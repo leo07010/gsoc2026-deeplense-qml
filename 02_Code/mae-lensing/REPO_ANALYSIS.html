@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>mae-lensing Repo Analysis</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">mae-lensing Repo Analysis</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#mae-lensing--repo-完整技術分析"
+id="toc-mae-lensing--repo-完整技術分析">mae-lensing — Repo
+完整技術分析</a>
+<ul>
+<li><a href="#目錄" id="toc-目錄">目錄</a></li>
+<li><a href="#1-repo-身分與規模" id="toc-1-repo-身分與規模">1. Repo
+身分與規模</a></li>
+<li><a href="#2-檔案級分析" id="toc-2-檔案級分析">2. 檔案級分析</a>
+<ul>
+<li><a href="#21-全部檔案清單" id="toc-21-全部檔案清單">2.1
+全部檔案清單</a></li>
+<li><a href="#22-觀察與評論" id="toc-22-觀察與評論">2.2
+觀察與評論</a></li>
+</ul></li>
+<li><a href="#3-mainv2py-程式碼架構" id="toc-3-mainv2py-程式碼架構">3.
+<code>mainv2.py</code> 程式碼架構</a>
+<ul>
+<li><a href="#31-全圖1833-行的-5-大區塊"
+id="toc-31-全圖1833-行的-5-大區塊">3.1 全圖（1833 行的 5
+大區塊）</a></li>
+<li><a href="#32-8-個模型-class-詳解"
+id="toc-32-8-個模型-class-詳解">3.2 8 個模型 class 詳解</a></li>
+<li><a href="#33-評估函式-evaluate_classifier-line-648"
+id="toc-33-評估函式-evaluate_classifier-line-648">3.3 評估函式
+(<code>evaluate_classifier</code>, line 648)</a></li>
+</ul></li>
+<li><a href="#4-三階段-pipeline-資料流"
+id="toc-4-三階段-pipeline-資料流">4. 三階段 Pipeline 資料流</a>
+<ul>
+<li><a href="#41-完整時序" id="toc-41-完整時序">4.1 完整時序</a></li>
+<li><a href="#42-三階段共用元件" id="toc-42-三階段共用元件">4.2
+三階段共用元件</a></li>
+</ul></li>
+<li><a href="#5-關鍵設計選擇與隱性假設"
+id="toc-5-關鍵設計選擇與隱性假設">5. 關鍵設計選擇與隱性假設</a>
+<ul>
+<li><a href="#51-star-mae-只在-no_sub-上預訓強假設"
+id="toc-51-star-mae-只在-no_sub-上預訓強假設">5.1 ⭐ MAE 只在
+<code>no_sub</code> 上預訓（強假設！）</a></li>
+<li><a href="#52-star-影像強制-resize-到-6464"
+id="toc-52-star-影像強制-resize-到-6464">5.2 ⭐ 影像強制 resize 到
+64×64</a></li>
+<li><a href="#53-star-mask-token-是設-0而非真移除simmim-風格"
+id="toc-53-star-mask-token-是設-0而非真移除simmim-風格">5.3 ⭐ Mask
+token 是「設 0」而非真移除（SimMIM 風格）</a></li>
+<li><a href="#54-star-decoder-比-he-原版更小2-vs-8-blocks"
+id="toc-54-star-decoder-比-he-原版更小2-vs-8-blocks">5.4 ⭐ Decoder 比
+He 原版更小（2 vs 8 blocks）</a></li>
+<li><a href="#55-沒有獨立-test-set" id="toc-55-沒有獨立-test-set">5.5
+沒有獨立 test set</a></li>
+<li><a href="#56-random_mask-是-per-sample-而非-per-batch"
+id="toc-56-random_mask-是-per-sample-而非-per-batch">5.6 Random_mask 是
+per-sample 而非 per-batch</a></li>
+<li><a href="#57-沒用-he-原版的-normalized-pixel-loss"
+id="toc-57-沒用-he-原版的-normalized-pixel-loss">5.7 沒用 He 原版的
+normalized pixel loss</a></li>
+</ul></li>
+<li><a href="#6-預訓-weights-內容分析"
+id="toc-6-預訓-weights-內容分析">6. 預訓 weights 內容分析</a>
+<ul>
+<li><a href="#outputs_lensclassifierpth-109-mb"
+id="toc-outputs_lensclassifierpth-109-mb"><code>outputs_lens/classifier.pth</code>
+(10.9 MB)</a></li>
+<li><a href="#抽出-encoder-weights-給量子-fine-tune-用"
+id="toc-抽出-encoder-weights-給量子-fine-tune-用">抽出 encoder weights
+給量子 fine-tune 用</a></li>
+</ul></li>
+<li><a href="#7-output-artifacts-完整清單"
+id="toc-7-output-artifacts-完整清單">7. Output artifacts
+完整清單</a></li>
+<li><a href="#8-量子整合插入點line-level"
+id="toc-8-量子整合插入點line-level">8. 量子整合插入點（line-level）</a>
+<ul>
+<li><a href="#dart-主要插入點vitclassifier-line-554-564"
+id="toc-dart-主要插入點vitclassifier-line-554-564">🎯
+主要插入點：<code>ViTClassifier</code> (line 554-564)</a></li>
+<li><a href="#dart-cli-旗標main-line-1495"
+id="toc-dart-cli-旗標main-line-1495">🎯 CLI 旗標：<code>main()</code>
+(line 1495)</a></li>
+<li><a href="#dart-次要插入點" id="toc-dart-次要插入點">🎯
+次要插入點</a></li>
+<li><a href="#dart-建議的新檔案結構量子整合後"
+id="toc-dart-建議的新檔案結構量子整合後">🎯
+建議的新檔案結構（量子整合後）</a></li>
+</ul></li>
+<li><a href="#9-已知-quirks-與-gotchas"
+id="toc-9-已知-quirks-與-gotchas">9. 已知 quirks 與 gotchas</a>
+<ul>
+<li><a href="#91-robust_load_npy-失敗時默默用噪音line-191-194"
+id="toc-91-robust_load_npy-失敗時默默用噪音line-191-194">9.1
+<code>robust_load_npy</code> 失敗時默默用噪音（line 191-194）</a></li>
+<li><a href="#92-oschdirargsdata_root-line-1540"
+id="toc-92-oschdirargsdata_root-line-1540">9.2
+<code>os.chdir(args.data_root)</code> (line 1540)</a></li>
+<li><a href="#93-默認-mask_ratio-075但-sota-是-09"
+id="toc-93-默認-mask_ratio-075但-sota-是-09">9.3 默認 mask_ratio
+0.75，但 SOTA 是 0.9</a></li>
+<li><a href="#94-optuna-只跑-5-trials"
+id="toc-94-optuna-只跑-5-trials">9.4 Optuna 只跑 5 trials</a></li>
+<li><a href="#95-no-reproducibility-on-cuda"
+id="toc-95-no-reproducibility-on-cuda">9.5 No reproducibility on
+CUDA</a></li>
+<li><a href="#96-random_mask-是-per-sample-python-loop慢"
+id="toc-96-random_mask-是-per-sample-python-loop慢">9.6 Random_mask 是
+per-sample Python loop（慢）</a></li>
+<li><a href="#97-vitencoder-在-main-中被-instantiated-4-次"
+id="toc-97-vitencoder-在-main-中被-instantiated-4-次">9.7 ViTEncoder 在
+main() 中被 instantiated 4 次</a></li>
+</ul></li>
+<li><a href="#10-改動建議哪些可改哪些不要動"
+id="toc-10-改動建議哪些可改哪些不要動">10.
+改動建議：哪些可改、哪些不要動</a>
+<ul>
+<li><a href="#white_check_mark-安全可改"
+id="toc-white_check_mark-安全可改">✅ 安全可改</a></li>
+<li><a href="#warning-可改但要小心" id="toc-warning-可改但要小心">⚠️
+可改但要小心</a></li>
+<li><a href="#no_entry_sign-不建議改" id="toc-no_entry_sign-不建議改">🚫
+不建議改</a></li>
+</ul></li>
+<li><a href="#11-reproduction-guide" id="toc-11-reproduction-guide">11.
+Reproduction guide</a>
+<ul>
+<li><a href="#step-1環境建議用-conda-env"
+id="toc-step-1環境建議用-conda-env">Step 1：環境（建議用 conda
+env）</a></li>
+<li><a href="#step-2下載資料" id="toc-step-2下載資料">Step
+2：下載資料</a></li>
+<li><a href="#step-3跑-baseline-重現-paper"
+id="toc-step-3跑-baseline-重現-paper">Step 3：跑 baseline 重現
+paper</a></li>
+<li><a href="#step-4跑-ablation" id="toc-step-4跑-ablation">Step 4：跑
+ablation</a></li>
+<li><a href="#step-5對照-paper-數字" id="toc-step-5對照-paper-數字">Step
+5：對照 paper 數字</a></li>
+</ul></li>
+<li><a href="#12-整合-checklist" id="toc-12-整合-checklist">12. 整合
+checklist</a>
+<ul>
+<li><a href="#pre-flight量子整合前要確認"
+id="toc-pre-flight量子整合前要確認">Pre-flight（量子整合前要確認）</a></li>
+<li><a href="#整合步驟" id="toc-整合步驟">整合步驟</a></li>
+<li><a href="#post-flightgsoc-final-report"
+id="toc-post-flightgsoc-final-report">Post-flight（GSoC final
+report）</a></li>
+</ul></li>
+<li><a href="#13-一句話總結" id="toc-13-一句話總結">13.
+一句話總結</a></li>
+<li><a href="#附錄用一張圖看完整-repo"
+id="toc-附錄用一張圖看完整-repo">附錄：用一張圖看完整 repo</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="mae-lensing--repo-完整技術分析">mae-lensing — Repo
+完整技術分析</h1>
+<blockquote>
+<p><strong>對象</strong>：<a
+href="https://github.com/achmadardanip/mae-lensing"><code>achmadardanip/mae-lensing</code></a>
+<strong>分析人</strong>：你的 GSoC workspace
+<strong>分析日期</strong>：2026-05-27 <strong>目的</strong>：理解 repo
+全貌，標定量子整合插入點，記錄已知 quirks</p>
+</blockquote>
+<hr />
+<h2 id="目錄">目錄</h2>
+<ol type="1">
+<li><a href="#1-repo-身分與規模">Repo 身分與規模</a></li>
+<li><a href="#2-檔案級分析">檔案級分析</a></li>
+<li><a href="#3-mainv2py-程式碼架構"><code>mainv2.py</code>
+程式碼架構</a></li>
+<li><a href="#4-三階段-pipeline-資料流">三階段 Pipeline 資料流</a></li>
+<li><a href="#5-關鍵設計選擇與隱性假設">關鍵設計選擇與隱性假設</a></li>
+<li><a href="#6-預訓-weights-內容分析">預訓 weights 內容分析</a></li>
+<li><a href="#7-output-artifacts-完整清單">Output artifacts
+完整清單</a></li>
+<li><a
+href="#8-量子整合插入點line-level">量子整合插入點（line-level）</a></li>
+<li><a href="#9-已知-quirks-與-gotchas">已知 quirks 與 gotchas</a></li>
+<li><a
+href="#10-改動建議哪些可改哪些不要動">改動建議：哪些可改、哪些不要動</a></li>
+<li><a href="#11-reproduction-guide">Reproduction guide</a></li>
+<li><a href="#12-整合-checklist">整合 checklist</a></li>
+</ol>
+<hr />
+<h2 id="1-repo-身分與規模">1. Repo 身分與規模</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>論文</strong></td>
+<td><em>Masked Autoencoder Pretraining on Strong-Lensing Images for
+Joint Dark-Matter Model Classification and Super-Resolution</em></td>
+</tr>
+<tr>
+<td><strong>arXiv</strong></td>
+<td><a href="https://arxiv.org/abs/2512.06642">2512.06642</a> (Dec
+2025)</td>
+</tr>
+<tr>
+<td><strong>作者</strong> (8 人)</td>
+<td>Achmad Ardani Prasha, Clavino Ourizqi Rachmadi, Muhamad Fauzan Ibnu
+Syahlan, Naufal Rahfi Anugerah, Nanda Garin Raditya, Putri Amelia,
+Sabrina Laila Mutiara, Hilman Syachr Ramadhan</td>
+</tr>
+<tr>
+<td><strong>單位</strong></td>
+<td>Universitas Mercu Buana, Jakarta, Indonesia</td>
+</tr>
+<tr>
+<td><strong>GitHub</strong></td>
+<td><a
+href="https://github.com/achmadardanip/mae-lensing">https://github.com/achmadardanip/mae-lensing</a></td>
+</tr>
+<tr>
+<td><strong>License</strong></td>
+<td>repo 內未明確標示（建議 fork 前 email 確認）</td>
+</tr>
+<tr>
+<td><strong>Repo 規模</strong></td>
+<td>1 主腳本（1833 行）+ 1 分析腳本（148 行）+ 1 notebook + 預訓
+weights</td>
+</tr>
+<tr>
+<td><strong>語言</strong></td>
+<td>Python (PyTorch)</td>
+</tr>
+<tr>
+<td><strong>目的</strong></td>
+<td>Reproduce paper 結果；不是 production-grade library</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-檔案級分析">2. 檔案級分析</h2>
+<h3 id="21-全部檔案清單">2.1 全部檔案清單</h3>
+<pre><code>mae-lensing/
+├── .git/                                                    # version control
+├── README.md                                          5.2 KB # 使用說明
+├── mainv2.py                                         66.4 KB # 唯一主程式 (1833 行)
+├── analyze_ablation.py                                5.8 KB # CSV → 圖
+├── achmads-notebook-dec-5 (1).ipynb               16,629 KB # 開發 notebook (含原始輸出)
+├── Masked_Autoencoder_Pretraining_..._(2).pdf       543 KB # paper PDF
+└── outputs_lens/                                            # 範例 artifacts
+    ├── classifier.pth                            10,921 KB # 預訓 classifier 權重 ⭐
+    ├── sr_model.pth                              11,752 KB # 預訓 SR 模型權重 ⭐
+    ├── ablation_cls.csv                              262 B # 3 行 ablation 結果
+    ├── ablation_sr.csv                               171 B # 2 行 SR ablation
+    ├── mask_ratio_ablation.csv                       515 B # 3 個 mask ratio 結果
+    ├── cls_pretrained_classification_report.txt      389 B # per-class P/R/F1
+    ├── cls_pretrained_confusion_matrix.png          27 KB
+    ├── ablation_cls_summary.png                     27 KB
+    ├── ablation_sr_summary.png                      27 KB
+    ├── mask_ratio_ablation_summary.png              45 KB
+    ├── reliability_pretrained.png                   38 KB
+    ├── roc_curve.png                                44 KB
+    ├── sr_example.png                               29 KB
+    ├── sr_grid.png                                  143 KB
+    └── tsne.png                                     84 KB</code></pre>
+<h3 id="22-觀察與評論">2.2 觀察與評論</h3>
+<table>
+<thead>
+<tr>
+<th>觀察</th>
+<th>含意</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>mainv2.py</code> 是唯一程式碼</strong></td>
+<td>沒 module 化（沒 <code>models/</code>, <code>data/</code>,
+<code>train.py</code>），改一處要找全 1833 行</td>
+</tr>
+<tr>
+<td><strong><code>outputs_lens</code> 已含預訓 weights</strong></td>
+<td>README 沒明說但確實 ship 了——你<strong>不需要重訓 2 小時
+MAE</strong></td>
+</tr>
+<tr>
+<td><strong>沒 <code>mae_encoder.pth</code> 獨立檔</strong></td>
+<td>只有 fine-tuned 整模型（含 encoder + head）</td>
+</tr>
+<tr>
+<td><strong><code>achmads-notebook</code> 16 MB 超大</strong></td>
+<td>內含 cell outputs（train log + 圖）；不適合進 git，但保留作為
+reference</td>
+</tr>
+<tr>
+<td><strong>沒 <code>requirements.txt</code></strong></td>
+<td>環境靠 README pip 命令重建，pinned 版本未指定</td>
+</tr>
+<tr>
+<td><strong>沒 unit tests</strong></td>
+<td>純 research code，重構時要小心</td>
+</tr>
+<tr>
+<td><strong>沒 LICENSE 檔</strong></td>
+<td>法律不明確；要做 derivative work 前最好聯絡作者</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-mainv2py-程式碼架構">3. <code>mainv2.py</code> 程式碼架構</h2>
+<h3 id="31-全圖1833-行的-5-大區塊">3.1 全圖（1833 行的 5 大區塊）</h3>
+<pre><code>Line 1-38       Imports + try/except for timm
+Line 40-194     Utils &amp; data loading (seed, zip extraction, robust npy loader)
+                 ├─ set_seed(), extract_zip_if_exists(), find_dataset_root_for_classes()
+                 ├─ _extract_2d_numeric_array() ← 處理「奇怪格式 npy」的 18-行 fallback
+                 └─ robust_load_npy() ← 含 noise fallback（重要 quirk!）
+
+Line 197-343    Datasets (3 個 Dataset class + 2 個 builder)
+                 ├─ NoSubDataset (line 201) ← MAE pretrain 用，只用 no_sub 類！
+                 ├─ ClassificationDataset (line 217) ← 3-way
+                 ├─ SuperResolutionDataset (line 237)
+                 ├─ build_task_VI_A_datasets() (line 256)
+                 └─ build_task_VI_B_datasets() (line 307)
+
+Line 346-609    Models (8 個 nn.Module class)
+                 ├─ PatchEmbed (line 350)
+                 ├─ MLP (line 375)
+                 ├─ TransformerBlock (line 394)
+                 ├─ ViTEncoder (line 421) ⭐ 你要凍結這個
+                 ├─ MaskedAutoencoderViT (line 484) ⭐ pretrain 模型
+                 ├─ ViTClassifier (line 554) ⭐ 量子插入點！
+                 ├─ SRHead (line 567)
+                 └─ ViTSuperResolution (line 596)
+
+Line 612-977    Training / Eval / Plotting (15 個函式)
+                 ├─ train_mae() (line 616)
+                 ├─ evaluate_classifier() (line 648)
+                 ├─ plot_roc_curves(), plot_tsne()
+                 ├─ evaluate_sr(), visualize_sr_example(), visualize_sr_grid()
+                 ├─ plot_confusion_and_report()
+                 └─ plot_reliability_diagram()
+
+Line 980-1102   Optuna objectives (2 個)
+                 ├─ objective_classification() ← 5 trials，搜 lr/wd/drop
+                 └─ objective_sr()
+
+Line 1105-1493  Experiment runners (4 個)
+                 ├─ classifier_experiment() ← scratch vs pretrained vs frozen
+                 ├─ sr_experiment() ← scratch vs pretrained
+                 ├─ run_ablation_experiments() ← 跑上面兩個
+                 └─ mask_ratio_experiment() + run_mask_ratio_experiments()
+
+Line 1495-1833  main() ← 唯一 entry point，硬編三階段流程</code></pre>
+<h3 id="32-8-個模型-class-詳解">3.2 8 個模型 class 詳解</h3>
+<h4 id="patchembed-line-350"><code>PatchEmbed</code> (line 350)</h4>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>img <span class="dv">64</span>×<span class="dv">64</span> → Conv2d(<span class="dv">1</span>, <span class="dv">192</span>, k<span class="op">=</span><span class="dv">4</span>, s<span class="op">=</span><span class="dv">4</span>) → (B, <span class="dv">192</span>, <span class="dv">16</span>, <span class="dv">16</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>         → flatten <span class="op">+</span> transpose → (B, <span class="dv">256</span>, <span class="dv">192</span>)  <span class="co"># 256 tokens</span></span></code></pre></div>
+<h4 id="transformerblock-line-394"><code>TransformerBlock</code> (line
+394)</h4>
+<p>標準 ViT block：</p>
+<pre><code>x + MHA(LayerNorm(x)) → + MLP(LayerNorm(x))</code></pre>
+<h4 id="vitencoder-line-421-star"><code>ViTEncoder</code> (line 421)
+⭐</h4>
+<pre><code>img 64×64
+  → PatchEmbed → (B, 256, 192)
+  → concat CLS token → (B, 257, 192)
+  → + pos_embed
+  → 6 × TransformerBlock
+  → LayerNorm
+  → 輸出 (B, 257, 192)</code></pre>
+<ul>
+<li><strong>參數量約 1.0 M</strong></li>
+<li>提供兩個 forward：<code>forward()</code>（從 image）與
+<code>forward_features_from_patches()</code>（從 patches，MAE 用）</li>
+</ul>
+<h4 id="maskedautoencodervit-line-484"><code>MaskedAutoencoderViT</code>
+(line 484)</h4>
+<p>完整 MAE：</p>
+<pre><code>img → patches → random_mask (90% zero) → encoder → decoder_embed (linear 192→192)
+   → 2 × TransformerBlock (decoder) → linear 192 → 4·4·1 = 16
+   → unpatchify → reconstructed image</code></pre>
+<ul>
+<li><strong><code>random_mask</code> 把 masked patch 設為 0</strong>
+（不是真正的「移除」——這是 SimMIM-style，非 He et al. MAE）</li>
+<li>Decoder 只有 <strong>2 blocks</strong>，比 encoder（6
+blocks）小</li>
+</ul>
+<h4
+id="vitclassifier-line-554-starstar-量子插入點"><code>ViTClassifier</code>
+(line 554) ⭐⭐ 量子插入點</h4>
+<p><strong>只有 10 行</strong>：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ViTClassifier(nn.Module):</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, encoder, num_classes):</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> encoder</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.head <span class="op">=</span> nn.Linear(encoder.embed_dim, num_classes)  <span class="co"># ← 替換這行</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>        tokens <span class="op">=</span> <span class="va">self</span>.encoder(x)</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>        cls_feat <span class="op">=</span> tokens[:, <span class="dv">0</span>]</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> <span class="va">self</span>.head(cls_feat)</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> logits, cls_feat</span></code></pre></div>
+<h4 id="vitsuperresolution-line-596"><code>ViTSuperResolution</code>
+(line 596)</h4>
+<pre><code>img 16×16
+  → encoder → patch tokens (B, 16, 192)
+  → reshape (B, 192, 4, 4)
+  → SRHead: 2× Upsample + Conv → 16×16 → 64×64 → final 1-ch</code></pre>
+<h3 id="33-評估函式-evaluate_classifier-line-648">3.3 評估函式
+(<code>evaluate_classifier</code>, line 648)</h3>
+<p>回傳 dict：</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;auc_macro&quot;</span>, <span class="st">&quot;fpr&quot;</span>, <span class="st">&quot;tpr&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;probs&quot;</span>, <span class="st">&quot;labels&quot;</span>, <span class="st">&quot;features&quot;</span>,   <span class="co"># ← features 可用 t-SNE 視覺化</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;accuracy&quot;</span>, <span class="st">&quot;f1_macro&quot;</span>, <span class="st">&quot;y_pred&quot;</span>,</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="4-三階段-pipeline-資料流">4. 三階段 Pipeline 資料流</h2>
+<h3 id="41-完整時序">4.1 完整時序</h3>
+<pre><code>═══════════════════════════════════════════════════════════════
+Phase 1: MAE Pretraining (no_sub class only!)
+═══════════════════════════════════════════════════════════════
+
+Dataset1.zip
+  ├─ axion/   (29,896 .npy) ──────────── 訓 CLS 用
+  ├─ cdm/     (29,759 .npy) ──────────── 訓 CLS 用
+  └─ no_sub/  (29,449 .npy) ──────┐
+                                   │ ⭐ pretrain MAE 只用這
+  no_sub paths ──→ NoSubDataset  ──┘
+                ↓
+       MaskedAutoencoderViT (mask_ratio=0.75 默認, 但 0.9 才是 SOTA)
+                ↓
+       train_mae() → 10 epochs Adam, lr=1e-4
+                ↓
+       mae_encoder.pth saved
+
+═══════════════════════════════════════════════════════════════
+Phase 2: Classification Fine-tuning (all 3 classes)
+═══════════════════════════════════════════════════════════════
+
+Dataset1.zip (axion + cdm + no_sub all)
+  → build_task_VI_A_datasets() → train_cls_ds (90%) / val_cls_ds (10%)
+                ↓
+       new ViTEncoder ← load mae_encoder.pth weights
+                ↓
+       ViTClassifier(encoder, num_classes=3)
+                ↓
+       10 epochs Adam, lr=5e-5
+                ↓
+       evaluate_classifier() → AUC, ACC, F1, ROC, t-SNE, confusion
+                ↓
+       classifier.pth saved (含 encoder + head 一起)
+
+═══════════════════════════════════════════════════════════════
+Phase 3: Super-Resolution Fine-tuning
+═══════════════════════════════════════════════════════════════
+
+Dataset2.zip
+  ├─ HR/  (10,000 .npy)
+  └─ LR/  (10,000 .npy)
+       → SuperResolutionDataset (按檔名 match)
+                ↓
+       new ViTEncoder ← load mae_encoder.pth
+                ↓
+       ViTSuperResolution(encoder)
+                ↓
+       10 epochs MSE
+                ↓
+       PSNR, SSIM 評估
+                ↓
+       sr_model.pth saved</code></pre>
+<h3 id="42-三階段共用元件">4.2 三階段共用元件</h3>
+<table>
+<thead>
+<tr>
+<th>元件</th>
+<th>Phase 1 用</th>
+<th>Phase 2 用</th>
+<th>Phase 3 用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ViTEncoder</code></td>
+<td>✓ (新 init)</td>
+<td>✓ (load MAE weights)</td>
+<td>✓ (load MAE weights)</td>
+</tr>
+<tr>
+<td>影像尺寸</td>
+<td>64×64 hard-coded</td>
+<td>64×64</td>
+<td>64×64</td>
+</tr>
+<tr>
+<td>Batch size</td>
+<td>64</td>
+<td>64</td>
+<td>64</td>
+</tr>
+<tr>
+<td>Optimizer</td>
+<td>Adam</td>
+<td>Adam</td>
+<td>Adam</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>MSE</td>
+<td>CrossEntropy</td>
+<td>MSE</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>10</td>
+<td>10</td>
+<td>10</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-關鍵設計選擇與隱性假設">5. 關鍵設計選擇與隱性假設</h2>
+<h3 id="51-star-mae-只在-no_sub-上預訓強假設">5.1 ⭐ MAE 只在
+<code>no_sub</code> 上預訓（強假設！）</h3>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 280-281</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> cls <span class="op">==</span> <span class="st">&quot;no_sub&quot;</span>:</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>    no_sub_paths.append(fpath)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 302</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>mae_ds <span class="op">=</span> NoSubDataset(no_sub_paths, target_size<span class="op">=</span>target_size)</span></code></pre></div>
+<p><strong>為什麼這是強假設</strong>：</p>
+<ul>
+<li>標準 MAE 在所有資料上做 SSL（self-supervised，不需要 label）</li>
+<li>但這個 repo 把 MAE 限制只看「無 substructure」的影像</li>
+<li><strong>物理直覺</strong>：讓 encoder 學「乾淨 arc」長什麼樣 →
+後續分類時，subhalo/vortex 會被視為「對 baseline 的擾動」</li>
+<li><strong>副作用</strong>：encoder 對 substructure 的 representation
+沒有 unsupervised exposure，可能限制下游 axion 分類能力（這呼應你看到的
+axion recall 0.76 偏低）</li>
+</ul>
+<blockquote>
+<p><strong>你的量子方向可以挑戰這假設</strong>：用全部 3 類做 MAE
+pretrain，看 quantum head 是否能利用更豐富的 representation</p>
+</blockquote>
+<h3 id="52-star-影像強制-resize-到-6464">5.2 ⭐ 影像強制 resize 到
+64×64</h3>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 183 (robust_load_npy)</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>img <span class="op">=</span> F.interpolate(img, size<span class="op">=</span>(target_size, target_size), mode<span class="op">=</span><span class="st">&quot;bicubic&quot;</span>, ...)</span></code></pre></div>
+<ul>
+<li>原始 lensing 影像可能是 150×150（Alexander 2019 用的尺寸），被縮成
+64×64</li>
+<li><strong>資訊損失</strong>：subhalo 在原圖約 1-2 pixel 大小，縮 ×2.3
+後可能消失</li>
+<li><strong>改動風險</strong>：若你想用 150×150，需同時改
+<code>target_size=150</code> + <code>patch_size=10</code> （讓
+num_patches 保持合理）+ <code>pos_embed</code> shape</li>
+</ul>
+<h3 id="53-star-mask-token-是設-0而非真移除simmim-風格">5.3 ⭐ Mask
+token 是「設 0」而非真移除（SimMIM 風格）</h3>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 514-525 (random_mask)</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>x_masked <span class="op">=</span> x_patches.clone()</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>x_masked[mask] <span class="op">=</span> <span class="fl">0.0</span></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> x_masked, mask</span></code></pre></div>
+<ul>
+<li>He et al. 原版 MAE 是把 masked patches <strong>從 encoder input
+移除</strong>，encoder 只看 visible（這節省計算）</li>
+<li>這 repo 是 <strong>set to zero</strong>，encoder 仍看 256 個
+tokens（其中 90% 是 zero）</li>
+<li><strong>效能差異</strong>：He 版較快，這版較慢但實作簡單</li>
+</ul>
+<h3 id="54-star-decoder-比-he-原版更小2-vs-8-blocks">5.4 ⭐ Decoder 比
+He 原版更小（2 vs 8 blocks）</h3>
+<table>
+<thead>
+<tr>
+<th>設計</th>
+<th>He 2022</th>
+<th>這 repo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Encoder depth</td>
+<td>24 (ViT-Huge)</td>
+<td><strong>6</strong></td>
+</tr>
+<tr>
+<td>Decoder depth</td>
+<td>8</td>
+<td><strong>2</strong></td>
+</tr>
+<tr>
+<td>Encoder dim</td>
+<td>1280</td>
+<td><strong>192</strong></td>
+</tr>
+<tr>
+<td>Decoder dim</td>
+<td>512</td>
+<td><strong>192</strong></td>
+</tr>
+</tbody>
+</table>
+<p>→ 這 repo 大幅縮減模型，<strong>約 ViT-Tiny 量級</strong>（總 ~1.5M
+params），適合單卡訓練。</p>
+<h3 id="55-沒有獨立-test-set">5.5 沒有獨立 test set</h3>
+<ul>
+<li><code>val_fraction=0.1</code> 拆 train/val</li>
+<li><strong>沒有 held-out test set</strong>——所有「test」其實是 val</li>
+<li><strong>後果</strong>：報告數字理論上有 selection bias（在 val 上
+tune 後又在 val 上報告）</li>
+</ul>
+<h3 id="56-random_mask-是-per-sample-而非-per-batch">5.6 Random_mask 是
+per-sample 而非 per-batch</h3>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 515-521</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(B):  <span class="co"># ← 每個 sample 各別 mask</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>    perm <span class="op">=</span> torch.randperm(N, device<span class="op">=</span>x_patches.device)</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div>
+<ul>
+<li>每張影像的 mask pattern 都不同</li>
+<li>比 per-batch mask 提供更多隨機性，但慢一點（Python loop over
+batch）</li>
+</ul>
+<h3 id="57-沒用-he-原版的-normalized-pixel-loss">5.7 沒用 He 原版的
+normalized pixel loss</h3>
+<p>He 2022 推薦對每個 patch 的 pixel 做 LayerNorm 後再算 MSE。這 repo
+直接對 raw pixel 算 MSE：</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 626</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>criterion <span class="op">=</span> nn.MSELoss()</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 637</span></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> criterion(recon, imgs)</span></code></pre></div>
+<p>→ 可能讓收斂稍慢、final loss 偏小。</p>
+<hr />
+<h2 id="6-預訓-weights-內容分析">6. 預訓 weights 內容分析</h2>
+<h3
+id="outputs_lensclassifierpth-109-mb"><code>outputs_lens/classifier.pth</code>
+(10.9 MB)</h3>
+<p>由 <code>torch.save(classifier.state_dict(), ...)</code> 儲存（line
+1698-1699）。預期 state_dict keys：</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>{</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.cls_token&#39;</span>: (<span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">192</span>),</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.pos_embed&#39;</span>: (<span class="dv">1</span>, <span class="dv">257</span>, <span class="dv">192</span>),</span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.patch_embed.proj.weight&#39;</span>: (<span class="dv">192</span>, <span class="dv">1</span>, <span class="dv">4</span>, <span class="dv">4</span>),</span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.patch_embed.proj.bias&#39;</span>: (<span class="dv">192</span>,),</span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.norm1.weight/bias&#39;</span>: (<span class="dv">192</span>,) ×<span class="dv">2</span>,</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.attn.in_proj_weight&#39;</span>: (<span class="dv">576</span>, <span class="dv">192</span>),</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.attn.in_proj_bias&#39;</span>: (<span class="dv">576</span>,),</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.attn.out_proj.weight&#39;</span>: (<span class="dv">192</span>, <span class="dv">192</span>),</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.attn.out_proj.bias&#39;</span>: (<span class="dv">192</span>,),</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.norm2.weight/bias&#39;</span>: (<span class="dv">192</span>,) ×<span class="dv">2</span>,</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.mlp.fc1.weight&#39;</span>: (<span class="dv">768</span>, <span class="dv">192</span>),</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.mlp.fc1.bias&#39;</span>: (<span class="dv">768</span>,),</span>
+<span id="cb16-14"><a href="#cb16-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.mlp.fc2.weight&#39;</span>: (<span class="dv">192</span>, <span class="dv">768</span>),</span>
+<span id="cb16-15"><a href="#cb16-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.blocks.0.mlp.fc2.bias&#39;</span>: (<span class="dv">192</span>,),</span>
+<span id="cb16-16"><a href="#cb16-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># ... blocks 1-5 重複 ...</span></span>
+<span id="cb16-17"><a href="#cb16-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;encoder.norm.weight/bias&#39;</span>: (<span class="dv">192</span>,) ×<span class="dv">2</span>,</span>
+<span id="cb16-18"><a href="#cb16-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;head.weight&#39;</span>: (<span class="dv">3</span>, <span class="dv">192</span>),</span>
+<span id="cb16-19"><a href="#cb16-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;head.bias&#39;</span>: (<span class="dv">3</span>,),</span>
+<span id="cb16-20"><a href="#cb16-20" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="抽出-encoder-weights-給量子-fine-tune-用">抽出 encoder weights
+給量子 fine-tune 用</h3>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a>ckpt <span class="op">=</span> torch.load(<span class="st">&#39;outputs_lens/classifier.pth&#39;</span>, map_location<span class="op">=</span><span class="st">&#39;cpu&#39;</span>)</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a>encoder_state <span class="op">=</span> {k.replace(<span class="st">&#39;encoder.&#39;</span>, <span class="st">&#39;&#39;</span>): v</span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> k, v <span class="kw">in</span> ckpt.items()</span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">if</span> k.startswith(<span class="st">&#39;encoder.&#39;</span>)}</span>
+<span id="cb17-7"><a href="#cb17-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-8"><a href="#cb17-8" aria-hidden="true" tabindex="-1"></a><span class="co"># 載入到新 encoder</span></span>
+<span id="cb17-9"><a href="#cb17-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> mainv2 <span class="im">import</span> ViTEncoder</span>
+<span id="cb17-10"><a href="#cb17-10" aria-hidden="true" tabindex="-1"></a>enc <span class="op">=</span> ViTEncoder(img_size<span class="op">=</span><span class="dv">64</span>, patch_size<span class="op">=</span><span class="dv">4</span>, in_chans<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb17-11"><a href="#cb17-11" aria-hidden="true" tabindex="-1"></a>                 embed_dim<span class="op">=</span><span class="dv">192</span>, depth<span class="op">=</span><span class="dv">6</span>, num_heads<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb17-12"><a href="#cb17-12" aria-hidden="true" tabindex="-1"></a>enc.load_state_dict(encoder_state)</span>
+<span id="cb17-13"><a href="#cb17-13" aria-hidden="true" tabindex="-1"></a>enc.<span class="bu">eval</span>()</span>
+<span id="cb17-14"><a href="#cb17-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> enc.parameters(): p.requires_grad <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb17-15"><a href="#cb17-15" aria-hidden="true" tabindex="-1"></a><span class="co"># 接你的 QuantumFusionHead</span></span></code></pre></div>
+<hr />
+<h2 id="7-output-artifacts-完整清單">7. Output artifacts 完整清單</h2>
+<table>
+<thead>
+<tr>
+<th>檔案</th>
+<th>內容</th>
+<th>對你的價值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>classifier.pth</code></td>
+<td>encoder + head 全 model</td>
+<td><strong>直接抽 encoder 用</strong></td>
+</tr>
+<tr>
+<td><code>sr_model.pth</code></td>
+<td>encoder + SR head</td>
+<td>視情況可用</td>
+</tr>
+<tr>
+<td><code>ablation_cls.csv</code></td>
+<td>3 行：pretrained_full / pretrained_frozen / scratch_full</td>
+<td>確認 pretrain 在 5 epochs ablation 中沒贏 scratch</td>
+</tr>
+<tr>
+<td><code>ablation_sr.csv</code></td>
+<td>2 行：pretrained_sr / scratch_sr</td>
+<td>SR 也是 pretrain 小贏</td>
+</tr>
+<tr>
+<td><code>mask_ratio_ablation.csv</code></td>
+<td>3 行 mask 0.5/0.75/0.9</td>
+<td>確認 90% 才到 AUC 0.968</td>
+</tr>
+<tr>
+<td><code>cls_pretrained_classification_report.txt</code></td>
+<td>per-class P/R/F1</td>
+<td><strong>axion recall 0.76</strong> 是改進空間</td>
+</tr>
+<tr>
+<td><code>roc_curve.png</code></td>
+<td>3 個 class 的 ROC</td>
+<td>視覺化比對基準</td>
+</tr>
+<tr>
+<td><code>tsne.png</code></td>
+<td>t-SNE of encoder features</td>
+<td>看 representation 是否分離</td>
+</tr>
+<tr>
+<td><code>confusion_matrix.png</code></td>
+<td>3×3 混淆矩陣</td>
+<td>axion ↔︎ cdm 混淆嚴重</td>
+</tr>
+<tr>
+<td><code>reliability_pretrained.png</code></td>
+<td>calibration plot</td>
+<td>看 model 自信度是否準確</td>
+</tr>
+<tr>
+<td><code>sr_example.png</code> / <code>sr_grid.png</code></td>
+<td>LR / Pred / HR 並列</td>
+<td>SR 視覺品質</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-量子整合插入點line-level">8. 量子整合插入點（line-level）</h2>
+<h3 id="dart-主要插入點vitclassifier-line-554-564">🎯
+主要插入點：<code>ViTClassifier</code> (line 554-564)</h3>
+<p><strong>原始 30 行</strong>：</p>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ViTClassifier(nn.Module):</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, encoder: ViTEncoder, num_classes: <span class="bu">int</span>):</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> encoder</span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.head <span class="op">=</span> nn.Linear(encoder.embed_dim, num_classes)  <span class="co"># ⬅ 替換這個</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x: torch.Tensor):</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>        tokens <span class="op">=</span> <span class="va">self</span>.encoder(x)</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a>        cls_feat <span class="op">=</span> tokens[:, <span class="dv">0</span>]</span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> <span class="va">self</span>.head(cls_feat)                            <span class="co"># ⬅ 用 fusion module</span></span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> logits, cls_feat</span></code></pre></div>
+<p><strong>改成</strong>：</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> quantum_fusion <span class="im">import</span> QuantumFusionHead   <span class="co"># 你新加的 module</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ViTClassifier(nn.Module):</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, encoder: ViTEncoder, num_classes: <span class="bu">int</span>,</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                 use_quantum: <span class="bu">bool</span> <span class="op">=</span> <span class="va">False</span>):                    <span class="co"># ⬅ 加旗標</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> encoder</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> use_quantum:</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.head <span class="op">=</span> QuantumFusionHead(in_dim<span class="op">=</span>encoder.embed_dim,</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>                                          n_classes<span class="op">=</span>num_classes)</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.head <span class="op">=</span> nn.Linear(encoder.embed_dim, num_classes)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x: torch.Tensor):</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        tokens <span class="op">=</span> <span class="va">self</span>.encoder(x)</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a>        cls_feat <span class="op">=</span> tokens[:, <span class="dv">0</span>]</span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>        logits, <span class="op">*</span>_ <span class="op">=</span> <span class="va">self</span>.head(cls_feat) <span class="op">\</span></span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>                     <span class="cf">if</span> <span class="bu">isinstance</span>(<span class="va">self</span>.head, QuantumFusionHead) <span class="op">\</span></span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>                     <span class="cf">else</span> (<span class="va">self</span>.head(cls_feat),)</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> logits, cls_feat</span></code></pre></div>
+<h3 id="dart-cli-旗標main-line-1495">🎯 CLI 旗標：<code>main()</code>
+(line 1495)</h3>
+<p>加一個 <code>--use_quantum</code> argparse：</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a>parser.add_argument(<span class="st">&quot;--use_quantum&quot;</span>, action<span class="op">=</span><span class="st">&quot;store_true&quot;</span>,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>                    <span class="bu">help</span><span class="op">=</span><span class="st">&quot;Use QuantumFusionHead instead of Linear head.&quot;</span>)</span></code></pre></div>
+<p>並在 line 1641 <code>ViTClassifier</code> 初始化處：</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>classifier <span class="op">=</span> ViTClassifier(encoder_cls,</span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                           num_classes<span class="op">=</span><span class="bu">len</span>(class_names),</span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                           use_quantum<span class="op">=</span>args.use_quantum).to(device)</span></code></pre></div>
+<h3 id="dart-次要插入點">🎯 次要插入點</h3>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>line</th>
+<th>改動類型</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ViTSuperResolution</code> (line 596)</td>
+<td>—</td>
+<td>若做 quantum SR head，類似 ViTClassifier</td>
+</tr>
+<tr>
+<td><code>MaskedAutoencoderViT</code> decoder (line 502-512)</td>
+<td>—</td>
+<td>若做 Q-MAE，把 decoder 換成 quantum</td>
+</tr>
+<tr>
+<td><code>random_mask()</code> (line 514)</td>
+<td>—</td>
+<td>若做 quantum mask strategy，這裡改</td>
+</tr>
+<tr>
+<td><code>train_mae()</code> (line 616)</td>
+<td>—</td>
+<td>若加 quantum reconstruction loss，這裡改</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dart-建議的新檔案結構量子整合後">🎯
+建議的新檔案結構（量子整合後）</h3>
+<pre><code>mae-lensing/
+├── mainv2.py                      # 原 paper code（盡量少改）
+├── quantum_fusion.py              # 你新增：QuantumFusionHead class
+├── train_quantum.py               # 你新增：呼叫 mainv2 + quantum 模式
+└── outputs_quantum/               # 量子實驗結果
+    ├── q_classifier.pth
+    └── ablation_q_vs_c.csv</code></pre>
+<hr />
+<h2 id="9-已知-quirks-與-gotchas">9. 已知 quirks 與 gotchas</h2>
+<h3 id="91-robust_load_npy-失敗時默默用噪音line-191-194">9.1
+<code>robust_load_npy</code> 失敗時默默用噪音（line 191-194）</h3>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="cf">except</span> <span class="pp">Exception</span> <span class="im">as</span> e:</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;[WARN] Failed to load </span><span class="sc">{</span>path<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span>e<span class="sc">}</span><span class="ss">. Using random noise.&quot;</span>)</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>    noise <span class="op">=</span> torch.rand(<span class="dv">1</span>, target_size, target_size)</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> noise</span></code></pre></div>
+<p>→ 若資料集有壞檔，<strong>訓練不會崩</strong>但會被 noise
+污染。<strong>最好 grep <code>[WARN] Failed to load</code></strong> 看
+log。</p>
+<h3 id="92-oschdirargsdata_root-line-1540">9.2
+<code>os.chdir(args.data_root)</code> (line 1540)</h3>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>os.chdir(args.data_root)</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>os.makedirs(<span class="st">&quot;outputs&quot;</span>, exist_ok<span class="op">=</span><span class="va">True</span>)</span></code></pre></div>
+<p>→ 改變了 cwd，且 <code>outputs/</code> 是在 <code>data_root/</code>
+而不是 repo 根。<strong>寫量子 import
+路徑時要小心</strong>（用絕對路徑或在 <code>os.chdir</code> 前
+import）。</p>
+<h3 id="93-默認-mask_ratio-075但-sota-是-09">9.3 默認 mask_ratio
+0.75，但 SOTA 是 0.9</h3>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 1505</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>parser.add_argument(<span class="st">&quot;--mae_mask_ratio&quot;</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">float</span>, default<span class="op">=</span><span class="fl">0.75</span>, ...)</span></code></pre></div>
+<p>要重現 SOTA AUC 0.968，<strong>必須加
+<code>--mae_mask_ratio 0.9</code></strong>。</p>
+<h3 id="94-optuna-只跑-5-trials">9.4 Optuna 只跑 5 trials</h3>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 1510-1511</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>parser.add_argument(<span class="st">&quot;--optuna_trials_cls&quot;</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">5</span>)</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>parser.add_argument(<span class="st">&quot;--optuna_trials_sr&quot;</span>, <span class="bu">type</span><span class="op">=</span><span class="bu">int</span>, default<span class="op">=</span><span class="dv">5</span>)</span></code></pre></div>
+<p>5 trials 對 3-d hyperparameter space (lr, wd, drop)
+太少。<strong>正經實驗應 &gt;= 20 trials</strong>。</p>
+<h3 id="95-no-reproducibility-on-cuda">9.5 No reproducibility on
+CUDA</h3>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 49-50</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>torch.backends.cudnn.deterministic <span class="op">=</span> <span class="va">True</span></span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>torch.backends.cudnn.benchmark <span class="op">=</span> <span class="va">False</span></span></code></pre></div>
+<p>設了 deterministic 但 PyTorch 在 CUDA 上某些 op 仍非
+deterministic（如 atomic add）。<strong>完全重現 seed 在 CUDA
+下不保證</strong>。</p>
+<h3 id="96-random_mask-是-per-sample-python-loop慢">9.6 Random_mask 是
+per-sample Python loop（慢）</h3>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Line 518-521</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(B):</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a>    perm <span class="op">=</span> torch.randperm(N, device<span class="op">=</span>x_patches.device)</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a>    ...</span></code></pre></div>
+<p>可以向量化但作者沒做。<strong>對 batch 64 影響不大但 batch 256+
+會明顯慢</strong>。</p>
+<h3 id="97-vitencoder-在-main-中被-instantiated-4-次">9.7 ViTEncoder 在
+main() 中被 instantiated 4 次</h3>
+<p>Line 1579, 1632, 1727, +ablation
+多次。<strong>每次都重新初始化</strong> weights 再 load_state_dict。改
+architecture 時要記得 4 處都改。</p>
+<hr />
+<h2 id="10-改動建議哪些可改哪些不要動">10.
+改動建議：哪些可改、哪些不要動</h2>
+<h3 id="white_check_mark-安全可改">✅ 安全可改</h3>
+<table>
+<thead>
+<tr>
+<th>改動</th>
+<th>影響範圍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>加 <code>QuantumFusionHead</code> class</td>
+<td>新檔，不動 mainv2.py 即可（用 monkey-patch）</td>
+</tr>
+<tr>
+<td>加 <code>--use_quantum</code> argparse</td>
+<td>只動 <code>main()</code> 與 <code>ViTClassifier</code></td>
+</tr>
+<tr>
+<td>改 <code>batch_size</code></td>
+<td>純 CLI 參數</td>
+</tr>
+<tr>
+<td>加新的 evaluation metrics（ECE, Brier）</td>
+<td>只動 <code>evaluate_classifier</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="warning-可改但要小心">⚠️ 可改但要小心</h3>
+<table>
+<thead>
+<tr>
+<th>改動</th>
+<th>連帶影響</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>改 <code>img_size</code> 從 64 → 150</td>
+<td>需同步改 patch_size、num_patches、pos_embed shape、interpolate
+target</td>
+</tr>
+<tr>
+<td>改 <code>embed_dim</code> 從 192 → 其他</td>
+<td>影響所有 down/up 投影、head 維度</td>
+</tr>
+<tr>
+<td>改 <code>depth</code>（encoder blocks）</td>
+<td>改完 mae_encoder.pth 不能 load（dim mismatch）</td>
+</tr>
+<tr>
+<td>改 MAE 預訓資料（加入 axion/cdm）</td>
+<td>違反作者「pretrain only no_sub」設計，但可能更好</td>
+</tr>
+</tbody>
+</table>
+<h3 id="no_entry_sign-不建議改">🚫 不建議改</h3>
+<table>
+<thead>
+<tr>
+<th>改動</th>
+<th>為什麼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>robust_load_npy</code> 的 noise fallback</td>
+<td>移掉後壞檔會 crash 整個訓練</td>
+</tr>
+<tr>
+<td><code>os.chdir</code> 的位置</td>
+<td>改了會破壞所有 output 路徑</td>
+</tr>
+<tr>
+<td>Per-sample masking</td>
+<td>雖然慢但 paper 是這樣訓的，改了 reproduce 不到</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="11-reproduction-guide">11. Reproduction guide</h2>
+<h3 id="step-1環境建議用-conda-env">Step 1：環境（建議用 conda
+env）</h3>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> maelens python=3.10 <span class="at">-y</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate maelens</span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision <span class="at">--index-url</span> https://download.pytorch.org/whl/cu124</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install numpy scikit-learn scikit-image matplotlib tqdm optuna</span></code></pre></div>
+<h3 id="step-2下載資料">Step 2：下載資料</h3>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> data <span class="kw">&amp;&amp;</span> <span class="bu">cd</span> data</span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># 手動從 Google Drive 下載</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Dataset1.zip: https://drive.google.com/file/d/1znqUeFzYz-DeAE3dYXD17qoMPK82Whji/</span></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Dataset2.zip: https://drive.google.com/file/d/1uJmDZw649XS-r-dYs9WD-OPwF_TIroVw/</span></span></code></pre></div>
+<p>或用 <code>gdown</code>：</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install gdown</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="ex">gdown</span> <span class="at">--id</span> 1znqUeFzYz-DeAE3dYXD17qoMPK82Whji <span class="at">-O</span> Dataset1.zip</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a><span class="ex">gdown</span> <span class="at">--id</span> 1uJmDZw649XS-r-dYs9WD-OPwF_TIroVw <span class="at">-O</span> Dataset2.zip</span></code></pre></div>
+<h3 id="step-3跑-baseline-重現-paper">Step 3：跑 baseline 重現
+paper</h3>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ..  <span class="co"># 回到 mae-lensing/</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> mainv2.py <span class="at">--data_root</span> ./data <span class="at">--mae_mask_ratio</span> 0.9</span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="co"># 預期：~2-3 小時 on A100，輸出在 data/outputs/</span></span></code></pre></div>
+<h3 id="step-4跑-ablation">Step 4：跑 ablation</h3>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> mainv2.py <span class="at">--data_root</span> ./data <span class="at">--mae_mask_ratio</span> 0.9 <span class="at">--run_ablation</span> <span class="dt">\</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>                 <span class="at">--run_mask_ablation</span> <span class="at">--mask_ratios</span> 0.5,0.75,0.9</span></code></pre></div>
+<h3 id="step-5對照-paper-數字">Step 5：對照 paper 數字</h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Paper</th>
+<th>你應該得到</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC (mask 0.9)</td>
+<td>0.968</td>
+<td>0.965 ± 0.005</td>
+</tr>
+<tr>
+<td>Acc (mask 0.9)</td>
+<td>88.65%</td>
+<td>87-89%</td>
+</tr>
+<tr>
+<td>Per-class F1 axion</td>
+<td>0.854</td>
+<td>~0.85</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-整合-checklist">12. 整合 checklist</h2>
+<h3 id="pre-flight量子整合前要確認">Pre-flight（量子整合前要確認）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />跑 baseline 並重現 paper AUC 0.968 ±
+0.01</label></li>
+<li><label><input type="checkbox" />確認
+<code>outputs_lens/classifier.pth</code> 能成功
+<code>torch.load</code></label></li>
+<li><label><input type="checkbox" />抽出 encoder weights 存成獨立
+<code>mae_encoder_only.pth</code></label></li>
+<li><label><input type="checkbox" />確認 PennyLane
+環境裝好：<code>python -c "import pennylane; print(pennylane.__version__)"</code></label></li>
+</ul>
+<h3 id="整合步驟">整合步驟</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />新增 <code>quantum_fusion.py</code>
+含 <code>QuantumFusionHead</code> class</label></li>
+<li><label><input type="checkbox" />修改 <code>mainv2.py:554</code> 的
+<code>ViTClassifier</code> 接受 <code>use_quantum</code>
+旗標</label></li>
+<li><label><input type="checkbox" />加 <code>--use_quantum</code> CLI
+旗標到 <code>main()</code></label></li>
+<li><label><input type="checkbox" />寫 <code>train_quantum.py</code> 把
+frozen MAE encoder + quantum head fine-tune</label></li>
+<li><label><input type="checkbox" />跑 baseline 對比：classical head vs
+quantum head（同 epoch 數）</label></li>
+<li><label><input type="checkbox" />跑 4-way ablation：</label>
+<ul class="task-list">
+<li><label><input type="checkbox" />no fusion (linear head
+only)</label></li>
+<li><label><input type="checkbox" />quantum only (no classical
+residual)</label></li>
+<li><label><input type="checkbox" />concat fusion</label></li>
+<li><label><input type="checkbox" />cross-attn + TSHF</label></li>
+</ul></li>
+<li><label><input type="checkbox" />把結果寫進 CSV，套
+<code>analyze_ablation.py</code> 的格式</label></li>
+</ul>
+<h3 id="post-flightgsoc-final-report">Post-flight（GSoC final
+report）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" />Update 04_GSoC_QML_Proposal.md
+加入實驗結果</label></li>
+<li><label><input type="checkbox" />PR 給 ML4SCI/DeepLense 主 repo（不是
+mae-lensing fork）</label></li>
+<li><label><input type="checkbox" />Email 給 8 個原作者報告 derivative
+work</label></li>
+<li><label><input type="checkbox" />整理進 short paper 投稿 NeurIPS 2026
+ML4PS workshop</label></li>
+</ul>
+<hr />
+<h2 id="13-一句話總結">13. 一句話總結</h2>
+<blockquote>
+<p><strong>mae-lensing 是 paper-quality reproduction
+code</strong>，<strong>結構簡單（單檔 1833 行）但設計選擇有
+quirks</strong>（只用 no_sub 預訓、64×64 強制縮放、SimMIM-style masking
+而非 He MAE-style）。 <strong>量子整合的最佳插入點是第 554 行的
+<code>ViTClassifier</code></strong>，<strong>只需替換
+<code>nn.Linear</code> 為 <code>QuantumFusionHead</code></strong>
+即可，<strong>其餘 1800 多行可不動</strong>。 <strong>預訓 weights 已
+ship</strong>（<code>outputs_lens/classifier.pth</code>），所以<strong>你不需要
+2 小時 MAE 重訓</strong>——直接抽 encoder 接量子 head fine-tune
+即可。</p>
+</blockquote>
+<hr />
+<h2 id="附錄用一張圖看完整-repo">附錄：用一張圖看完整 repo</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────┐
+│                    mae-lensing repo                         │
+│                                                             │
+│  ┌────────────┐    ┌─────────────────┐    ┌─────────────┐  │
+│  │ Dataset1   │───▶│  PHASE 1 (MAE)  │───▶│ encoder.pth │  │
+│  │ (no_sub)   │    │   10 epochs     │    └──────┬──────┘  │
+│  └────────────┘    └─────────────────┘           │         │
+│                                                   │         │
+│  ┌────────────┐    ┌─────────────────┐           │         │
+│  │ Dataset1   │───▶│ PHASE 2 (CLS)   │◀──────────┤         │
+│  │ (3 class)  │    │   10 epochs     │           │         │
+│  └────────────┘    └────────┬────────┘           │         │
+│                              │                   │         │
+│                              ▼                   │         │
+│                       ┌──────────────┐           │         │
+│                       │classifier.pth│ ⭐ ship&#39;d │         │
+│                       └──────────────┘           │         │
+│                                                   │         │
+│  ┌────────────┐    ┌─────────────────┐           │         │
+│  │ Dataset2   │───▶│ PHASE 3 (SR)    │◀──────────┘         │
+│  │ (LR/HR)    │    │   10 epochs     │                     │
+│  └────────────┘    └────────┬────────┘                     │
+│                              │                              │
+│                              ▼                              │
+│                       ┌──────────────┐                     │
+│                       │ sr_model.pth │ ⭐ ship&#39;d            │
+│                       └──────────────┘                     │
+│                                                             │
+│  量子整合插入點 ──▶  line 554 (ViTClassifier)               │
+└─────────────────────────────────────────────────────────────┘</code></pre>
+<hr />
+<blockquote>
+<p><strong>VSCode 預覽</strong>：<code>Ctrl+Shift+V</code>
+<strong>整合到主 README</strong>：可在頂層 <a
+href="../../README.md">README.md</a> 加 link 指向此檔</p>
+</blockquote>
+</body>
+</html>

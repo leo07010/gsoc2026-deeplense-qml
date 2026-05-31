@@ -1,0 +1,1246 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>GSoC 2026 QML Proposal</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">GSoC 2026 QML Proposal</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#gsoc-2026-proposal" id="toc-gsoc-2026-proposal">GSoC 2026
+Proposal</a>
+<ul>
+<li><a
+href="#hybrid-quantum-classical-representation-learning-for-dark-matter-substructure-classification"
+id="toc-hybrid-quantum-classical-representation-learning-for-dark-matter-substructure-classification">Hybrid
+Quantum-Classical Representation Learning for Dark Matter Substructure
+Classification</a></li>
+<li><a href="#摘要-abstract" id="toc-摘要-abstract">摘要
+(Abstract)</a></li>
+<li><a href="#目錄" id="toc-目錄">目錄</a></li>
+<li><a href="#1-背景與動機" id="toc-1-背景與動機">1. 背景與動機</a>
+<ul>
+<li><a href="#11-物理任務" id="toc-11-物理任務">1.1 物理任務</a></li>
+<li><a href="#12-為什麼需要-qml" id="toc-12-為什麼需要-qml">1.2
+為什麼需要 QML</a></li>
+</ul></li>
+<li><a href="#2-問題陳述與-gap-分析" id="toc-2-問題陳述與-gap-分析">2.
+問題陳述與 Gap 分析</a>
+<ul>
+<li><a href="#21-gap-矩陣基於完整-20192026-文獻調查"
+id="toc-21-gap-矩陣基於完整-20192026-文獻調查">2.1 Gap 矩陣（基於完整
+2019–2026 文獻調查）</a></li>
+<li><a href="#22-提案三大方向的設計邏輯"
+id="toc-22-提案三大方向的設計邏輯">2.2 提案三大方向的設計邏輯</a></li>
+</ul></li>
+<li><a href="#3-方向-1quanvolution--qsvm-baseline"
+id="toc-3-方向-1quanvolution--qsvm-baseline">3. 方向 1：Quanvolution +
+QSVM Baseline</a>
+<ul>
+<li><a href="#31-動機" id="toc-31-動機">3.1 動機</a></li>
+<li><a href="#32-架構設計" id="toc-32-架構設計">3.2 架構設計</a></li>
+<li><a href="#33-評估指標" id="toc-33-評估指標">3.3 評估指標</a></li>
+<li><a href="#34-deliverables" id="toc-34-deliverables">3.4
+Deliverables</a></li>
+<li><a href="#35-風險" id="toc-35-風險">3.5 風險</a></li>
+</ul></li>
+<li><a href="#4-方向-2equivariant-quantum-cnn-eqcnn"
+id="toc-4-方向-2equivariant-quantum-cnn-eqcnn">4. 方向 2：Equivariant
+Quantum CNN (EQCNN)</a>
+<ul>
+<li><a href="#41-動機這是本提案最核心的-novelty"
+id="toc-41-動機這是本提案最核心的-novelty">4.1 動機（這是本提案最核心的
+novelty）</a></li>
+<li><a href="#42-架構設計" id="toc-42-架構設計">4.2 架構設計</a></li>
+<li><a href="#43-評估指標" id="toc-43-評估指標">4.3 評估指標</a></li>
+<li><a href="#44-deliverables" id="toc-44-deliverables">4.4
+Deliverables</a></li>
+<li><a href="#45-風險" id="toc-45-風險">4.5 風險</a></li>
+</ul></li>
+<li><a href="#5-方向-3quantum-enhanced-mae-q-mae"
+id="toc-5-方向-3quantum-enhanced-mae-q-mae">5. 方向 3：Quantum-Enhanced
+MAE (Q-MAE)</a>
+<ul>
+<li><a href="#51-動機" id="toc-51-動機">5.1 動機</a></li>
+<li><a href="#52-架構設計" id="toc-52-架構設計">5.2 架構設計</a></li>
+<li><a href="#53-評估指標" id="toc-53-評估指標">5.3 評估指標</a></li>
+<li><a href="#54-deliverables" id="toc-54-deliverables">5.4
+Deliverables</a></li>
+<li><a href="#55-風險" id="toc-55-風險">5.5 風險</a></li>
+</ul></li>
+<li><a href="#6-stretch-goal-aquantum-autoencoder-for-anomaly-detection"
+id="toc-6-stretch-goal-aquantum-autoencoder-for-anomaly-detection">6.
+Stretch Goal A：Quantum Autoencoder for Anomaly Detection</a>
+<ul>
+<li><a href="#61-動機" id="toc-61-動機">6.1 動機</a></li>
+<li><a href="#62-架構簡述" id="toc-62-架構簡述">6.2
+架構（簡述）</a></li>
+<li><a href="#63-target" id="toc-63-target">6.3 Target</a></li>
+<li><a href="#64-為何是-stretch" id="toc-64-為何是-stretch">6.4 為何是
+stretch</a></li>
+</ul></li>
+<li><a href="#7-stretch-goal-bood-robust-quantum-classifier"
+id="toc-7-stretch-goal-bood-robust-quantum-classifier">7. Stretch Goal
+B：OOD-Robust Quantum Classifier</a>
+<ul>
+<li><a href="#71-動機" id="toc-71-動機">7.1 動機</a></li>
+<li><a href="#72-評估設計" id="toc-72-評估設計">7.2 評估設計</a></li>
+<li><a href="#73-target" id="toc-73-target">7.3 Target</a></li>
+<li><a href="#74-為何是-stretch" id="toc-74-為何是-stretch">7.4 為何是
+stretch</a></li>
+</ul></li>
+<li><a href="#8-跨方向統一評估協議" id="toc-8-跨方向統一評估協議">8.
+跨方向統一評估協議</a>
+<ul>
+<li><a href="#81-資料集" id="toc-81-資料集">8.1 資料集</a></li>
+<li><a href="#82-統一指標" id="toc-82-統一指標">8.2 統一指標</a></li>
+<li><a href="#83-baseline-對照表" id="toc-83-baseline-對照表">8.3
+Baseline 對照表</a></li>
+<li><a href="#84-公平性原則" id="toc-84-公平性原則">8.4
+公平性原則</a></li>
+</ul></li>
+<li><a href="#9-時程規劃-12-週" id="toc-9-時程規劃-12-週">9. 時程規劃
+(12 週)</a></li>
+<li><a href="#10-預期-deliverables" id="toc-10-預期-deliverables">10.
+預期 Deliverables</a>
+<ul>
+<li><a href="#101-程式碼" id="toc-101-程式碼">10.1 程式碼</a></li>
+<li><a href="#102-文件" id="toc-102-文件">10.2 文件</a></li>
+<li><a href="#103-學術產出" id="toc-103-學術產出">10.3 學術產出</a></li>
+<li><a href="#104-公開資料" id="toc-104-公開資料">10.4 公開資料</a></li>
+</ul></li>
+<li><a href="#11-風險與緩解" id="toc-11-風險與緩解">11.
+風險與緩解</a></li>
+<li><a href="#12-why-me--所需技能" id="toc-12-why-me--所需技能">12. Why
+Me / 所需技能</a>
+<ul>
+<li><a href="#121-必備已具備" id="toc-121-必備已具備">12.1
+必備（已具備）</a></li>
+<li><a href="#122-量子相關學習計畫" id="toc-122-量子相關學習計畫">12.2
+量子相關（學習計畫）</a></li>
+<li><a href="#123-物理背景" id="toc-123-物理背景">12.3 物理背景</a></li>
+<li><a href="#124-我做過的相關工作" id="toc-124-我做過的相關工作">12.4
+我做過的相關工作</a></li>
+<li><a href="#125-pre-application-plangsoc-前的-self-evaluation-task"
+id="toc-125-pre-application-plangsoc-前的-self-evaluation-task">12.5
+Pre-application Plan（GSoC 前的 self-evaluation task）</a></li>
+</ul></li>
+<li><a href="#13-references" id="toc-13-references">13. References</a>
+<ul>
+<li><a href="#131-古典-baseline必比對"
+id="toc-131-古典-baseline必比對">13.1 古典 baseline（必比對）</a></li>
+<li><a href="#132-量子方法基石" id="toc-132-量子方法基石">13.2
+量子方法基石</a></li>
+<li><a href="#133-equivariant-qmld2-核心"
+id="toc-133-equivariant-qmld2-核心">13.3 Equivariant QML（D2
+核心）</a></li>
+<li><a href="#134-quantum-進階變體" id="toc-134-quantum-進階變體">13.4
+Quantum 進階變體</a></li>
+<li><a href="#135-ood--robustnessstretch-b-動機"
+id="toc-135-ood--robustnessstretch-b-動機">13.5 OOD /
+Robustness（Stretch B 動機）</a></li>
+<li><a href="#136-工具" id="toc-136-工具">13.6 工具</a></li>
+</ul></li>
+<li><a href="#附錄-a三方向技術對照表"
+id="toc-附錄-a三方向技術對照表">附錄 A：三方向技術對照表</a></li>
+<li><a href="#附錄-b手上-pdf-與本提案對應"
+id="toc-附錄-b手上-pdf-與本提案對應">附錄 B：手上 PDF
+與本提案對應</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1 id="gsoc-2026-proposal">GSoC 2026 Proposal</h1>
+<h2
+id="hybrid-quantum-classical-representation-learning-for-dark-matter-substructure-classification">Hybrid
+Quantum-Classical Representation Learning for Dark Matter Substructure
+Classification</h2>
+<blockquote>
+<p><strong>組織</strong>：ML4SCI — DeepLense
+<strong>作者</strong>：[你的名字] <strong>聯絡</strong>：<a
+href="mailto:leo07010@gmail.com">leo07010@gmail.com</a>
+<strong>提案日期</strong>：2026-05-27 <strong>狀態</strong>：草稿 v1</p>
+</blockquote>
+<hr />
+<h2 id="摘要-abstract">摘要 (Abstract)</h2>
+<p>DeepLense 的 classical pipeline 已涵蓋
+CNN、ViT、equivariant、SSL、MAE、diffusion、SBI
+等所有現代方法，<strong>2024–2026 的 12 篇新工作中 0 篇是
+quantum</strong>。本提案在 ML4SCI/DeepLense
+體系中建立<strong>第一個系統性的 hybrid quantum-classical 分類
+benchmark</strong>，提出三條互補的研究方向：</p>
+<ol type="1">
+<li><strong>方向 1（Foundation）</strong>：Quanvolution +
+量子核（QSVM）作為快速 baseline</li>
+<li><strong>方向 2（Novelty）</strong>：<strong>Equivariant Quantum
+Convolutional Network (EQCNN)</strong>——把強透鏡的 SO(2) 對稱性寫進
+quantum ansatz</li>
+<li><strong>方向 3（SOTA-targeting）</strong>：<strong>Quantum-enhanced
+MAE (Q-MAE)</strong>——把量子分類頭接在 2025 SOTA 的 MAE 預訓練 ViT
+encoder 後</li>
+</ol>
+<p>外加 2 個 stretch goals：Quantum Autoencoder for anomaly
+detection（延續 Alexander 2021），與 OOD-robust quantum classifier（呼應
+Filipp 2024 警鐘）。</p>
+<p>評估目標：對標當前 SOTA（<strong>MAE 2025: AUC 0.968 / acc
+88.65%</strong>），在固定 parameter budget 下進行公平
+head-to-head。Deliverables 不押在「quantum 一定贏」，而是
+<em>characterize where the quantum/entangled ansatz helps and where it
+doesn't</em>——即便 negative result 也是有價值的 community
+contribution。</p>
+<hr />
+<h2 id="目錄">目錄</h2>
+<ol type="1">
+<li><a href="#1-背景與動機">背景與動機</a></li>
+<li><a href="#2-問題陳述與-gap-分析">問題陳述與 Gap 分析</a></li>
+<li><a href="#3-方向-1quanvolution--qsvm-baseline">方向 1：Quanvolution
++ QSVM Baseline</a></li>
+<li><a href="#4-方向-2equivariant-quantum-cnn-eqcnn">方向 2：Equivariant
+Quantum CNN (EQCNN)</a></li>
+<li><a href="#5-方向-3quantum-enhanced-mae-q-mae">方向
+3：Quantum-Enhanced MAE (Q-MAE)</a></li>
+<li><a
+href="#6-stretch-goal-aquantum-autoencoder-for-anomaly-detection">Stretch
+Goal A：Quantum Autoencoder</a></li>
+<li><a href="#7-stretch-goal-bood-robust-quantum-classifier">Stretch
+Goal B：OOD-Robust Quantum Classifier</a></li>
+<li><a href="#8-跨方向統一評估協議">跨方向統一評估協議</a></li>
+<li><a href="#9-時程規劃-12-週">時程規劃 (12 週)</a></li>
+<li><a href="#10-預期-deliverables">預期 Deliverables</a></li>
+<li><a href="#11-風險與緩解">風險與緩解</a></li>
+<li><a href="#12-why-me--所需技能">Why Me / 所需技能</a></li>
+<li><a href="#13-references">References</a></li>
+</ol>
+<hr />
+<h2 id="1-背景與動機">1. 背景與動機</h2>
+<h3 id="11-物理任務">1.1 物理任務</h3>
+<p>強重力透鏡影像在 lensing arc 邊緣編碼了 sub-percent
+等級的子結構簽名，能區分競爭的暗物質模型：</p>
+<ul>
+<li><strong>No substructure</strong>：純平滑 halo</li>
+<li><strong>Cold Dark Matter (CDM)</strong>：球狀 subhalo 點狀擾動</li>
+<li><strong>Axion / Fuzzy DM</strong>：vortex 線狀擾動（superfluid
+signature）</li>
+</ul>
+<p>差別細微到肉眼看不出，但 deep learning 已在 simulated DeepLense
+benchmark 上達到 macro AUC &gt; 0.99（Alexander 2019 ResNet）、acc
+88.65%（MAE 2025）。</p>
+<h3 id="12-為什麼需要-qml">1.2 為什麼需要 QML</h3>
+<p>ML4SCI DeepLense GitHub repo 中<strong>所有 sub-projects（含 GSoC
+2021-2025）皆為
+classical</strong>（CNN、ViT、equivariant、SimCLR/DINO、MAE、diffusion、domain
+adaptation）。<strong>Quantum 工作只在 sister project QMLHEP（HEP
+領域）出現，從未跨界到 lensing</strong>。這代表：</p>
+<table>
+<thead>
+<tr>
+<th>QML 在本任務的賣點</th>
+<th>風險聲明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>指數 Hilbert 空間</strong> (<span
+class="math inline">2<sup><em>n</em></sup></span> for <span
+class="math inline"><em>n</em></span> qubits)</td>
+<td>NISQ 量子優勢在影像分類尚無嚴格證明</td>
+</tr>
+<tr>
+<td><strong>Entanglement-structured representation</strong> 可表達
+classical kernel 難達的非線性相關</td>
+<td>Barren plateau、encoding bottleneck</td>
+</tr>
+<tr>
+<td><strong>NISQ-friendly hybrid</strong> 架構成熟（PennyLane +
+PyTorch）</td>
+<td>Amplitude embedding state-prep 可能 <span
+class="math inline"><em>O</em>(<em>N</em>)</span> depth</td>
+</tr>
+<tr>
+<td><strong>Lensing 的 SO(2) 對稱性</strong>剛好對應 equivariant quantum
+ansatz</td>
+<td>離散群近似（<span
+class="math inline"><em>C</em><sub>8</sub></span>/<span
+class="math inline"><em>D</em><sub>4</sub></span>）不完全等效連續對稱</td>
+</tr>
+</tbody>
+</table>
+<p><strong>本提案的 framing</strong>：不押 "quantum
+advantage"，而是建立第一個 <em>systematic, fair, parameter-matched
+benchmark</em> 在 DeepLense 三類分類任務上。</p>
+<hr />
+<h2 id="2-問題陳述與-gap-分析">2. 問題陳述與 Gap 分析</h2>
+<h3 id="21-gap-矩陣基於完整-20192026-文獻調查">2.1 Gap 矩陣（基於完整
+2019–2026 文獻調查）</h3>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>信心</th>
+<th>現況</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ML4SCI DeepLense 完全沒有量子工作</td>
+<td><strong>HIGH</strong></td>
+<td>repo 結構確認，2024–26 新論文 0 篇 quantum</td>
+</tr>
+<tr>
+<td>Equivariant QML 從未應用於 lensing</td>
+<td><strong>HIGH</strong></td>
+<td>West 2023 EquivQCNN 只在 MNIST/CIFAR 驗證</td>
+</tr>
+<tr>
+<td>把 MAE pretrained encoder 接 quantum head</td>
+<td><strong>HIGH</strong></td>
+<td>MAE paper 2025-12 太新</td>
+</tr>
+<tr>
+<td>Quantum autoencoder 從未用於 lensing</td>
+<td><strong>HIGH</strong></td>
+<td>LHC 有（Ngairangbam 2022），astro 沒有</td>
+</tr>
+<tr>
+<td>Quantum 對 OOD robustness 從未被 audit</td>
+<td><strong>HIGH</strong></td>
+<td>Filipp 2024 揭示 classical NRE 嚴重 OOD bias，quantum 待測</td>
+</tr>
+<tr>
+<td>Tensor network classifier 從未在 DeepLense baseline</td>
+<td><strong>HIGH</strong></td>
+<td>repo 找不到</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-提案三大方向的設計邏輯">2.2 提案三大方向的設計邏輯</h3>
+<pre><code>Direction 1 (Quanvolution + QSVM)          ── Foundation / Sanity Check ──
+        │                                      最便宜的可運行 baseline
+        ▼
+Direction 2 (Equivariant Quantum CNN)      ── Novelty / Original Contribution ──
+        │                                      物理對稱性 + quantum ansatz 首次結合
+        ▼
+Direction 3 (Q-MAE)                        ── SOTA Targeting ──
+                                               接最新 classical SOTA 後段試量子
+                                                                    + 
+Stretch Goal A (Quantum Autoencoder)       ── 延續 paper 2 unsupervised 路線
+Stretch Goal B (OOD-Robust Quantum)        ── 答 Filipp 2024 robustness 警鐘</code></pre>
+<p>三方向<strong>互補非競爭</strong>：D1 提供 floor、D2 提供 novelty、D3
+試 ceiling；任何一方向失敗都有獨立價值，至少一個成功就構成完整 GSoC
+contribution。</p>
+<hr />
+<h2 id="3-方向-1quanvolution--qsvm-baseline">3. 方向 1：Quanvolution +
+QSVM Baseline</h2>
+<h3 id="31-動機">3.1 動機</h3>
+<p>最便宜、最容易跑通的 hybrid 量子方法。直接複製 Rauf et al.
+2026（AstroNet, <em>PRE</em>）的架構到 lensing 影像，建立量子 baseline
+數字。<strong>這個方向不追求 novelty，追求「proposal 中至少有一個能
+reproducibly run 的量子結果」</strong>。</p>
+<h3 id="32-架構設計">3.2 架構設計</h3>
+<pre><code>Input (150×150 lensing image)
+  ↓ 預處理：resize → 28×28，min-max normalize 到 [0,1]
+Patchify (2×2 stride 2 → 14×14 patches)
+  ↓
+For each 2×2 patch:
+  ├─ Quantum encoding: RY(π·x_j) ⊗ RY(π·x_k) 兩個 qubit
+  ├─ RandomLayers (固定，非 trainable)
+  ├─ Pauli-Z measurement → expectation values
+  └─ Output: 2 channels (one per qubit) → Feature map 14×14×2
+  ↓
+Classical CNN head:
+  Conv2D(32, 3×3, ReLU) → MaxPool(2)
+  Conv2D(64, 3×3, ReLU) → MaxPool(2)
+  Flatten → Dense(64, ReLU) → Dense(3, Softmax)</code></pre>
+<p><strong>並行的 QSVM 變體</strong>：</p>
+<pre><code>Input
+  ↓ Classical CNN encoder (ResNet-18 截取至 layer 3, freeze)
+  ↓ Features → PCA / linear projection → 8 維
+  ↓ Quantum feature map: U_φ(x) = exp(iπ Σ_i x_i Z_i + π² Σ_{i&lt;j} x_i x_j Z_i Z_j)
+  ↓ Kernel: K(x,x&#39;) = |⟨0|U_φ(x&#39;)† U_φ(x)|0⟩|²
+  ↓ Classical SVM with quantum kernel → 3-class output</code></pre>
+<h3 id="33-評估指標">3.3 評估指標</h3>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC</td>
+<td>≥ 0.93 (matching Diaz Rivero baseline)</td>
+</tr>
+<tr>
+<td>Per-class accuracy</td>
+<td>≥ 75% all classes</td>
+</tr>
+<tr>
+<td>Training time</td>
+<td>&lt; 2 hours on simulator (CPU/GPU)</td>
+</tr>
+<tr>
+<td>Parameter count</td>
+<td>Classical head &lt; 100K，Quantum part 4 qubits</td>
+</tr>
+</tbody>
+</table>
+<h3 id="34-deliverables">3.4 Deliverables</h3>
+<ul>
+<li>✅ PennyLane + PyTorch 完整 pipeline</li>
+<li>✅ Jupyter notebook 可直接重現</li>
+<li>✅ 拉到 DeepLense repo 的
+<code>Quantum_Classification/Quanvolution_Baseline/</code> 資料夾</li>
+<li>✅ Wiki 文件 + 訓練腳本</li>
+</ul>
+<h3 id="35-風險">3.5 風險</h3>
+<table>
+<thead>
+<tr>
+<th>風險</th>
+<th>緩解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quanvolution 表現過低（AUC &lt; 0.85）</td>
+<td>增加 quantum channels（從 2 加到 4–6），加 trainable
+RandomLayer</td>
+</tr>
+<tr>
+<td>Simulator 慢</td>
+<td>用 PennyLane <code>default.qubit.jax</code> JIT 編譯；batch
+平行</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-方向-2equivariant-quantum-cnn-eqcnn">4. 方向 2：Equivariant
+Quantum CNN (EQCNN)</h2>
+<h3 id="41-動機這是本提案最核心的-novelty">4.1 動機（這是本提案最核心的
+novelty）</h3>
+<p><strong>強重力透鏡在透鏡軸對稱下保持 SO(2) 不變</strong>。Classical
+CNN 只有 translation equivariance；E(2)-CNN（NeurIPS ML4PS
+2023）已證明在 DeepLense 上加入 <span
+class="math inline"><em>C</em><sub>8</sub></span> rotation equivariance
+顯著好過 plain CNN。</p>
+<p><strong>Equivariant Quantum Neural Network</strong> 在 QML 文獻中已有
+prototype（West et al. 2023 reflection-equivariant、arXiv 2310.02323
+p4m-equivariant），但<strong>從未應用於 strong
+lensing</strong>。本方向首次將 EQCNN 套用到 DeepLense，同時利用：</p>
+<ul>
+<li>Lensing 的 SO(2) inductive bias</li>
+<li>Quantum entanglement 的高表達力</li>
+</ul>
+<h3 id="42-架構設計">4.2 架構設計</h3>
+<p><strong>核心思想</strong>：設計 ansatz 使 <span
+class="math inline"><em>U</em>(<em>g</em> ⋅ <em>x</em>) = <em>V</em>(<em>g</em>)<em>U</em>(<em>x</em>)<em>V</em>(<em>g</em>)<sup>†</sup></span>
+對於 <span
+class="math inline"><em>g</em> ∈ <em>C</em><sub>8</sub></span>。</p>
+<pre><code>Input image (28×28 resized)
+  ↓
+Group lifting: 將影像複製 8 份，分別旋轉 0°, 45°, 90°, ..., 315°
+  ↓
+Embedded into 8-fiber feature map
+  ↓
+Equivariant Quantum Conv Block:
+  ├─ Per-fiber amplitude encoding (8 qubits)
+  ├─ Twirled SU(4) gate U_eq = (1/|G|) Σ_{g∈G} V(g) U V(g)†
+  ├─ CNOT entanglement between fibers
+  └─ Per-fiber measurement → 8 expectation values
+  ↓
+Group pooling (max or mean over 8 orientations)
+  ↓
+Classical FC head → 3-class softmax</code></pre>
+<p><strong>對照 ablation</strong>：</p>
+<ul>
+<li>(a) Plain QCNN（無 equivariance）</li>
+<li>(b) E(2)-CNN（classical equivariant）</li>
+<li>(c) <strong>EQCNN（quantum equivariant）</strong> ← 我們的方法</li>
+<li>(d) Classical CNN + data augmentation（rotation）</li>
+</ul>
+<h3 id="43-評估指標">4.3 評估指標</h3>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC</td>
+<td>≥ 0.95 (matching E(2)-CNN classical baseline)</td>
+</tr>
+<tr>
+<td><strong>Sample efficiency</strong> (低資料 regime)</td>
+<td>EQCNN 在 1000 training samples 應顯著優於 plain QCNN</td>
+</tr>
+<tr>
+<td>Parameter count</td>
+<td>與 classical E(2)-CNN 在相同數量級下對比</td>
+</tr>
+<tr>
+<td><strong>Equivariance verification</strong></td>
+<td>旋轉 input 的 output 應為對應 representation 變換</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-deliverables">4.4 Deliverables</h3>
+<ul>
+<li>✅ EQCNN PennyLane 實作（含 group twirling 工具）</li>
+<li>✅ 與 E(2)-CNN（用 <code>e2cnn</code> package）公平對比的
+benchmark</li>
+<li>✅ Ablation report：equivariance 在 low-data regime 的價值</li>
+<li>✅ 至少 2 個 mass-bin / SNR setting 的結果</li>
+</ul>
+<h3 id="45-風險">4.5 風險</h3>
+<table>
+<thead>
+<tr>
+<th>風險</th>
+<th>緩解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Group twirling 計算成本高</td>
+<td>用 <span class="math inline"><em>C</em><sub>4</sub></span> 開始（4
+fibers，10 qubits 內），驗證後升 <span
+class="math inline"><em>C</em><sub>8</sub></span></td>
+</tr>
+<tr>
+<td>真實 lensing 不是完全 SO(2)（lens ellipticity + shear）</td>
+<td>比較 <span class="math inline"><em>C</em><sub>4</sub></span> vs
+<span class="math inline"><em>C</em><sub>8</sub></span> vs
+無對稱，量化「不完美對稱性」對 EQCNN 的影響</td>
+</tr>
+<tr>
+<td>Barren plateau</td>
+<td>採用 layerwise training（Skolik et al. 2021），先訓淺層再加深</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-方向-3quantum-enhanced-mae-q-mae">5. 方向 3：Quantum-Enhanced
+MAE (Q-MAE)</h2>
+<h3 id="51-動機">5.1 動機</h3>
+<p>當前 DeepLense SOTA 是 <strong>MAE 2025</strong>（arXiv
+2512.06642，AUC 0.968 / acc
+88.65%）。要在這基礎上挑戰，最務實的做法不是從頭重練
+quantum，而是<strong>直接接 MAE pretrained ViT encoder，把分類 head 換成
+quantum</strong>。</p>
+<p>這個 framing 同時對應到：</p>
+<ul>
+<li><strong>HQViT 2025</strong>（arXiv 2504.02730）quantum attention
+的最新進展</li>
+<li><strong>HEP-QViT 2024</strong>（arXiv 2402.00776）量子 ViT
+在物理事件分類</li>
+</ul>
+<h3 id="52-架構設計">5.2 架構設計</h3>
+<pre><code>Input image (150×150)
+  ↓
+[Frozen] MAE pretrained ViT-Base encoder (from arXiv 2512.06642 weights)
+  ↓
+CLS token feature (768-dim)
+  ↓ Linear projection → 8 or 16 dim
+  ↓
+Quantum Classification Head:
+  ├─ Amplitude embedding (8 qubits ↔ 256-dim Hilbert space)
+  ├─ Variational ansatz: l × (StronglyEntanglingLayer)
+  │   每層 3 × n_qubits params
+  ├─ Measurement: ⟨Z_i⟩ for i = 0, 1, 2 → 3 logits
+  └─ Softmax → 3-class probability</code></pre>
+<p><strong>進階變體</strong>：把 MAE decoder 也量子化（quantum
+reconstruction loss），形成端到端 Q-MAE。</p>
+<h3 id="53-評估指標">5.3 評估指標</h3>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC</td>
+<td>≥ 0.968 (match SOTA) → <strong>stretch: &gt; 0.97</strong></td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td>≥ 88.65% (match SOTA)</td>
+</tr>
+<tr>
+<td><strong>Parameter efficiency</strong></td>
+<td>Quantum head 用 &lt; 200 params vs classical MLP 用 ~50K params</td>
+</tr>
+<tr>
+<td>Fine-tuning time</td>
+<td>&lt; 50% of full MAE fine-tuning</td>
+</tr>
+</tbody>
+</table>
+<h3 id="54-deliverables">5.4 Deliverables</h3>
+<ul>
+<li>✅ 載入 arXiv 2512.06642 pretrained weights 的 pipeline</li>
+<li>✅ Quantum head 與 classical MLP head（同參數量）head-to-head</li>
+<li>✅ Quantum head 與 classical MLP head（不同參數量）efficiency
+frontier</li>
+<li>✅ 如果 quantum 顯著贏，撰寫 short paper 投稿 NeurIPS 2026 ML4PS
+workshop</li>
+</ul>
+<h3 id="55-風險">5.5 風險</h3>
+<table>
+<thead>
+<tr>
+<th>風險</th>
+<th>緩解</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAE weights 未公開</td>
+<td>自己 retrain MAE（~1 週 GPU 時間），或用相近的 ViT-Small pretrained
+weights</td>
+</tr>
+<tr>
+<td>Quantum head 過小無法表達 ViT 後 256-dim feature</td>
+<td>用 data re-uploading 增加表達力；或 stack 多層</td>
+</tr>
+<tr>
+<td>量子優勢被 ViT encoder 主宰</td>
+<td>報告 parameter-efficiency frontier 而非絕對 accuracy；強調
+"lightweight head" use case</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-stretch-goal-aquantum-autoencoder-for-anomaly-detection">6.
+Stretch Goal A：Quantum Autoencoder for Anomaly Detection</h2>
+<h3 id="61-動機">6.1 動機</h3>
+<p>延續 <strong>Alexander 2021</strong>（你 paper 2）的 unsupervised
+路線——AAE 達到 AUC 0.932 ≈ optimal anomaly detector。<strong>Quantum
+autoencoder</strong>（Romero 2017、HEP: Ngairangbam 2022 PRD）在 LHC
+已驗證<strong>勝過 classical AE 在相同 input space</strong>。本 stretch
+goal 把它套用到 lensing。</p>
+<h3 id="62-架構簡述">6.2 架構（簡述）</h3>
+<pre><code>Input image
+  ↓ Classical CNN encoder → latent 8 qubits
+  ↓ Quantum Autoencoder:
+     ├─ Trash-qubit compression（Romero 2017）
+     ├─ Trash-qubit fidelity loss
+     └─ 訓練只用 no-substructure 影像
+  ↓ Anomaly score = trash-qubit purity
+  ↓ Threshold → binary anomaly classifier</code></pre>
+<h3 id="63-target">6.3 Target</h3>
+<ul>
+<li>AUC ≥ 0.93（與 AAE 平手）</li>
+<li>計算成本：unsupervised &lt; 200 epochs（vs Alexander 2021 的 500
+epochs）</li>
+</ul>
+<h3 id="64-為何是-stretch">6.4 為何是 stretch</h3>
+<ul>
+<li>雖然技術可行，但 unsupervised 路線需要更多 hyperparameter
+tuning</li>
+<li>真正的 selling point 是 "quantum AE 有沒有比 classical AAE 在
+small-data regime 更穩"——這要時間驗證</li>
+</ul>
+<hr />
+<h2 id="7-stretch-goal-bood-robust-quantum-classifier">7. Stretch Goal
+B：OOD-Robust Quantum Classifier</h2>
+<h3 id="71-動機">7.1 動機</h3>
+<p><strong>Filipp 2024</strong>（arXiv 2411.05905）揭示所有 classical
+NRE/NPE 對 OOD 高度敏感——slight source morphology shift 就有顯著
+posterior bias。<strong>這是 community 普遍痛點</strong>。</p>
+<p><strong>假說</strong>：Quantum entanglement-structured representation
+對 nuisance shift 較不依賴，因為 representation 不是 over-fit 到單一
+manifold。<strong>這是個 testable hypothesis</strong>。</p>
+<h3 id="72-評估設計">7.2 評估設計</h3>
+<pre><code>Train on: Sérsic source profile, idealized PSF, SNR=20
+Test on:  COSMOS source (Tsang 2024 style), realistic PSF, SNR∈[10, 30]
+                                                                    ↑ OOD
+Measure: AUC drop from in-distribution to OOD
+         → 比較 Quantum vs Classical model 的 robustness</code></pre>
+<h3 id="73-target">7.3 Target</h3>
+<ul>
+<li>對 OOD test set，quantum 的 AUC 下降幅度 &lt; classical 的 50%</li>
+<li>若 hypothesis 為真：構成 NeurIPS ML4PS 等級 contribution</li>
+<li>若 hypothesis 為假：仍是有價值的 negative
+result，避免社群錯誤期待</li>
+</ul>
+<h3 id="74-為何是-stretch">7.4 為何是 stretch</h3>
+<p>依賴 D1/D2/D3 至少有一個 trained model，且需要重做模擬資料（COSMOS
+source 整合）。</p>
+<hr />
+<h2 id="8-跨方向統一評估協議">8. 跨方向統一評估協議</h2>
+<p>為了 <strong>fair comparison</strong>，所有方向採用相同協議：</p>
+<h3 id="81-資料集">8.1 資料集</h3>
+<ul>
+<li><strong>主資料</strong>：DeepLense Model I/II/III public
+release（HuggingFace / Zenodo）</li>
+<li>切分：train 80% / val 10% / test 10%</li>
+<li><strong>OOD set</strong>（for stretch B）：自行用 lenstronomy
+重新生成，COSMOS source</li>
+</ul>
+<h3 id="82-統一指標">8.2 統一指標</h3>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>metrics <span class="op">=</span> {</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;macro_auc&#39;</span>: roc_auc_score(y_true, y_pred, average<span class="op">=</span><span class="st">&#39;macro&#39;</span>),</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;per_class_acc&#39;</span>: accuracy_per_class(y_true, y_pred),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;macro_f1&#39;</span>: f1_score(y_true, y_pred, average<span class="op">=</span><span class="st">&#39;macro&#39;</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;ece&#39;</span>: expected_calibration_error(y_true, y_pred_probs),  <span class="co"># for uncertainty</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;param_count&#39;</span>: count_trainable_params(model),</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;flops&#39;</span>: estimate_flops(model),</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;train_time_per_epoch&#39;</span>: measure_train_time(),</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;inference_time_per_image&#39;</span>: measure_inference_time(),</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<h3 id="83-baseline-對照表">8.3 Baseline 對照表</h3>
+<p>每個方向都跟下列 baseline 對比：</p>
+<table>
+<thead>
+<tr>
+<th>Baseline</th>
+<th>來源</th>
+<th>預期 AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Random</td>
+<td>trivial</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>Logistic regression on raw pixels</td>
+<td>古典</td>
+<td>~0.7</td>
+</tr>
+<tr>
+<td>ResNet-18 (Alexander 2019)</td>
+<td>classical</td>
+<td>0.984 (macro)</td>
+</tr>
+<tr>
+<td>E(2)-CNN (NeurIPS ML4PS 2023)</td>
+<td>classical equivariant</td>
+<td>~0.97</td>
+</tr>
+<tr>
+<td>MAE (arXiv 2512.06642)</td>
+<td>classical SOTA</td>
+<td><strong>0.968</strong></td>
+</tr>
+<tr>
+<td>Tensor Network (MPS)</td>
+<td>quantum-inspired</td>
+<td>TBD（這個方向也是 novelty）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="84-公平性原則">8.4 公平性原則</h3>
+<blockquote>
+<p><strong>參數量對齊</strong>：當報告「quantum vs
+classical」差距時，<strong>必須在相同 trainable parameter count</strong>
+下比。Quantum circuit 若只有 60 params，要跟 60-param classical MLP
+比，不能跟 11M params ResNet 比。</p>
+</blockquote>
+<hr />
+<h2 id="9-時程規劃-12-週">9. 時程規劃 (12 週)</h2>
+<table>
+<thead>
+<tr>
+<th>週</th>
+<th>任務</th>
+<th>Deliverable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>W1</strong></td>
+<td>Setup、跑通 Alexander 2019 baseline、確認資料與環境</td>
+<td>重現 ResNet AUC 0.984</td>
+</tr>
+<tr>
+<td><strong>W2</strong></td>
+<td><strong>方向 1</strong>：Quanvolution + CNN 實作</td>
+<td>跑通 Rauf-style pipeline</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td><strong>方向 1</strong>：QSVM 變體、benchmark</td>
+<td>D1 完整結果 + notebook</td>
+</tr>
+<tr>
+<td><strong>W4</strong></td>
+<td><strong>方向 2</strong>：EQCNN 設計（<span
+class="math inline"><em>C</em><sub>4</sub></span> 起步）</td>
+<td>4-qubit EQCNN 跑通</td>
+</tr>
+<tr>
+<td><strong>W5</strong></td>
+<td><strong>方向 2</strong>：擴展到 <span
+class="math inline"><em>C</em><sub>8</sub></span>、與 E(2)-CNN 對比</td>
+<td>D2 head-to-head benchmark</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td><strong>Midterm evaluation</strong> + D1/D2 報告</td>
+<td>Midterm report</td>
+</tr>
+<tr>
+<td><strong>W7</strong></td>
+<td><strong>方向 3</strong>：MAE encoder 載入、quantum head 設計</td>
+<td>Q-MAE prototype</td>
+</tr>
+<tr>
+<td><strong>W8</strong></td>
+<td><strong>方向 3</strong>：完整 fine-tune、SOTA 對比</td>
+<td>D3 完整結果</td>
+</tr>
+<tr>
+<td><strong>W9</strong></td>
+<td><strong>跨方向統一 benchmark</strong>：parameter-matched
+comparison</td>
+<td>Master comparison table</td>
+</tr>
+<tr>
+<td><strong>W10</strong></td>
+<td><strong>Stretch A</strong>（quantum autoencoder） 或 <strong>Stretch
+B</strong>（OOD test）</td>
+<td>取一深做</td>
+</tr>
+<tr>
+<td><strong>W11</strong></td>
+<td>Documentation、code cleanup、PR 到 DeepLense repo</td>
+<td>Pull Request opened</td>
+</tr>
+<tr>
+<td><strong>W12</strong></td>
+<td>Final report + 1 篇 NeurIPS ML4PS 2026 workshop submission 草稿</td>
+<td>Final deliverable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="10-預期-deliverables">10. 預期 Deliverables</h2>
+<h3 id="101-程式碼">10.1 程式碼</h3>
+<ul>
+<li>完整 PennyLane + PyTorch pipeline，PR 到
+<code>ML4SCI/DeepLense</code> repo</li>
+<li>預期目錄結構：
+<pre><code>DeepLense/
+  └── Quantum_Classification/
+      ├── D1_Quanvolution_Baseline/
+      ├── D2_Equivariant_QCNN/
+      ├── D3_Q_MAE/
+      ├── Stretch_A_QAE/  (if reached)
+      ├── Stretch_B_OOD/   (if reached)
+      ├── benchmarks/
+      └── notebooks/</code></pre></li>
+</ul>
+<h3 id="102-文件">10.2 文件</h3>
+<ul>
+<li>README.md：每方向獨立 quickstart</li>
+<li>Wiki：架構說明、訓練腳本、結果重現</li>
+<li>Jupyter notebooks：互動式 demo（每方向至少 1 個）</li>
+</ul>
+<h3 id="103-學術產出">10.3 學術產出</h3>
+<ul>
+<li>完整 GSoC final report（部落格文章 + PDF）</li>
+<li><strong>目標</strong>：1 篇 short paper 投稿 NeurIPS 2026 ML4PS
+workshop</li>
+<li><strong>若 D2 或 D3 有顯著結果</strong>：擴充為 full paper 投稿
+<em>Machine Learning: Science and Technology</em> 或 <em>Quantum Machine
+Intelligence</em></li>
+</ul>
+<h3 id="104-公開資料">10.4 公開資料</h3>
+<ul>
+<li>訓練好的 model weights（HuggingFace Hub）</li>
+<li>Benchmark dataset 切分（reproducibility）</li>
+</ul>
+<hr />
+<h2 id="11-風險與緩解">11. 風險與緩解</h2>
+<table>
+<thead>
+<tr>
+<th>風險類別</th>
+<th>具體風險</th>
+<th>緩解策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>計算</strong></td>
+<td>12+ qubit simulation 慢</td>
+<td>主用 ≤ 10 qubits；用 <code>default.qubit.jax</code> JIT 加速；batch
+parallelize</td>
+</tr>
+<tr>
+<td><strong>計算</strong></td>
+<td>Stretch B 需要重做模擬資料</td>
+<td>限縮至小規模 sanity test，不追求 statistically significant 數字</td>
+</tr>
+<tr>
+<td><strong>學術</strong></td>
+<td>Quantum 全面輸給 classical</td>
+<td>proposal 已 framed 為 "characterize" 而非 "win"；negative results
+仍有 community value</td>
+</tr>
+<tr>
+<td><strong>學術</strong></td>
+<td>Barren plateau 卡死訓練</td>
+<td>layerwise training；初始化技巧；用 QCNN（Cong 2019 證明無 barren
+plateau）</td>
+</tr>
+<tr>
+<td><strong>工程</strong></td>
+<td>MAE 2025 weights 未公開</td>
+<td>自己 retrain（W7 多預留 2 天）；或用 ImageNet pretrained ViT
+替代</td>
+</tr>
+<tr>
+<td><strong>時程</strong></td>
+<td>D1+D2+D3 都做不完</td>
+<td>優先級：D1 &gt; D2 &gt; D3；至少 D1 + D2 必交，D3 視進度</td>
+</tr>
+<tr>
+<td><strong>同儕競爭</strong></td>
+<td>GSoC 同期多人選 DeepLense</td>
+<td>三方向設計強調 <em>complementary contribution</em>；EQCNN 是真正
+unique angle</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="12-why-me--所需技能">12. Why Me / 所需技能</h2>
+<h3 id="121-必備已具備">12.1 必備（已具備）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>PyTorch</strong>
+熟練度：能讀寫 ResNet/ViT 標準訓練 loop</label></li>
+<li><label><input type="checkbox" /><strong>CNN 與 ViT</strong>
+基礎：理解 convolution、attention、residual connection</label></li>
+<li><label><input type="checkbox" /><strong>線性代數</strong>：unitary
+matrix、Hilbert space、tensor product</label></li>
+<li><label><input type="checkbox" /><strong>Python
+工程</strong>：git、unit test、Jupyter</label></li>
+</ul>
+<h3 id="122-量子相關學習計畫">12.2 量子相關（學習計畫）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>PennyLane</strong>：W0（GSoC
+前）讀完官方 demos 4 篇</label></li>
+<li><label><input type="checkbox" /><strong>Qiskit Machine
+Learning</strong>：作為備援，了解 API</label></li>
+<li><label><input type="checkbox" /><strong>QCNN /
+Quanvolution</strong>：手上 Rauf 2026 + Anwar 2025 兩篇 paper
+已詳讀</label></li>
+<li><label><input type="checkbox" /><strong>Equivariant
+QML</strong>：West 2023 + Chang 2023 兩篇 reading list 中</label></li>
+</ul>
+<h3 id="123-物理背景">12.3 物理背景</h3>
+<ul class="task-list">
+<li><label><input
+type="checkbox" /><strong>強重力透鏡基礎</strong>：Alexander 2019 paper
+已讀完前 5 節（含 lens equation）</label></li>
+<li><label><input type="checkbox" /><strong>暗物質模型</strong>：CDM /
+Axion / Superfluid 區別已理解（Alexander 2019 Section IV）</label></li>
+<li><label><input type="checkbox" />不需要會推導 metric / geodesic
+equation——只需理解模擬器輸出影像的意涵</label></li>
+</ul>
+<h3 id="124-我做過的相關工作">12.4 我做過的相關工作</h3>
+<blockquote>
+<p>[此段填入你個人的相關背景，例如：「在 [大學/實驗室] 完成 [專案]，使用
+PyTorch 實作 [CNN/Transformer]，達到 [指標]。」「在 [課程] 學過 quantum
+computing 基礎，完成 [作業]」。]</p>
+</blockquote>
+<h3 id="125-pre-application-plangsoc-前的-self-evaluation-task">12.5
+Pre-application Plan（GSoC 前的 self-evaluation task）</h3>
+<ul class="task-list">
+<li><label><input type="checkbox" /><strong>Task 1</strong>：在
+DeepLense 公開資料上重現 ResNet-18 baseline，達 AUC ≥ 0.95</label></li>
+<li><label><input type="checkbox" /><strong>Task 2</strong>：用
+PennyLane 寫一個最小 2-qubit variational classifier 在 toy MNIST
+2-class</label></li>
+<li><label><input type="checkbox" /><strong>Task 3</strong>：把 Task 2
+的 quantum classifier 接到 Task 1 的 ResNet 後面，建立 hybrid
+prototype</label></li>
+<li><label><input type="checkbox" /><strong>GitHub</strong>：把上述 3 個
+task 放在公開 repo，附 README，作為 application 的證明</label></li>
+</ul>
+<hr />
+<h2 id="13-references">13. References</h2>
+<h3 id="131-古典-baseline必比對">13.1 古典 baseline（必比對）</h3>
+<ol type="1">
+<li><strong>Alexander S. et al.</strong> <em>Deep Learning the
+Morphology of Dark Matter Substructure.</em> <strong>ApJ</strong> 893,
+15 (2020). arXiv:1909.07346</li>
+<li><strong>Alexander S. et al.</strong> <em>Decoding Dark Matter
+Substructure without Supervision.</em> arXiv:2008.12731 (2021)</li>
+<li><strong>MAE Strong Lensing</strong> <em>Masked Autoencoder
+Pretraining on Strong-Lensing Images for Joint DM Model Classification
+and Super-Resolution.</em> arXiv:2512.06642 (Dec 2025) — <strong>current
+SOTA</strong></li>
+<li><strong>Equivariant NN for DM Morphology</strong> NeurIPS 2023 ML4PS
+workshop paper #188</li>
+</ol>
+<h3 id="132-量子方法基石">13.2 量子方法基石</h3>
+<ol start="5" type="1">
+<li><strong>Cong I., Choi S., Lukin M.D.</strong> <em>Quantum
+Convolutional Neural Networks.</em> <strong>Nat. Phys.</strong> 15, 1273
+(2019)</li>
+<li><strong>Henderson M. et al.</strong> <em>Quanvolutional Neural
+Networks.</em> <strong>Quantum Mach. Intell.</strong> 2:2 (2020)</li>
+<li><strong>Pérez-Salinas A. et al.</strong> <em>Data re-uploading for a
+universal quantum classifier.</em> <strong>Quantum</strong> 4, 226
+(2020)</li>
+<li><strong>Havlíček V. et al.</strong> <em>Supervised learning with
+quantum-enhanced feature spaces.</em> <strong>Nature</strong> 567, 209
+(2019)</li>
+<li><strong>Rauf A., Amin J., Nabi J.-U.</strong> <em>Hybrid
+quantum-classical convolutional neural network for astrophysical object
+classification.</em> <strong>Phys. Rev. E</strong> 113, 015302
+(2026)</li>
+<li><strong>Anwar S. et al.</strong> <em>Hybrid Quantum-Classical
+Learning for Multiclass Image Classification.</em> arXiv:2508.18161
+(2025)</li>
+</ol>
+<h3 id="133-equivariant-qmld2-核心">13.3 Equivariant QML（D2 核心）</h3>
+<ol start="11" type="1">
+<li><strong>West M. et al.</strong> <em>Reflection Equivariant Quantum
+Neural Networks for Enhanced Image Classification.</em> <strong>Mach.
+Learn.: Sci. Technol.</strong> 4, 035027 (2023)</li>
+<li><strong>Chang S.Y. et al.</strong> <em>Approximately Equivariant
+Quantum Neural Network for p4m Group Symmetries in Images.</em>
+arXiv:2310.02323 (2023)</li>
+</ol>
+<h3 id="134-quantum-進階變體">13.4 Quantum 進階變體</h3>
+<ol start="13" type="1">
+<li><strong>Romero J., Olson J.P., Aspuru-Guzik A.</strong> <em>Quantum
+autoencoders for efficient compression of quantum data.</em>
+<strong>Quantum Sci. Technol.</strong> 2, 045001 (2017)</li>
+<li><strong>Ngairangbam V.S., Spannowsky M., Takeuchi M.</strong>
+<em>Anomaly detection in high-energy physics using a quantum
+autoencoder.</em> <strong>Phys. Rev. D</strong> 105, 095004 (2022)</li>
+<li><strong>HQViT</strong> <em>Hybrid Quantum Vision Transformer.</em>
+arXiv:2504.02730 (2025)</li>
+<li>*<em>Hybrid Quantum ViT for HEP.</em> arXiv:2402.00776 (2024)</li>
+</ol>
+<h3 id="135-ood--robustnessstretch-b-動機">13.5 OOD /
+Robustness（Stretch B 動機）</h3>
+<ol start="17" type="1">
+<li><strong>Filipp A., Hezaveh Y., Perreault-Levasseur L.</strong>
+<em>Robustness of NRE/NPE to Distributional Shifts.</em>
+arXiv:2411.05905 (Nov 2024)</li>
+<li><strong>Tsang A., Şengül A.Ç., Dvorkin C.</strong> <em>Substructure
+Detection in Realistic Strong Lensing Systems with ML.</em>
+arXiv:2401.16624 (Jan 2024)</li>
+</ol>
+<h3 id="136-工具">13.6 工具</h3>
+<ul>
+<li>PennyLane: <a
+href="https://pennylane.ai">https://pennylane.ai</a></li>
+<li>Qiskit ML: <a
+href="https://qiskit.org/ecosystem/machine-learning">https://qiskit.org/ecosystem/machine-learning</a></li>
+<li>e2cnn (classical equivariant baseline): <a
+href="https://github.com/QUVA-Lab/e2cnn">https://github.com/QUVA-Lab/e2cnn</a></li>
+<li>DeepLense repo: <a
+href="https://github.com/ML4SCI/DeepLense">https://github.com/ML4SCI/DeepLense</a></li>
+<li>ML4SCI QMLHEP（量子工作前例）: <a
+href="https://ml4sci.org/gsoc/projects/2025/project_QMLHEP.html">https://ml4sci.org/gsoc/projects/2025/project_QMLHEP.html</a></li>
+</ul>
+<hr />
+<h2 id="附錄-a三方向技術對照表">附錄 A：三方向技術對照表</h2>
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>D1: Quanvolution+QSVM</th>
+<th>D2: EQCNN</th>
+<th>D3: Q-MAE</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Novelty</strong></td>
+<td>低（複製 Rauf 2026）</td>
+<td><strong>高</strong>（首次 lensing）</td>
+<td>中（首次 quantum + MAE）</td>
+</tr>
+<tr>
+<td><strong>實作難度</strong></td>
+<td>低</td>
+<td>中-高</td>
+<td>中</td>
+</tr>
+<tr>
+<td><strong>計算成本</strong></td>
+<td>低（4 qubits）</td>
+<td>中（8-10 qubits）</td>
+<td>中（8-16 qubits）</td>
+</tr>
+<tr>
+<td><strong>預期 AUC</strong></td>
+<td>0.85–0.93</td>
+<td>0.93–0.97</td>
+<td>0.95–0.97+</td>
+</tr>
+<tr>
+<td><strong>是否要 retrain MAE</strong></td>
+<td>否</td>
+<td>否</td>
+<td>是（或用 pretrained）</td>
+</tr>
+<tr>
+<td><strong>與 paper 1 對應</strong></td>
+<td>直接（CNN baseline）</td>
+<td>對照（equivariant CNN）</td>
+<td>對照（ViT SOTA）</td>
+</tr>
+<tr>
+<td><strong>與 paper 2 對應</strong></td>
+<td>弱</td>
+<td>弱</td>
+<td>中（共用 encoder）</td>
+</tr>
+<tr>
+<td><strong>與 paper 3 對應</strong></td>
+<td><strong>強</strong>（直接複製）</td>
+<td>弱</td>
+<td>弱</td>
+</tr>
+<tr>
+<td><strong>與 paper 4 對應</strong></td>
+<td>中（SU(4) ansatz）</td>
+<td><strong>強</strong>（advanced ansatz）</td>
+<td>中（discarded-qubit recycling）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="附錄-b手上-pdf-與本提案對應">附錄 B：手上 PDF 與本提案對應</h2>
+<pre><code>C:\Users\USER\Downloads\GSoC\
+├── Deep Learning the Morphology of Dark Matter Substructure.pdf
+│     → 提供 D1/D2/D3 的 baseline AUC 數字（0.984 macro）
+├── Decoding Dark Matter Substructure without Supervision.pdf
+│     → 提供 Stretch A 的對照組 AUC（AAE 0.932）
+├── Hybrid quantum-classical convolutional neural network for
+│   astrophysical object classification.pdf
+│     → D1 的直接架構模板（Rauf 2026 quanvolution）
+└── Hybrid Quantum-Classical Learning for Multiclass Image
+    Classification.pdf
+      → D2/D3 的 SU(4) ansatz 與 discarded-qubit recycling 技巧</code></pre>
+<hr />
+<blockquote>
+<p><strong>預覽方式</strong></p>
+<ul>
+<li>VSCode：<code>Ctrl+Shift+V</code></li>
+<li>編譯
+HTML：<code>pandoc GSoC_QML_Proposal.md -f gfm -t html5 -s -c github-markdown.css -o GSoC_QML_Proposal.html</code></li>
+</ul>
+</blockquote>
+<blockquote>
+<p><strong>提交前 checklist</strong></p>
+<ul class="task-list">
+<li><label><input type="checkbox" />補上「Why
+Me」段個人經歷</label></li>
+<li><label><input type="checkbox" />完成 pre-application 3 個
+self-evaluation tasks</label></li>
+<li><label><input type="checkbox" />把 GitHub 公開 repo link 加進「12.4
+我做過的相關工作」</label></li>
+<li><label><input type="checkbox" />Mentor 聯絡確認（透過 ML4SCI
+Slack）</label></li>
+<li><label><input type="checkbox" />確認 GSoC 2026 contributor
+申請截止日期</label></li>
+</ul>
+</blockquote>
+</body>
+</html>

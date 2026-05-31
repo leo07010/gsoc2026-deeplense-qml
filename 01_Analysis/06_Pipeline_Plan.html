@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>GSoC 2026 Pipeline Plan</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+  gantt:    { useMaxWidth: true },
+  themeVariables: { fontFamily: '"Noto Sans TC","Microsoft JhengHei",sans-serif' }
+});
+window.addEventListener('DOMContentLoaded', async () => {
+  // Pandoc gfm output: <pre class="mermaid"><code>...</code></pre>
+  // Convert to <div class="mermaid">...</div>
+  document.querySelectorAll('pre.mermaid').forEach((pre) => {
+    const code = pre.querySelector('code');
+    const text = code ? code.textContent : pre.textContent;
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = text;
+    pre.replaceWith(div);
+  });
+  // Also handle the alternative <pre><code class="language-mermaid"> form
+  document.querySelectorAll('pre > code.language-mermaid').forEach((el) => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = el.textContent;
+    el.parentElement.replaceWith(div);
+  });
+  try {
+    await mermaid.run({ querySelector: '.mermaid' });
+  } catch (e) {
+    console.error('Mermaid render error:', e);
+  }
+  // Signal headless print we're ready
+  document.body.setAttribute('data-mermaid-ready', '1');
+});
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+Mono:wght@400;700&display=swap');
+
+body {
+  font-family: "Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 48px;
+  color: #24292e;
+  line-height: 1.6;
+}
+.markdown-body { box-sizing: border-box; }
+h1 { border-bottom: 3px solid #0366d6; padding-bottom: 8px; }
+h2 { border-bottom: 1px solid #eaecef; padding-bottom: 6px; margin-top: 32px; }
+h3 { margin-top: 24px; color: #0366d6; }
+pre, code {
+  font-family: "Noto Sans Mono","Consolas",monospace;
+  font-size: 13px;
+}
+table { font-size: 14px; }
+.mermaid {
+  text-align: center;
+  margin: 16px auto;
+  max-width: 100%;
+  page-break-inside: avoid;
+}
+.mermaid svg { max-width: 100%; height: auto; }
+blockquote {
+  border-left: 4px solid #ffd33d;
+  background: #fffbdd;
+  padding: 8px 16px;
+  margin: 16px 0;
+  color: #735c0f;
+}
+
+@media print {
+  body { padding: 0 16px; }
+  h1, h2, h3 { page-break-after: avoid; }
+  .mermaid, pre, table { page-break-inside: avoid; }
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  a { color: inherit; text-decoration: none; }
+}
+@page {
+  size: A4;
+  margin: 18mm 16mm;
+}
+</style>
+</head>
+<body class="markdown-body">
+<h1 id="gsoc-2026-完整-pipeline-計畫書">GSoC 2026 完整 Pipeline
+計畫書</h1>
+<h2
+id="hybrid-quantum-classical-representation-learning-for-dark-matter-substructure-classification">Hybrid
+Quantum-Classical Representation Learning for Dark Matter Substructure
+Classification</h2>
+<blockquote>
+<p><strong>組織</strong>：ML4SCI — DeepLense
+<strong>作者</strong>：leo07010 <strong>版本</strong>：v1.0 (2026-05-28)
+<strong>預期執行期間</strong>：12 週 (GSoC standard) <strong>目標
+SOTA</strong>：超越或匹配 MAE 2025 baseline (Macro AUC 0.968 / Acc
+88.65%)</p>
+</blockquote>
+<hr />
+<h2 id="executive-summary">Executive Summary</h2>
+<p>本計畫在 ML4SCI/DeepLense 體系中建立<strong>第一個 hybrid
+quantum-classical 影像分類 pipeline</strong>，整合：</p>
+<ul>
+<li><strong>mae-lensing</strong>（Prasha 2025, current SOTA）作為
+classical backbone</li>
+<li><strong>QONN attention</strong>（Tesi 2024, Gleyzer 共同作者）作為
+attention-layer quantum 注入</li>
+<li><strong>Cross-attention fusion + temperature scaling</strong>（Alavi
+2025 + Sobrinho 2026）作為 head-layer quantum 注入</li>
+</ul>
+<p>最終 deliverable 是<strong>fair, parameter-matched
+benchmark</strong>，證明 quantum 在 3 處插入點的相對價值。</p>
+<hr />
+<h2 id="1-master-pipeline-全圖">1. Master Pipeline 全圖</h2>
+<pre class="mermaid"><code>flowchart TD
+    Start([Project Start]) --&gt; S0[Stage 0: Environment Setup W1 day 1-2]
+    S0 --&gt; S1[Stage 1: Baseline Reproduction W1-2]
+    S1 --&gt; CheckBase{AUC over 0.95?}
+    CheckBase -- No --&gt; Debug1[Debug data and training]
+    Debug1 --&gt; S1
+    CheckBase -- Yes --&gt; S2[Stage 2: D1 QuantumFusionHead W3-4]
+    S2 --&gt; S3[Stage 3: D2 QONN Attention W5-6]
+    S3 --&gt; Midterm[Midterm Evaluation End of W6]
+    Midterm --&gt; S4[Stage 4: D3 Combined Q-MAE Fusion W7-9]
+    S4 --&gt; S5[Stage 5: Ablation Studies W9-10]
+    S5 --&gt; S6[Stage 6: Documentation and Reporting W11-12]
+    S6 --&gt; Final([Final Deliverable])
+
+    style Start fill:#e1f5ff
+    style Final fill:#c8e6c9
+    style Midterm fill:#fff9c4
+    style CheckBase fill:#ffe0b2</code></pre>
+<hr />
+<h2 id="2-三層量子整合架構核心-idea">2. 三層量子整合架構（核心
+idea）</h2>
+<pre class="mermaid"><code>flowchart LR
+    Input[Image 64x64] --&gt; Encoder[Classical ViT Encoder 6 blocks frozen]
+    Encoder --&gt; Block6{Last Block 6}
+    Block6 -- Variant B --&gt; QAttn[QONN Attention 8 qubits RBS pyramid]
+    Block6 -- Variant A baseline --&gt; CAttn[Classical Attention]
+    QAttn --&gt; CLS[CLS Token 192-d]
+    CAttn --&gt; CLS
+    CLS --&gt; Head{Classifier Head}
+    Head -- Variant A --&gt; QHead[QuantumFusionHead cross-attn TSHF]
+    Head -- Baseline --&gt; CHead[nn.Linear 192 to 3]
+    QHead --&gt; Out[3 classes CDM Axion no-sub]
+    CHead --&gt; Out
+
+    style QAttn fill:#bbdefb
+    style QHead fill:#bbdefb
+    style CAttn fill:#fff
+    style CHead fill:#fff</code></pre>
+<p><strong>3 個方向 = 3 個 combinations</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Attention</th>
+<th>Head</th>
+<th>Novelty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D1</strong></td>
+<td>Classical</td>
+<td>Quantum (Fusion)</td>
+<td>medium</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td>Quantum (QONN)</td>
+<td>Classical</td>
+<td>high</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td>Quantum (QONN)</td>
+<td>Quantum (Fusion)</td>
+<td>very high</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-stage-by-stage-詳細計畫">3. Stage-by-Stage 詳細計畫</h2>
+<h3 id="stage-0-environment-setup-w1-day-1-2">Stage 0: Environment Setup
+(W1, Day 1-2)</h3>
+<pre class="mermaid"><code>flowchart LR
+    A[Create conda env python 3.10] --&gt; B[Install PyTorch and CUDA]
+    B --&gt; C[Install sklearn skimage optuna]
+    C --&gt; D[Install PennyLane and plugins]
+    D --&gt; E[Clone mae-lensing repo done]
+    E --&gt; F[Verify GPU and simulator]</code></pre>
+<p><strong>完整指令</strong>：</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> create <span class="at">-n</span> gsoc-qml python=3.10 <span class="at">-y</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> activate gsoc-qml</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install torch torchvision <span class="at">--index-url</span> https://download.pytorch.org/whl/cu124</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install numpy scikit-learn scikit-image matplotlib tqdm optuna</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install pennylane pennylane-lightning</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="ex">pip</span> install gdown  <span class="co"># 自動下載 Google Drive</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-c</span> <span class="st">&quot;import torch; print(&#39;CUDA:&#39;, torch.cuda.is_available())&quot;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> <span class="at">-c</span> <span class="st">&quot;import pennylane as qml; print(&#39;PL:&#39;, qml.__version__)&quot;</span></span></code></pre></div>
+<p><strong>Checkpoint</strong>：能輸出 CUDA True 與 PennyLane 版本。</p>
+<hr />
+<h3 id="stage-1-baseline-reproduction-w1-2">Stage 1: Baseline
+Reproduction (W1-2)</h3>
+<pre class="mermaid"><code>flowchart TD
+    Download[Download Dataset1 and Dataset2 via gdown] --&gt; Extract[Auto extract via mainv2]
+    Extract --&gt; Pretrain[Phase 1 MAE pretrain 10 epochs mask 0.9]
+    Pretrain --&gt; CLS[Phase 2 CLS fine-tune 10 epochs]
+    CLS --&gt; SR[Phase 3 SR fine-tune 10 epochs]
+    SR --&gt; Verify{AUC matches paper 0.968 plus minus 0.01}
+    Verify -- No --&gt; Debug[Check data integrity noise warnings seed]
+    Debug --&gt; Pretrain
+    Verify -- Yes --&gt; Done[Baseline locked in]
+
+    style Done fill:#c8e6c9
+    style Debug fill:#ffccbc</code></pre>
+<p><strong>指令</strong>：</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> 02_Code/mae-lensing</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> ../../03_Data</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../../03_Data</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="ex">gdown</span> <span class="at">--id</span> 1znqUeFzYz-DeAE3dYXD17qoMPK82Whji <span class="at">-O</span> Dataset1.zip</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="ex">gdown</span> <span class="at">--id</span> 1uJmDZw649XS-r-dYs9WD-OPwF_TIroVw <span class="at">-O</span> Dataset2.zip</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> ../02_Code/mae-lensing</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="ex">python</span> mainv2.py <span class="at">--data_root</span> ../../03_Data <span class="at">--mae_mask_ratio</span> 0.9</span></code></pre></div>
+<p><strong>預期 wall time</strong>：~2-3 小時 on single A100。</p>
+<p><strong>驗收條件</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>目標</th>
+<th>容忍範圍</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC</td>
+<td>0.968</td>
+<td>0.96 - 0.98</td>
+</tr>
+<tr>
+<td>Accuracy</td>
+<td>88.7%</td>
+<td>86 - 90%</td>
+</tr>
+<tr>
+<td>Per-class F1 (no_sub)</td>
+<td>0.95</td>
+<td>&gt; 0.93</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deliverable</strong>：<code>baseline_repro.csv</code> +
+<code>baseline_repro_plots/</code></p>
+<hr />
+<h3 id="stage-2-d1---quantumfusionhead-w3-4">Stage 2: D1 -
+QuantumFusionHead (W3-4)</h3>
+<h4 id="架構">架構</h4>
+<pre class="mermaid"><code>flowchart LR
+    Img[Image] --&gt; Enc[Frozen MAE encoder]
+    Enc -- CLS 192-d --&gt; Proj[Linear 192 to 16]
+    Proj -- z_c --&gt; Branch1[z_c 16-d]
+    Proj -- z_c --&gt; QProj[Linear 16 to 4]
+    QProj -- 4 features --&gt; QC[Quantum Circuit 4 qubits 3 SEL layers]
+    QC -- 16 Pauli expvals --&gt; Branch2[z_q 16-d]
+    Branch1 --&gt; Attn[Cross-Attention Q is z_c, KV is z_q]
+    Branch2 --&gt; Attn
+    Attn --&gt; TSHF[z equals z_c plus attn_out over tau, learnable tau]
+    TSHF --&gt; Final[Linear 16 to 3]
+    Final --&gt; Out[3 logits]
+
+    style QC fill:#bbdefb
+    style TSHF fill:#fff9c4</code></pre>
+<h4 id="代碼位置">代碼位置</h4>
+<p>新增 <code>02_Code/mae-lensing/quantum_fusion.py</code>:</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pennylane <span class="im">as</span> qml</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>n_qubits <span class="op">=</span> <span class="dv">4</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>dev <span class="op">=</span> qml.device(<span class="st">&quot;default.qubit&quot;</span>, wires<span class="op">=</span>n_qubits)</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="at">@qml.qnode</span>(dev, interface<span class="op">=</span><span class="st">&quot;torch&quot;</span>, diff_method<span class="op">=</span><span class="st">&quot;adjoint&quot;</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> q_branch(inputs, weights):</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    qml.AngleEmbedding(inputs <span class="op">*</span> <span class="fl">3.14159</span>, wires<span class="op">=</span><span class="bu">range</span>(n_qubits))</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    qml.StronglyEntanglingLayers(weights, wires<span class="op">=</span><span class="bu">range</span>(n_qubits))</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    obs <span class="op">=</span> ([qml.PauliZ(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>)] <span class="op">+</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>           [qml.PauliX(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>)] <span class="op">+</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>           [qml.PauliY(i) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>)] <span class="op">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>           [qml.PauliZ(i) <span class="op">@</span> qml.PauliZ((i<span class="op">+</span><span class="dv">1</span>) <span class="op">%</span> <span class="dv">4</span>) <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">4</span>)])</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> [qml.expval(o) <span class="cf">for</span> o <span class="kw">in</span> obs]</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> QuantumFusionHead(nn.Module):</span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, in_dim<span class="op">=</span><span class="dv">192</span>, latent_dim<span class="op">=</span><span class="dv">16</span>, n_classes<span class="op">=</span><span class="dv">3</span>):</span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_c <span class="op">=</span> nn.Linear(in_dim, latent_dim)</span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_q <span class="op">=</span> nn.Linear(latent_dim, n_qubits)</span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>        weight_shape <span class="op">=</span> {<span class="st">&quot;weights&quot;</span>: (<span class="dv">3</span>, n_qubits, <span class="dv">3</span>)}</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.qbranch <span class="op">=</span> qml.qnn.TorchLayer(q_branch, weight_shape)</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.attn <span class="op">=</span> nn.MultiheadAttention(latent_dim, num_heads<span class="op">=</span><span class="dv">2</span>, batch_first<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.log_tau <span class="op">=</span> nn.Parameter(torch.zeros(<span class="dv">1</span>))</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.classifier <span class="op">=</span> nn.Linear(latent_dim, n_classes)</span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>        z_c <span class="op">=</span> torch.tanh(<span class="va">self</span>.proj_c(x))</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>        q_in <span class="op">=</span> torch.tanh(<span class="va">self</span>.proj_q(z_c))</span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>        z_q <span class="op">=</span> <span class="va">self</span>.qbranch(q_in)</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>        attn_out, _ <span class="op">=</span> <span class="va">self</span>.attn(</span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>            z_c.unsqueeze(<span class="dv">1</span>), z_q.unsqueeze(<span class="dv">1</span>), z_q.unsqueeze(<span class="dv">1</span>)</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>        attn_out <span class="op">=</span> attn_out.squeeze(<span class="dv">1</span>)</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>        tau <span class="op">=</span> torch.exp(<span class="va">self</span>.log_tau)</span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> z_c <span class="op">+</span> attn_out <span class="op">/</span> tau</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.classifier(z)</span></code></pre></div>
+<h4 id="整合-patch">整合 patch</h4>
+<p>修改 <code>mainv2.py</code> line 554 的
+<code>ViTClassifier</code>:</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> quantum_fusion <span class="im">import</span> QuantumFusionHead</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> ViTClassifier(nn.Module):</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, encoder, num_classes, use_quantum<span class="op">=</span><span class="va">False</span>):</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> encoder</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> use_quantum:</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.head <span class="op">=</span> QuantumFusionHead(encoder.embed_dim, <span class="dv">16</span>, num_classes)</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="cf">else</span>:</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>            <span class="va">self</span>.head <span class="op">=</span> nn.Linear(encoder.embed_dim, num_classes)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.use_quantum <span class="op">=</span> use_quantum</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>        tokens <span class="op">=</span> <span class="va">self</span>.encoder(x)</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>        cls_feat <span class="op">=</span> tokens[:, <span class="dv">0</span>]</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> <span class="va">self</span>.head(cls_feat)</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> logits, cls_feat</span></code></pre></div>
+<p>加 CLI flag (line 1495 main):</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>parser.add_argument(<span class="st">&quot;--use_quantum&quot;</span>, action<span class="op">=</span><span class="st">&quot;store_true&quot;</span>)</span></code></pre></div>
+<h4 id="驗收">驗收</h4>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>目標</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Macro AUC</td>
+<td>≥ 0.95</td>
+<td>matching classical head</td>
+</tr>
+<tr>
+<td>Quantum parameter count</td>
+<td>&lt; 200</td>
+<td>check via sum of param counts</td>
+</tr>
+<tr>
+<td>Wall time per epoch</td>
+<td>&lt; 2× classical</td>
+<td>simulator overhead</td>
+</tr>
+<tr>
+<td>τ (learned)</td>
+<td>&gt; 0.5</td>
+<td>indicates quantum contributes</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="stage-3-d2---qonn-attention-w5-6-tesi-inspired">Stage 3: D2 -
+QONN Attention (W5-6, Tesi-inspired)</h3>
+<h4 id="概念對照">概念對照</h4>
+<pre class="mermaid"><code>flowchart TB
+    subgraph Classical[Classical Attention]
+        C1[Q K V projections] --&gt; C2[QK transpose over sqrt d]
+        C2 --&gt; C3[softmax]
+        C3 --&gt; C4[multiply by V]
+    end
+
+    subgraph QONN[Quantum QONN Attention]
+        Q1[Q K V projections] --&gt; Q2[A_ij equals x_i W x_j RBS pyramid 8 qubits]
+        Q2 --&gt; Q3[normalize]
+        Q3 --&gt; Q4[multiply by V]
+    end
+
+    Classical -. replace last block .-&gt; QONN
+
+    style QONN fill:#bbdefb</code></pre>
+<h4 id="實作模組">實作模組</h4>
+<p>新增 <code>02_Code/mae-lensing/qonn_attention.py</code>:</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch.nn <span class="im">as</span> nn</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pennylane <span class="im">as</span> qml</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> math</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>n_qubits <span class="op">=</span> <span class="dv">8</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> rbs_gate(theta, wires):</span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>    qml.SingleExcitation(theta, wires<span class="op">=</span>wires)</span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pyramid_qonn(thetas, n<span class="op">=</span>n_qubits):</span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> layer <span class="kw">in</span> <span class="bu">range</span>(n <span class="op">-</span> <span class="dv">1</span>):</span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n <span class="op">-</span> <span class="dv">1</span> <span class="op">-</span> layer):</span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>            rbs_gate(thetas[idx], wires<span class="op">=</span>[i, i <span class="op">+</span> <span class="dv">1</span>])</span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">+=</span> <span class="dv">1</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> unary_load(x):</span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    qml.PauliX(wires<span class="op">=</span><span class="dv">0</span>)</span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>    angles <span class="op">=</span> givens_angles(x)</span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, theta <span class="kw">in</span> <span class="bu">enumerate</span>(angles):</span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>        rbs_gate(theta, wires<span class="op">=</span>[i, i <span class="op">+</span> <span class="dv">1</span>])</span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> givens_angles(x):</span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a>    n <span class="op">=</span> <span class="bu">len</span>(x)</span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a>    angles <span class="op">=</span> []</span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a>    remaining <span class="op">=</span> x.norm()</span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n <span class="op">-</span> <span class="dv">1</span>):</span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a>        ang <span class="op">=</span> torch.atan2(x[i<span class="op">+</span><span class="dv">1</span>:].norm(), x[i])</span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a>        angles.append(ang)</span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> angles</span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a>dev_attn <span class="op">=</span> qml.device(<span class="st">&quot;default.qubit&quot;</span>, wires<span class="op">=</span>n_qubits)</span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a><span class="at">@qml.qnode</span>(dev_attn, interface<span class="op">=</span><span class="st">&quot;torch&quot;</span>)</span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> qonn_attention_score(x_i, x_j, thetas):</span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    unary_load(x_i)</span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a>    pyramid_qonn(thetas)</span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a>    qml.adjoint(unary_load)(x_j)</span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> qml.probs(wires<span class="op">=</span><span class="dv">0</span>)[<span class="dv">1</span>]</span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> QONNAttention(nn.Module):</span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, embed_dim, projection_dim<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_q <span class="op">=</span> nn.Linear(embed_dim, projection_dim)</span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_k <span class="op">=</span> nn.Linear(embed_dim, projection_dim)</span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_v <span class="op">=</span> nn.Linear(embed_dim, embed_dim)</span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>        n_rbs <span class="op">=</span> projection_dim <span class="op">*</span> (projection_dim <span class="op">-</span> <span class="dv">1</span>) <span class="op">//</span> <span class="dv">2</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.thetas <span class="op">=</span> nn.Parameter(torch.randn(n_rbs) <span class="op">*</span> <span class="fl">0.1</span>)</span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.proj_out <span class="op">=</span> nn.Linear(embed_dim, embed_dim)</span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a>        B, N, C <span class="op">=</span> x.shape</span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a>        Q <span class="op">=</span> torch.tanh(<span class="va">self</span>.proj_q(x))</span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a>        K <span class="op">=</span> torch.tanh(<span class="va">self</span>.proj_k(x))</span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a>        V <span class="op">=</span> <span class="va">self</span>.proj_v(x)</span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a>        scores <span class="op">=</span> torch.zeros(B, N, N, device<span class="op">=</span>x.device)</span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> b <span class="kw">in</span> <span class="bu">range</span>(B):</span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a>            <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(N):</span>
+<span id="cb12-63"><a href="#cb12-63" aria-hidden="true" tabindex="-1"></a>                <span class="cf">for</span> j <span class="kw">in</span> <span class="bu">range</span>(N):</span>
+<span id="cb12-64"><a href="#cb12-64" aria-hidden="true" tabindex="-1"></a>                    Q_norm <span class="op">=</span> Q[b, i] <span class="op">/</span> (Q[b, i].norm() <span class="op">+</span> <span class="fl">1e-6</span>)</span>
+<span id="cb12-65"><a href="#cb12-65" aria-hidden="true" tabindex="-1"></a>                    K_norm <span class="op">=</span> K[b, j] <span class="op">/</span> (K[b, j].norm() <span class="op">+</span> <span class="fl">1e-6</span>)</span>
+<span id="cb12-66"><a href="#cb12-66" aria-hidden="true" tabindex="-1"></a>                    scores[b, i, j] <span class="op">=</span> qonn_attention_score(Q_norm, K_norm, <span class="va">self</span>.thetas)</span>
+<span id="cb12-67"><a href="#cb12-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-68"><a href="#cb12-68" aria-hidden="true" tabindex="-1"></a>        attn <span class="op">=</span> torch.softmax(scores, dim<span class="op">=-</span><span class="dv">1</span>)</span>
+<span id="cb12-69"><a href="#cb12-69" aria-hidden="true" tabindex="-1"></a>        out <span class="op">=</span> torch.matmul(attn, V)</span>
+<span id="cb12-70"><a href="#cb12-70" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.proj_out(out)</span></code></pre></div>
+<blockquote>
+<p>⚠️ <strong>效能警告</strong>：上述 nested Python loop 對 256 tokens ×
+batch 64 會極慢。<strong>實際實作必須 vectorize</strong> 或限制只在 CLS
+token 與 N tokens 之間做（reduces N² to N）。</p>
+</blockquote>
+<h4 id="整合策略-3-levels-of-aggressiveness">整合策略 (3 levels of
+aggressiveness)</h4>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Scope</th>
+<th>Token count</th>
+<th>預估 wall time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1</strong></td>
+<td>Only block 6 attention</td>
+<td>256² = 65k</td>
+<td>very slow</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>CLS-only attention in block 6</td>
+<td>1×256 = 256</td>
+<td>feasible</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td>Reduce patch to 16×16 (4 patches)</td>
+<td>4² = 16</td>
+<td>fast</td>
+</tr>
+</tbody>
+</table>
+<p><strong>推薦從 L3 開始 prove concept，再 scale up</strong>。</p>
+<hr />
+<h3 id="stage-4-d3---combined-q-mae-fusion-w7-9">Stage 4: D3 - Combined
+Q-MAE Fusion (W7-9)</h3>
+<pre class="mermaid"><code>flowchart TD
+    Img[Image 64x64] --&gt; PE[PatchEmbed 4x4 patches]
+    PE --&gt; Block1[Block 1 classical]
+    Block1 --&gt; Block2[Block 2 classical]
+    Block2 --&gt; Block3[Block 3 classical]
+    Block3 --&gt; Block4[Block 4 classical]
+    Block4 --&gt; Block5[Block 5 classical]
+    Block5 --&gt; Block6[Block 6 QONN attention]
+    Block6 --&gt; Norm[LayerNorm]
+    Norm --&gt; CLS[CLS token 192-d]
+    CLS --&gt; QFH[QuantumFusionHead cross-attn TSHF]
+    QFH --&gt; Logits[3 logits]
+
+    style Block6 fill:#bbdefb
+    style QFH fill:#bbdefb</code></pre>
+<h4 id="step-by-step-integration">Step-by-step Integration</h4>
+<ol type="1">
+<li>Take <code>mae_encoder.pth</code> from baseline (Stage 1)</li>
+<li>Replace block 6's attention with <code>QONNAttention</code> (random
+init)</li>
+<li>Replace head with <code>QuantumFusionHead</code></li>
+<li>Freeze blocks 1-5</li>
+<li>Fine-tune block 6 + head (10 epochs)</li>
+<li>Compare vs D1 + D2 separately</li>
+</ol>
+<h4 id="預期結果矩陣">預期結果矩陣</h4>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Attention</th>
+<th>Head</th>
+<th>Trainable params</th>
+<th>Target AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Baseline</strong></td>
+<td>Classical</td>
+<td>Classical</td>
+<td>~50K</td>
+<td>0.968</td>
+</tr>
+<tr>
+<td><strong>D1</strong></td>
+<td>Classical</td>
+<td>Quantum</td>
+<td>~700</td>
+<td>≥ 0.95</td>
+</tr>
+<tr>
+<td><strong>D2</strong></td>
+<td>Quantum</td>
+<td>Classical</td>
+<td>~30</td>
+<td>≥ 0.94</td>
+</tr>
+<tr>
+<td><strong>D3</strong></td>
+<td>Quantum</td>
+<td>Quantum</td>
+<td>~750</td>
+<td><strong>≥ 0.96</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="stage-5-ablation-studies-w9-10">Stage 5: Ablation Studies
+(W9-10)</h3>
+<pre class="mermaid"><code>flowchart TD
+    Start([4-way ablation matrix]) --&gt; A[A Baseline classical and classical]
+    Start --&gt; B[B D1 only classical and quantum head]
+    Start --&gt; C[C D2 only quantum attn and classical head]
+    Start --&gt; D[D D3 quantum attn and quantum head]
+
+    A --&gt; Compare{Compare AUC ACC F1 per-class param count}
+    B --&gt; Compare
+    C --&gt; Compare
+    D --&gt; Compare
+
+    Compare --&gt; Decision{Which is best}
+    Decision -- A wins --&gt; WriteA[Frame parameter efficiency quantum matches with 100x fewer params]
+    Decision -- B or C wins --&gt; WriteBC[Frame where quantum helps]
+    Decision -- D wins --&gt; WriteD[Frame synergy of two quantum layers]
+
+    style Compare fill:#fff9c4
+    style WriteD fill:#c8e6c9</code></pre>
+<h4 id="critical-ablations">Critical ablations</h4>
+<ol type="1">
+<li><p><strong>Parameter-matched fair comparison</strong></p>
+<ul>
+<li>Match quantum total params to classical MLP</li>
+<li>Show parameter efficiency frontier</li>
+</ul></li>
+<li><p><strong>τ scaling test</strong></p>
+<ul>
+<li>Fix τ=1 vs learnable τ</li>
+<li>Confirms TSHF mechanism value</li>
+</ul></li>
+<li><p><strong>Quantum branch zero-out</strong></p>
+<ul>
+<li>Set z_q = 0 in forward</li>
+<li>Should match classical baseline</li>
+</ul></li>
+<li><p><strong>OOD robustness</strong> (stretch)</p>
+<ul>
+<li>Train on Sérsic source, test on COSMOS source</li>
+<li>Measure AUC drop vs classical baseline</li>
+</ul></li>
+</ol>
+<hr />
+<h3 id="stage-6-documentation--reporting-w11-12">Stage 6: Documentation
+&amp; Reporting (W11-12)</h3>
+<pre class="mermaid"><code>flowchart LR
+    Code[Clean code] --&gt; PR[Pull Request to ML4SCI DeepLense]
+    PR --&gt; Docs[Write blog post]
+    Docs --&gt; Paper[Draft NeurIPS ML4PS workshop submission]
+    Paper --&gt; Email[Email original mae-lensing authors]</code></pre>
+<p><strong>Deliverables</strong>:</p>
+<ul>
+<li><code>quantum_fusion.py</code>, <code>qonn_attention.py</code>
+modules</li>
+<li><code>outputs_quantum/</code> folder with full ablation CSVs +
+plots</li>
+<li>README.md update for quantum mode</li>
+<li>1 blog post on GSoC blog</li>
+<li>Short paper draft (4 pages) for NeurIPS 2026 ML4PS</li>
+</ul>
+<hr />
+<h2 id="4-12-week-gantt-chart">4. 12-Week Gantt Chart</h2>
+<pre class="mermaid"><code>gantt
+    title GSoC 2026 Timeline
+    dateFormat YYYY-MM-DD
+    axisFormat %m/%d
+
+    section Stage 0-1
+    Setup env             :done, s0, 2026-05-25, 2d
+    Download data         :s01, after s0, 1d
+    Baseline reproduction :s1, after s01, 7d
+
+    section Stage 2 D1
+    QuantumFusionHead impl   :d1a, after s1, 4d
+    D1 fine-tune + eval      :d1b, after d1a, 4d
+
+    section Stage 3 D2
+    QONN module impl         :d2a, after d1b, 4d
+    D2 fine-tune + eval      :d2b, after d2a, 4d
+
+    section Midterm
+    Midterm report           :crit, m, after d2b, 2d
+
+    section Stage 4 D3
+    D3 integration           :d3a, after m, 5d
+    D3 fine-tune             :d3b, after d3a, 5d
+
+    section Stage 5
+    4-way ablation           :s5, after d3b, 7d
+
+    section Stage 6
+    Code cleanup + PR        :s6a, after s5, 4d
+    Blog + paper draft       :s6b, after s6a, 4d</code></pre>
+<hr />
+<h2 id="5-decision-tree-中途失敗對策">5. Decision Tree
+(中途失敗對策)</h2>
+<pre class="mermaid"><code>flowchart TD
+    Start{Stage 1 baseline reproduce success}
+    Start -- No --&gt; S1Fail[Use shipped classifier.pth skip pretrain only fine-tune]
+    Start -- Yes --&gt; S2{Stage 2 D1 AUC greater than 0.93}
+    S2 -- No --&gt; S2Fix[Increase quantum layers or change encoding]
+    S2 -- Yes --&gt; S3{Stage 3 D2 trains without OOM}
+    S3 -- No --&gt; S3Fix[Drop to L3 token reduction 16x16 patch]
+    S3 -- Yes --&gt; S4{Stage 4 D3 better than max of D1 D2}
+    S4 -- No --&gt; S4Decision[Pick best of D1 vs D2 as final submission]
+    S4 -- Yes --&gt; Success([Submit D3 plus ablations])
+
+    S2Fix --&gt; S2
+    S3Fix --&gt; S3
+    S4Decision --&gt; SubmitB([Submit best variant])
+    S1Fail --&gt; S2
+
+    style Start fill:#fff9c4
+    style Success fill:#c8e6c9
+    style SubmitB fill:#c8e6c9
+    style S1Fail fill:#ffe0b2
+    style S2Fix fill:#ffe0b2
+    style S3Fix fill:#ffe0b2</code></pre>
+<hr />
+<h2 id="6-critical-code-templates">6. Critical Code Templates</h2>
+<h3 id="61-hybrid-model-載入預訓-weights">6.1 Hybrid model 載入預訓
+weights</h3>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> torch</span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> mainv2 <span class="im">import</span> ViTEncoder</span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> quantum_fusion <span class="im">import</span> QuantumFusionHead</span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>ckpt <span class="op">=</span> torch.load(<span class="st">&#39;outputs_lens/classifier.pth&#39;</span>, map_location<span class="op">=</span><span class="st">&#39;cpu&#39;</span>)</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>encoder_state <span class="op">=</span> {k.replace(<span class="st">&#39;encoder.&#39;</span>, <span class="st">&#39;&#39;</span>): v</span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">for</span> k, v <span class="kw">in</span> ckpt.items()</span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>                 <span class="cf">if</span> k.startswith(<span class="st">&#39;encoder.&#39;</span>)}</span>
+<span id="cb18-9"><a href="#cb18-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-10"><a href="#cb18-10" aria-hidden="true" tabindex="-1"></a>encoder <span class="op">=</span> ViTEncoder(img_size<span class="op">=</span><span class="dv">64</span>, patch_size<span class="op">=</span><span class="dv">4</span>, in_chans<span class="op">=</span><span class="dv">1</span>,</span>
+<span id="cb18-11"><a href="#cb18-11" aria-hidden="true" tabindex="-1"></a>                     embed_dim<span class="op">=</span><span class="dv">192</span>, depth<span class="op">=</span><span class="dv">6</span>, num_heads<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb18-12"><a href="#cb18-12" aria-hidden="true" tabindex="-1"></a>encoder.load_state_dict(encoder_state)</span>
+<span id="cb18-13"><a href="#cb18-13" aria-hidden="true" tabindex="-1"></a>encoder.<span class="bu">eval</span>()</span>
+<span id="cb18-14"><a href="#cb18-14" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> p <span class="kw">in</span> encoder.parameters():</span>
+<span id="cb18-15"><a href="#cb18-15" aria-hidden="true" tabindex="-1"></a>    p.requires_grad <span class="op">=</span> <span class="va">False</span></span>
+<span id="cb18-16"><a href="#cb18-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-17"><a href="#cb18-17" aria-hidden="true" tabindex="-1"></a>q_head <span class="op">=</span> QuantumFusionHead(in_dim<span class="op">=</span><span class="dv">192</span>, latent_dim<span class="op">=</span><span class="dv">16</span>, n_classes<span class="op">=</span><span class="dv">3</span>)</span>
+<span id="cb18-18"><a href="#cb18-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-19"><a href="#cb18-19" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> QClassifier(torch.nn.Module):</span>
+<span id="cb18-20"><a href="#cb18-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, enc, head):</span>
+<span id="cb18-21"><a href="#cb18-21" aria-hidden="true" tabindex="-1"></a>        <span class="bu">super</span>().<span class="fu">__init__</span>()</span>
+<span id="cb18-22"><a href="#cb18-22" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.encoder <span class="op">=</span> enc</span>
+<span id="cb18-23"><a href="#cb18-23" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.head <span class="op">=</span> head</span>
+<span id="cb18-24"><a href="#cb18-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> forward(<span class="va">self</span>, x):</span>
+<span id="cb18-25"><a href="#cb18-25" aria-hidden="true" tabindex="-1"></a>        feat <span class="op">=</span> <span class="va">self</span>.encoder(x)[:, <span class="dv">0</span>]</span>
+<span id="cb18-26"><a href="#cb18-26" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="va">self</span>.head(feat)</span>
+<span id="cb18-27"><a href="#cb18-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-28"><a href="#cb18-28" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> QClassifier(encoder, q_head).cuda()</span></code></pre></div>
+<h3 id="62-training-loop-d1-fine-tune">6.2 Training loop (D1
+fine-tune)</h3>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>optimizer <span class="op">=</span> torch.optim.Adam(</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>    [p <span class="cf">for</span> p <span class="kw">in</span> model.parameters() <span class="cf">if</span> p.requires_grad],</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    lr<span class="op">=</span><span class="fl">5e-5</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>criterion <span class="op">=</span> torch.nn.CrossEntropyLoss()</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> epoch <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">10</span>):</span>
+<span id="cb19-8"><a href="#cb19-8" aria-hidden="true" tabindex="-1"></a>    model.train()</span>
+<span id="cb19-9"><a href="#cb19-9" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> imgs, labels <span class="kw">in</span> train_loader:</span>
+<span id="cb19-10"><a href="#cb19-10" aria-hidden="true" tabindex="-1"></a>        imgs, labels <span class="op">=</span> imgs.cuda(), labels.cuda()</span>
+<span id="cb19-11"><a href="#cb19-11" aria-hidden="true" tabindex="-1"></a>        optimizer.zero_grad()</span>
+<span id="cb19-12"><a href="#cb19-12" aria-hidden="true" tabindex="-1"></a>        logits <span class="op">=</span> model(imgs)</span>
+<span id="cb19-13"><a href="#cb19-13" aria-hidden="true" tabindex="-1"></a>        loss <span class="op">=</span> criterion(logits, labels)</span>
+<span id="cb19-14"><a href="#cb19-14" aria-hidden="true" tabindex="-1"></a>        loss.backward()</span>
+<span id="cb19-15"><a href="#cb19-15" aria-hidden="true" tabindex="-1"></a>        optimizer.step()</span>
+<span id="cb19-16"><a href="#cb19-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-17"><a href="#cb19-17" aria-hidden="true" tabindex="-1"></a>    model.<span class="bu">eval</span>()</span>
+<span id="cb19-18"><a href="#cb19-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">with</span> torch.no_grad():</span>
+<span id="cb19-19"><a href="#cb19-19" aria-hidden="true" tabindex="-1"></a>        aucs, accs <span class="op">=</span> [], []</span>
+<span id="cb19-20"><a href="#cb19-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> imgs, labels <span class="kw">in</span> val_loader:</span>
+<span id="cb19-21"><a href="#cb19-21" aria-hidden="true" tabindex="-1"></a>            logits <span class="op">=</span> model(imgs.cuda())</span>
+<span id="cb19-22"><a href="#cb19-22" aria-hidden="true" tabindex="-1"></a>            probs <span class="op">=</span> torch.softmax(logits, dim<span class="op">=</span><span class="dv">1</span>).cpu()</span>
+<span id="cb19-23"><a href="#cb19-23" aria-hidden="true" tabindex="-1"></a>            <span class="co"># ... compute AUC, ACC</span></span>
+<span id="cb19-24"><a href="#cb19-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">print</span>(<span class="ss">f&quot;Epoch </span><span class="sc">{</span>epoch<span class="sc">}</span><span class="ss">: AUC=</span><span class="sc">{</span>aucs<span class="sc">}</span><span class="ss">, Acc=</span><span class="sc">{</span>accs<span class="sc">}</span><span class="ss">, tau=</span><span class="sc">{</span>torch<span class="sc">.</span>exp(model.head.log_tau)<span class="sc">.</span>item()<span class="sc">:.3f}</span><span class="ss">&quot;</span>)</span></code></pre></div>
+<hr />
+<h2 id="7-risk-matrix">7. Risk Matrix</h2>
+<p><strong>Risk likelihood × impact matrix</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Likelihood</th>
+<th>Impact</th>
+<th>Quadrant</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Quantum slower than classical</td>
+<td>High (0.95)</td>
+<td>Low (0.4)</td>
+<td>Plan around</td>
+</tr>
+<tr>
+<td>OOM on QONN attention</td>
+<td>Med (0.6)</td>
+<td>High (0.85)</td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td>Quantum worse than classical AUC</td>
+<td>High (0.7)</td>
+<td>Med (0.7)</td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td>Dataset download fails</td>
+<td>Low (0.2)</td>
+<td>High (0.9)</td>
+<td>Monitor</td>
+</tr>
+<tr>
+<td>PennyLane API changes</td>
+<td>Low (0.15)</td>
+<td>Low (0.3)</td>
+<td>Accept</td>
+</tr>
+<tr>
+<td>Barren plateau</td>
+<td>Low (0.3)</td>
+<td>Med (0.6)</td>
+<td>Plan</td>
+</tr>
+<tr>
+<td>Pretrain not reproducible</td>
+<td>Low (0.25)</td>
+<td>Med (0.5)</td>
+<td>Plan</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>QONN attention OOM</td>
+<td>Drop to L3 (16 tokens) or CLS-only</td>
+</tr>
+<tr>
+<td>Quantum worse than classical</td>
+<td>Reframe as parameter efficiency (already proposal-ready)</td>
+</tr>
+<tr>
+<td>Dataset download fails</td>
+<td>Try mirror, contact mae-lensing authors</td>
+</tr>
+<tr>
+<td>Barren plateau</td>
+<td>Use layerwise training; QCNN style (Cong 2019 proves BP-free)</td>
+</tr>
+<tr>
+<td>Pretrain not reproducible</td>
+<td>Use shipped <code>classifier.pth</code>, skip pretrain</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="8-expected-final-output">8. Expected Final Output</h2>
+<h3 id="程式碼結構">程式碼結構</h3>
+<pre><code>GSoC_QML_Submission/
+├── README.md                       # Project overview
+├── quantum_fusion.py               # D1 module
+├── qonn_attention.py               # D2 module
+├── main_quantum.py                 # Modified mainv2 with --use_quantum flag
+├── ablation_runner.py              # 4-way ablation script
+├── notebooks/
+│   ├── 01_baseline_reproduction.ipynb
+│   ├── 02_D1_demo.ipynb
+│   ├── 03_D2_demo.ipynb
+│   └── 04_D3_full_pipeline.ipynb
+├── outputs_quantum/
+│   ├── ablation_4way.csv
+│   ├── tau_evolution.png
+│   └── per_class_comparison.png
+└── docs/
+    ├── pipeline_diagram.png
+    ├── results_summary.pdf
+    └── blog_post.md</code></pre>
+<h3 id="預期-final-benchmark-table">預期 final benchmark table</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Attention</th>
+<th>Head</th>
+<th>Params</th>
+<th>Macro AUC</th>
+<th>Acc</th>
+<th>Axion F1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MAE Baseline (paper)</td>
+<td>Classical</td>
+<td>Classical (Linear)</td>
+<td>50K</td>
+<td>0.968</td>
+<td>88.65%</td>
+<td>0.854</td>
+</tr>
+<tr>
+<td>D1 QuantumFusionHead</td>
+<td>Classical</td>
+<td>Q (4 qubits, 36 params)</td>
+<td>700 + 36q</td>
+<td>(target 0.96)</td>
+<td>(target 88%)</td>
+<td>(target 0.86)</td>
+</tr>
+<tr>
+<td>D2 QONN Attention</td>
+<td>Q (8 qubits, 28 params)</td>
+<td>Classical</td>
+<td>50K + 28q</td>
+<td>(target 0.95)</td>
+<td>(target 87%)</td>
+<td>(target 0.83)</td>
+</tr>
+<tr>
+<td><strong>D3 Full Q-MAE</strong></td>
+<td>Q (QONN)</td>
+<td>Q (Fusion)</td>
+<td>700 + 64q</td>
+<td><strong>(target 0.97)</strong></td>
+<td><strong>(target 89%)</strong></td>
+<td><strong>(target 0.87)</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>注：當 AUC 平手時，<strong>強調 parameter efficiency</strong> 或
+<strong>per-class improvement on axion</strong>。</p>
+</blockquote>
+<hr />
+<h2 id="9-pre-flight-checklist-gsoc-申請前要做">9. Pre-flight Checklist
+(GSoC 申請前要做)</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />完成 Stage 0 環境 setup</label></li>
+<li><label><input type="checkbox" />完成 Stage 1 baseline
+reproduction，AUC ≥ 0.95</label></li>
+<li><label><input type="checkbox" />寫一個 minimal
+<code>QuantumFusionHead</code> 在 MNIST 跑通 (sanity check)</label></li>
+<li><label><input type="checkbox" />抽出 mae-lensing encoder
+weights，能載入新 model</label></li>
+<li><label><input type="checkbox" />GitHub repo 公開，包含上述 3 個
+milestones</label></li>
+<li><label><input type="checkbox" />Email 給 mae-lensing 作者 Achmad
+Prasha，告知 derivative work</label></li>
+<li><label><input type="checkbox" />寫 GSoC proposal 引用 5
+篇核心：Alexander 2019, Prasha 2025, Tesi 2024, Alavi 2025, Sobrinho
+2026</label></li>
+</ul>
+<hr />
+<h2 id="10-一頁速查-quick-reference">10. 一頁速查 (Quick Reference)</h2>
+<pre><code>GOAL: Beat or match MAE SOTA (AUC 0.968) with quantum-enhanced architecture
+
+PATH:
+  W1-2  → Reproduce baseline
+  W3-4  → D1 (quantum head)
+  W5-6  → D2 (QONN attention)
+  W7-9  → D3 (both)
+  W9-10 → 4-way ablation
+  W11-12 → Docs + PR + paper draft
+
+KEY FILES:
+  - 02_Code/mae-lensing/mainv2.py:554 → insert QuantumFusionHead
+  - 02_Code/mae-lensing/mainv2.py:394 → insert QONNAttention
+  - outputs_lens/classifier.pth → shipped pretrained, skip 2hr training
+
+KEY METRICS to report:
+  - Macro AUC, per-class F1 (axion key)
+  - Parameter count
+  - Wall time
+  - tau learned value (TSHF)
+
+3 FRAMINGS for results:
+  1. Quantum wins: emphasize this clearly with statistical test
+  2. Quantum matches: parameter efficiency story
+  3. Quantum loses: characterize WHERE it loses, propose hypothesis</code></pre>
+<hr />
+<blockquote>
+<p><strong>文件版本</strong>：v1.0 (2026-05-28)
+<strong>下次更新</strong>：完成 Stage 1 baseline reproduction
+後，加入實測 wall time 與 AUC 數字</p>
+</blockquote>
+</body>
+</html>

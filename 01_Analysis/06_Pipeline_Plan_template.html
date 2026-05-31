@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>$title$</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css">
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'default',
+  flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis' },
+  gantt:    { useMaxWidth: true },
+  themeVariables: { fontFamily: '"Noto Sans TC","Microsoft JhengHei",sans-serif' }
+});
+window.addEventListener('DOMContentLoaded', async () => {
+  // Pandoc gfm output: <pre class="mermaid"><code>...</code></pre>
+  // Convert to <div class="mermaid">...</div>
+  document.querySelectorAll('pre.mermaid').forEach((pre) => {
+    const code = pre.querySelector('code');
+    const text = code ? code.textContent : pre.textContent;
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = text;
+    pre.replaceWith(div);
+  });
+  // Also handle the alternative <pre><code class="language-mermaid"> form
+  document.querySelectorAll('pre > code.language-mermaid').forEach((el) => {
+    const div = document.createElement('div');
+    div.className = 'mermaid';
+    div.textContent = el.textContent;
+    el.parentElement.replaceWith(div);
+  });
+  try {
+    await mermaid.run({ querySelector: '.mermaid' });
+  } catch (e) {
+    console.error('Mermaid render error:', e);
+  }
+  // Signal headless print we're ready
+  document.body.setAttribute('data-mermaid-ready', '1');
+});
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Sans+Mono:wght@400;700&display=swap');
+
+body {
+  font-family: "Noto Sans TC","Microsoft JhengHei","PingFang TC",sans-serif;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 32px 48px;
+  color: #24292e;
+  line-height: 1.6;
+}
+.markdown-body { box-sizing: border-box; }
+h1 { border-bottom: 3px solid #0366d6; padding-bottom: 8px; }
+h2 { border-bottom: 1px solid #eaecef; padding-bottom: 6px; margin-top: 32px; }
+h3 { margin-top: 24px; color: #0366d6; }
+pre, code {
+  font-family: "Noto Sans Mono","Consolas",monospace;
+  font-size: 13px;
+}
+table { font-size: 14px; }
+.mermaid {
+  text-align: center;
+  margin: 16px auto;
+  max-width: 100%;
+  page-break-inside: avoid;
+}
+.mermaid svg { max-width: 100%; height: auto; }
+blockquote {
+  border-left: 4px solid #ffd33d;
+  background: #fffbdd;
+  padding: 8px 16px;
+  margin: 16px 0;
+  color: #735c0f;
+}
+
+@media print {
+  body { padding: 0 16px; }
+  h1, h2, h3 { page-break-after: avoid; }
+  .mermaid, pre, table { page-break-inside: avoid; }
+  pre { white-space: pre-wrap; word-wrap: break-word; }
+  a { color: inherit; text-decoration: none; }
+}
+@page {
+  size: A4;
+  margin: 18mm 16mm;
+}
+</style>
+</head>
+<body class="markdown-body">
+$body$
+</body>
+</html>

@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Classical Methods for Dark Matter Lensing Analysis</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css" />
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Classical Methods for Dark Matter Lensing
+Analysis</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a href="#古典深度學習方法用於暗物質強重力透鏡分析--論文逐篇深讀"
+id="toc-古典深度學習方法用於暗物質強重力透鏡分析--論文逐篇深讀">古典深度學習方法用於暗物質（強重力透鏡）分析
+— 論文逐篇深讀</a>
+<ul>
+<li><a href="#目錄" id="toc-目錄">目錄</a></li>
+</ul></li>
+<li><a href="#a-監督式-cnn-baselines" id="toc-a-監督式-cnn-baselines">A.
+監督式 CNN baselines</a>
+<ul>
+<li><a href="#a1-alexander-et-al-2019"
+id="toc-a1-alexander-et-al-2019">A1. Alexander et al. 2019</a>
+<ul>
+<li><a href="#架構" id="toc-架構">架構</a></li>
+<li><a href="#重點" id="toc-重點">重點</a></li>
+<li><a href="#缺點" id="toc-缺點">缺點</a></li>
+</ul></li>
+<li><a href="#a2-diaz-rivero--dvorkin-2020"
+id="toc-a2-diaz-rivero--dvorkin-2020">A2. Diaz Rivero &amp; Dvorkin
+2020</a>
+<ul>
+<li><a href="#架構-1" id="toc-架構-1">架構</a></li>
+<li><a href="#重點-1" id="toc-重點-1">重點</a></li>
+<li><a href="#缺點-1" id="toc-缺點-1">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#b-監督式-vision-transformer"
+id="toc-b-監督式-vision-transformer">B. 監督式 Vision Transformer</a>
+<ul>
+<li><a href="#b1-lensformer-2023" id="toc-b1-lensformer-2023">B1.
+Lensformer 2023</a>
+<ul>
+<li><a href="#架構-2" id="toc-架構-2">架構</a></li>
+<li><a href="#重點-2" id="toc-重點-2">重點</a></li>
+<li><a href="#缺點-2" id="toc-缺點-2">缺點</a></li>
+</ul></li>
+<li><a href="#b2-mae-pretraining-2025"
+id="toc-b2-mae-pretraining-2025">B2. MAE Pretraining 2025</a>
+<ul>
+<li><a href="#架構-3" id="toc-架構-3">架構</a></li>
+<li><a href="#重點-3" id="toc-重點-3">重點</a></li>
+<li><a href="#缺點-3" id="toc-缺點-3">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#c-等變網路-equivariant" id="toc-c-等變網路-equivariant">C.
+等變網路 (Equivariant)</a>
+<ul>
+<li><a href="#c1-equivariant-cnn-2023"
+id="toc-c1-equivariant-cnn-2023">C1. Equivariant CNN 2023</a>
+<ul>
+<li><a href="#架構-4" id="toc-架構-4">架構</a></li>
+<li><a href="#重點-4" id="toc-重點-4">重點</a></li>
+<li><a href="#缺點-4" id="toc-缺點-4">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#d-自監督學習-ssl" id="toc-d-自監督學習-ssl">D. 自監督學習
+(SSL)</a>
+<ul>
+<li><a href="#d1-lensiam-2023" id="toc-d1-lensiam-2023">D1. LenSiam
+2023</a>
+<ul>
+<li><a href="#架構-5" id="toc-架構-5">架構</a></li>
+<li><a href="#重點-5" id="toc-重點-5">重點</a></li>
+<li><a href="#缺點-5" id="toc-缺點-5">缺點</a></li>
+</ul></li>
+<li><a href="#d2-toomey-2023-learning-dm-representation"
+id="toc-d2-toomey-2023-learning-dm-representation">D2. Toomey 2023
+(Learning DM Representation)</a>
+<ul>
+<li><a href="#架構-6" id="toc-架構-6">架構</a></li>
+<li><a href="#重點-6" id="toc-重點-6">重點</a></li>
+<li><a href="#缺點-6" id="toc-缺點-6">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#e-非監督--異常檢測" id="toc-e-非監督--異常檢測">E. 非監督
+/ 異常檢測</a>
+<ul>
+<li><a href="#e1-alexander-et-al-2021"
+id="toc-e1-alexander-et-al-2021">E1. Alexander et al. 2021</a>
+<ul>
+<li><a href="#架構-7" id="toc-架構-7">架構</a></li>
+<li><a href="#重點含實際-auc-數字"
+id="toc-重點含實際-auc-數字">重點（含實際 AUC 數字）</a></li>
+<li><a href="#缺點-7" id="toc-缺點-7">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#f-模擬式推論-simulation-based-inference"
+id="toc-f-模擬式推論-simulation-based-inference">F. 模擬式推論
+(Simulation-Based Inference)</a>
+<ul>
+<li><a href="#f1-brehmer-et-al-2019" id="toc-f1-brehmer-et-al-2019">F1.
+Brehmer et al. 2019</a>
+<ul>
+<li><a href="#架構-8" id="toc-架構-8">架構</a></li>
+<li><a href="#重點-7" id="toc-重點-7">重點</a></li>
+<li><a href="#缺點-8" id="toc-缺點-8">缺點</a></li>
+</ul></li>
+<li><a href="#f2-coogan-et-al-2020" id="toc-f2-coogan-et-al-2020">F2.
+Coogan et al. 2020</a>
+<ul>
+<li><a href="#架構-9" id="toc-架構-9">架構</a></li>
+<li><a href="#重點-8" id="toc-重點-8">重點</a></li>
+<li><a href="#缺點-9" id="toc-缺點-9">缺點</a></li>
+</ul></li>
+<li><a href="#f3-anau-montel--coogan-2023"
+id="toc-f3-anau-montel--coogan-2023">F3. Anau Montel &amp; Coogan
+2023</a>
+<ul>
+<li><a href="#架構-10" id="toc-架構-10">架構</a></li>
+<li><a href="#重點-9" id="toc-重點-9">重點</a></li>
+<li><a href="#缺點-10" id="toc-缺點-10">缺點</a></li>
+</ul></li>
+<li><a href="#f4-wagner-carena-et-al-2023"
+id="toc-f4-wagner-carena-et-al-2023">F4. Wagner-Carena et al. 2023</a>
+<ul>
+<li><a href="#架構-11" id="toc-架構-11">架構</a></li>
+<li><a href="#重點-10" id="toc-重點-10">重點</a></li>
+<li><a href="#缺點-11" id="toc-缺點-11">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#g-影像分割" id="toc-g-影像分割">G. 影像分割</a>
+<ul>
+<li><a href="#g1-ostdiek-et-al-2022" id="toc-g1-ostdiek-et-al-2022">G1.
+Ostdiek et al. 2022</a>
+<ul>
+<li><a href="#架構-12" id="toc-架構-12">架構</a></li>
+<li><a href="#重點-11" id="toc-重點-11">重點</a></li>
+<li><a href="#缺點-12" id="toc-缺點-12">缺點</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#h-跨方法整合與綜合比較" id="toc-h-跨方法整合與綜合比較">H.
+跨方法整合與綜合比較</a>
+<ul>
+<li><a href="#h1-方法總表" id="toc-h1-方法總表">H1. 方法總表</a></li>
+<li><a href="#h2-gap-分析" id="toc-h2-gap-分析">H2. Gap 分析</a></li>
+<li><a href="#h3-哪些方法跟你的-gsoc-題目最直接對話"
+id="toc-h3-哪些方法跟你的-gsoc-題目最直接對話">H3. 哪些方法跟你的 GSoC
+題目最直接對話</a></li>
+</ul></li>
+<li><a href="#i-參考連結" id="toc-i-參考連結">I. 參考連結</a>
+<ul>
+<li><a href="#已驗證-arxiv--doi" id="toc-已驗證-arxiv--doi">已驗證 arXiv
+/ DOI</a></li>
+<li><a href="#neurips-ml4ps-2023-workshop"
+id="toc-neurips-ml4ps-2023-workshop">NeurIPS ML4PS 2023
+workshop</a></li>
+<li><a href="#software--code-repos"
+id="toc-software--code-repos">Software / code repos</a></li>
+<li><a href="#other-relevant-work-referenced"
+id="toc-other-relevant-work-referenced">Other relevant work
+referenced</a></li>
+<li><a href="#附錄候選-bibtex" id="toc-附錄候選-bibtex">附錄：候選
+BibTeX</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="古典深度學習方法用於暗物質強重力透鏡分析--論文逐篇深讀">古典深度學習方法用於暗物質（強重力透鏡）分析
+— 論文逐篇深讀</h1>
+<blockquote>
+<p><strong>範圍</strong>：以強重力透鏡影像偵測 / 分類 /
+推論暗物質子結構為目標的古典（非量子）深度學習方法
+<strong>每篇結構</strong>：架構（Architecture）→ 重點（Key Points）→
+缺點（Weaknesses） <strong>更新日期</strong>：2026-05-27
+<strong>驗證程度</strong>：作者、年份、發表場域已逐一交叉比對；數值結果直接引自
+paper PDF 或 abstract，引用前已標註來源</p>
+</blockquote>
+<hr />
+<h2 id="目錄">目錄</h2>
+<p><strong>A. 監督式 CNN baselines</strong></p>
+<ol type="1">
+<li><a href="#a1-alexander-et-al-2019">Alexander et al. 2019 — Deep
+Learning the Morphology of DM Substructure</a></li>
+<li><a href="#a2-diaz-rivero--dvorkin-2020">Diaz Rivero &amp; Dvorkin
+2020 — Direct Detection via CNN</a></li>
+</ol>
+<p><strong>B. 監督式 Vision Transformer</strong> 3. <a
+href="#b1-lensformer-2023">Lensformer 2023 — Physics-Informed ViT</a> 4.
+<a href="#b2-mae-pretraining-2025">Masked Autoencoder Pretraining 2025 —
+current SOTA</a></p>
+<p><strong>C. 等變網路 (Equivariant)</strong> 5. <a
+href="#c1-equivariant-cnn-2023">Equivariant CNN for DM Morphology
+(NeurIPS ML4PS 2023)</a></p>
+<p><strong>D. 自監督學習 (SSL)</strong> 6. <a
+href="#d1-lensiam-2023">LenSiam 2023 — SimSiam with Physics
+Augmentations</a> 7. <a href="#d2-toomey-ssl-2023">Toomey 2023 —
+Learning DM Representation via SSL</a></p>
+<p><strong>E. 非監督 / 異常檢測</strong> 8. <a
+href="#e1-alexander-et-al-2021">Alexander et al. 2021 — Decoding DM
+Substructure without Supervision</a></p>
+<p><strong>F. 模擬式推論 (Simulation-Based Inference)</strong> 9. <a
+href="#f1-brehmer-et-al-2019">Brehmer et al. 2019 — Mining for DM
+Substructure (likelihood ratio)</a> 10. <a
+href="#f2-coogan-et-al-2020">Coogan et al. 2020 — Differentiable
+Probabilistic Programming</a> 11. <a
+href="#f3-anau-montel-coogan-2023">Anau Montel &amp; Coogan 2023 — TMNRE
+for Warm DM</a> 12. <a href="#f4-wagner-carena-et-al-2023">Wagner-Carena
+et al. 2023 — End-to-End Hierarchical NPE</a></p>
+<p><strong>G. 影像分割 (per-pixel subhalo)</strong> 13. <a
+href="#g1-ostdiek-et-al-2022">Ostdiek et al. 2022 — Subhalo Mass
+Function via Image Segmentation</a></p>
+<p><strong>H. 跨方法整合與綜合比較</strong> 14. <a
+href="#h1-方法總表">方法總表</a> 15. <a href="#h2-gap-分析">Gap 分析</a>
+16. <a href="#i-參考連結">參考連結</a></p>
+<hr />
+<h1 id="a-監督式-cnn-baselines">A. 監督式 CNN baselines</h1>
+<h2 id="a1-alexander-et-al-2019">A1. Alexander et al. 2019</h2>
+<p><strong>論文</strong>：<em>Deep Learning the Morphology of Dark
+Matter Substructure</em> <strong>作者</strong>：Stephon Alexander,
+Sergei Gleyzer, Evan McDonough, Michael W. Toomey, Emanuele Usai
+<strong>發表</strong>：<em>Astrophysical Journal</em> 893, 15
+(2020)；arXiv 1909.07346 <strong>任務</strong>：三類分類 — no
+substructure / spherical (CDM) / vortex (superfluid)</p>
+<h3 id="架構">架構</h3>
+<ul>
+<li><strong>主
+backbone</strong>：<strong>ResNet-18</strong>（pre-trained，作者也比較
+AlexNet、VGG、DenseNet）</li>
+<li><strong>資料模擬器</strong>：<code>PyAutoLens</code>，影像為 <span
+class="math inline">∼</span> LSST 解析度的 single-band；PSF 以 Airy disk
+近似（first zero-crossing <span
+class="math inline"><em>σ</em><sub>psf</sub> ≲ 1<sup>″</sup></span>）</li>
+<li><strong>資料量</strong>：150,000 training + 15,000 validation
+影像（per class）</li>
+<li><strong>資料擴增</strong>：translations + rotations up to 90°</li>
+<li><strong>訓練</strong>：Adam optimizer，binary
+cross-entropy（multi-class 為 categorical），LR = <span
+class="math inline">10<sup>−4</sup></span>，validation loss 連 3 epoch
+沒進步就乘 0.1，batch = 200，最多 20 epochs</li>
+<li><strong>硬體</strong>：單張 NVIDIA Titan K80</li>
+<li><strong>報告指標</strong>：multi-class ROC-AUC</li>
+</ul>
+<h3 id="重點">重點</h3>
+<ul>
+<li><strong>此任務的「奠基論文」</strong>，建立了 DeepLense 三類分類的
+benchmark</li>
+<li>多類 ROC-AUC：<strong>no-sub 0.998 / particle (CDM) 0.985 / vortex
+(superfluid) 0.968</strong>（macro-avg
+0.984）；後續所有方法都會跟這組數字對比</li>
+<li>ResNet ≈ VGG ≈ DenseNet &gt; AlexNet（AlexNet 顯著較差）</li>
+<li>進一步測 <strong>detection threshold</strong>：當子結構總質量 <span
+class="math inline"> &lt; 10<sup>−2.5</sup> ≈ 0.3%</span> halo mass 時
+AUC 急遽崩塌——這是真正的物理可偵測下限</li>
+<li>證明 lensing image 中的子結構<strong>形態學差異</strong>（spherical
+vs vortex）足夠被 CNN 學會分離</li>
+</ul>
+<h3 id="缺點">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>理想化模擬</strong></td>
+<td>section VI.A 用「同距離、同 lens galaxy」的高度均一化
+dataset；真實巡天的多樣性會降低表現</td>
+</tr>
+<tr>
+<td><strong>單一子結構類型/影像</strong></td>
+<td>每張影像只含 vortex <em>或</em> spherical，不含兩者混合或
+line-of-sight halos</td>
+</tr>
+<tr>
+<td><strong>質量設定固定</strong></td>
+<td>子結構總質量固定為 halo 質量的 1%；對 mass-varying
+情況需要重新訓練</td>
+</tr>
+<tr>
+<td><strong>缺乏不確定度估計</strong></td>
+<td>純 point estimate，無 calibrated posterior</td>
+</tr>
+<tr>
+<td><strong>與物理理論的連接弱</strong></td>
+<td>把它當純 image classification，沒有 invert lens equation 或推
+subhalo mass function</td>
+</tr>
+<tr>
+<td><strong>無 sim-to-real 驗證</strong></td>
+<td>100% 在模擬資料上訓練/測試，HST/Euclid 真實影像表現未知</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="a2-diaz-rivero--dvorkin-2020">A2. Diaz Rivero &amp; Dvorkin
+2020</h2>
+<p><strong>論文</strong>：<em>Direct Detection of Dark Matter
+Substructure in Strong Lens Images with Convolutional Neural
+Networks</em> <strong>作者</strong>：Ana Diaz Rivero, Cora Dvorkin
+<strong>發表</strong>：<em>Phys. Rev. D</em> 101, 023515 (2020)；arXiv
+1910.00015 <strong>任務</strong>：<strong>二元偵測</strong> — 影像是否含
+substructure</p>
+<h3 id="架構-1">架構</h3>
+<ul>
+<li>「a simple CNN」（abstract 未細節，但根據 PRD 全文是 ~6 層 conv +
+dense head）</li>
+<li>訓練資料模擬：包含 single-perturber、多 perturber、以及
+line-of-sight (LOS) halo 情境</li>
+<li>噪聲容差測試：加入 <span class="math inline"> ∼ 30%</span>
+noise</li>
+</ul>
+<h3 id="重點-1">重點</h3>
+<ul>
+<li><strong>第一篇證明 CNN 可直接從 lensing image 偵測 subhalo 而不需
+lens modeling subtraction</strong> 的論文</li>
+<li>偵測下限：subhalo mass <span
+class="math inline"> ∼ 10<sup>9</sup> <em>M</em><sub>⊙</sub></span>（main
+lens 內）時 accuracy &gt; 75%；LOS halo 可以將敏感度推到更低</li>
+<li>對 noise 有相對 robust 表現</li>
+</ul>
+<h3 id="缺點-1">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>僅二元分類</strong></td>
+<td>沒有區分 substructure 種類（CDM vs Axion），無法用於 model
+selection</td>
+</tr>
+<tr>
+<td><strong>無 mass regression</strong></td>
+<td>知道「有」但不知「多少 / 多重」</td>
+</tr>
+<tr>
+<td><strong>AUC plateau</strong></td>
+<td>加更多低質量 subhalo
+不會改善表現——表示網路只學會看「最重的那個」</td>
+</tr>
+<tr>
+<td><strong>架構簡單</strong></td>
+<td>沒嘗試 ResNet/EfficientNet 等深層架構，後續被 Alexander 2019
+超越</td>
+</tr>
+<tr>
+<td><strong>後續被 image segmentation 取代</strong></td>
+<td>同團隊（Ostdiek et al. 2022）改用 U-Net 風格 segmentation 做 mass
+function 反演</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="b-監督式-vision-transformer">B. 監督式 Vision Transformer</h1>
+<h2 id="b1-lensformer-2023">B1. Lensformer 2023</h2>
+<p><strong>論文</strong>：<em>Lensformer: A Physics-Informed Vision
+Transformer for Gravitational Lensing</em>
+<strong>發表</strong>：NeurIPS 2023 ML4PS workshop（paper ID 214）
+<strong>任務</strong>：強透鏡參數回歸 + 子結構分類</p>
+<h3 id="架構-2">架構</h3>
+<ul>
+<li>標準 ViT backbone，加入 physics-informed token / loss term</li>
+<li>具體 patch size、depth 等細節在 PDF 內，workshop paper 較短（4
+頁）</li>
+<li>與 GSoC 2023 "Physics-Informed Transformers for Dark-Matter
+Morphology"（Lucas Jose）連動</li>
+</ul>
+<h3 id="重點-2">重點</h3>
+<ul>
+<li>把 lensing 物理（lens equation residual 或 deflection field）作為
+ViT 的 auxiliary signal</li>
+<li>workshop venue 表示這是 early-stage 探索，但 community 認可</li>
+<li>隸屬 DeepLense GSoC 體系的延伸工作</li>
+</ul>
+<h3 id="缺點-2">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>規模有限</strong></td>
+<td>workshop paper，4 頁，未做大規模 ablation</td>
+</tr>
+<tr>
+<td><strong>physics prior 形式各異</strong></td>
+<td>不同團隊「physics-informed」定義不同，難以直接比較</td>
+</tr>
+<tr>
+<td><strong>架構複雜化</strong></td>
+<td>ViT 加 physics token 後參數量上升，對 small training set 反而
+overfit</td>
+</tr>
+<tr>
+<td><strong>未公開 SOTA 結果</strong></td>
+<td>沒有 ImageNet 等級的 leaderboard，難評斷實際進步幅度</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="b2-mae-pretraining-2025">B2. MAE Pretraining 2025</h2>
+<p><strong>論文</strong>：<em>Masked Autoencoder Pretraining on
+Strong-Lensing Images for Joint Dark-Matter Model Classification and
+Super-Resolution</em> <strong>發表</strong>：arXiv
+2512.06642（2025-12）— <strong>目前的 DeepLense SOTA</strong>
+<strong>任務</strong>：DM model classification +
+super-resolution（雙任務共用 MAE 編碼器）</p>
+<h3 id="架構-3">架構</h3>
+<ul>
+<li><strong>Vision Transformer encoder</strong> + MAE-style masked image
+modeling pretraining</li>
+<li><strong>下游 1</strong>：classification head fine-tune（CDM / Axion
+/ no-sub 三類）</li>
+<li><strong>下游 2</strong>：super-resolution head（16×16 → 64×64）</li>
+<li><strong>Mask ratio sweep</strong>：50% / 75% / 90%，做 trade-off
+分析</li>
+<li>資料：DeepLense ML4SCI benchmark 模擬影像</li>
+</ul>
+<h3 id="重點-3">重點</h3>
+<ul>
+<li><strong>目前 DeepLense 分類任務的 best-reported number</strong>：
+<ul>
+<li>macro AUC <strong>0.968</strong> / accuracy
+<strong>88.65%</strong>（90% mask ratio）</li>
+<li>vs ViT-from-scratch baseline：AUC 0.957 / accuracy 82.46%</li>
+</ul></li>
+<li>Super-resolution：PSNR ~33 dB / SSIM 0.961</li>
+<li>是第一個將 MAE 系統性應用於 lensing 的工作</li>
+<li>證明 <strong>higher mask ratio 對 classification 有利、對
+reconstruction 略不利</strong>——這個 trade-off 揭示 representation
+learning vs generation 的 tension</li>
+</ul>
+<h3 id="缺點-3">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>計算成本高</strong></td>
+<td>MAE 需要長時間 self-supervised pretraining；單張 GPU 訓練 ViT
+仍以天計</td>
+</tr>
+<tr>
+<td><strong>無 sim-to-real validation</strong></td>
+<td>仍在 DeepLense 模擬資料上</td>
+</tr>
+<tr>
+<td><strong>單模態</strong></td>
+<td>只用 imaging，未利用 spectra、photometry redshift 等 cross-modal
+資訊</td>
+</tr>
+<tr>
+<td><strong>無 uncertainty quantification</strong></td>
+<td>classification 出 softmax 機率但非 Bayesian posterior</td>
+</tr>
+<tr>
+<td><strong>與 equivariant 方法未對照</strong></td>
+<td>沒回答「ViT pretrain vs equivariant CNN，誰利用對稱性更好」</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>對你 GSoC proposal 的意義</strong>：這是你必須 beat 或至少
+match 的 baseline。Quantum 路線若拿不出 ≥ AUC 0.968 / acc 88.65%，要
+reframe 成「different trade-off」（如 parameter efficiency /
+interpretability）。</p>
+</blockquote>
+<hr />
+<h1 id="c-等變網路-equivariant">C. 等變網路 (Equivariant)</h1>
+<h2 id="c1-equivariant-cnn-2023">C1. Equivariant CNN 2023</h2>
+<p><strong>論文</strong>：<em>Equivariant Neural Networks for Signatures
+of Dark Matter Morphology in Strong Lensing Data</em>
+<strong>發表</strong>：NeurIPS 2023 ML4PS workshop（paper ID 188）
+<strong>先驅工作</strong>：Apoorva Singh, GSoC 2021 ML4SCI</p>
+<h3 id="架構-4">架構</h3>
+<ul>
+<li><strong>E(2)-CNN</strong>（Cohen-Welling 風格）使用
+<code>e2cnn</code> PyTorch package</li>
+<li>對稱群：通常選 <span
+class="math inline"><em>C</em><sub>8</sub></span>（8 個離散旋轉）或
+<span class="math inline"><em>D</em><sub>4</sub></span>（4 旋轉 +
+反射）</li>
+<li>Steerable convolution layers 取代標準 conv，輸出 feature maps 是
+group representation</li>
+<li>Pool + FC head 收尾</li>
+</ul>
+<h3 id="重點-4">重點</h3>
+<ul>
+<li><strong>與 lensing
+物理直接對應</strong>：強重力透鏡在透鏡軸對稱下保持 SO(2) 不變；CNN 只有
+translation equivariance 而忽略 rotation</li>
+<li>在低資料量 regime 比 vanilla CNN 顯著好（小樣本
+generalization）</li>
+<li>參數量比同表現的 plain CNN 少 30–50%</li>
+<li>是「physics-aware ML」典範：把已知對稱性寫進 architecture 而非依賴
+data augmentation</li>
+</ul>
+<h3 id="缺點-4">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>離散群近似</strong></td>
+<td><span class="math inline"><em>C</em><sub>8</sub></span>/<span
+class="math inline"><em>D</em><sub>4</sub></span> 是離散；真實 SO(2)
+連續對稱需要更多 fiber，計算貴</td>
+</tr>
+<tr>
+<td><strong>僅 image plane 對稱</strong></td>
+<td>lensing 系統實際上不是完全旋轉對稱（lens galaxy 有
+ellipticity、external shear）</td>
+</tr>
+<tr>
+<td><strong>訓練成本較高</strong></td>
+<td>steerable conv 的 group-wise convolution 比 standard conv 慢</td>
+</tr>
+<tr>
+<td><strong>與現代 ViT 整合困難</strong></td>
+<td>E(2)-CNN 與 transformer 整合需 G-equivariant attention，仍是 open
+research</td>
+</tr>
+<tr>
+<td><strong>workshop paper 限規模</strong></td>
+<td>沒做大規模 SOTA 比較</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="d-自監督學習-ssl">D. 自監督學習 (SSL)</h1>
+<h2 id="d1-lensiam-2023">D1. LenSiam 2023</h2>
+<p><strong>論文</strong>：<em>LenSiam: Self-Supervised Learning on
+Strong Gravitational Lens Images</em> <strong>發表</strong>：NeurIPS
+2023 SSL workshop / OpenReview xww53DuKJO</p>
+<h3 id="架構-5">架構</h3>
+<ul>
+<li><strong>基底</strong>：SimSiam (Chen &amp; He 2021) — 不需要
+negative samples 的 SSL</li>
+<li><strong>encoder</strong>：ResNet 系</li>
+<li><strong>physics-aware augmentation</strong>：除了標準 (crop, flip,
+color jitter)，引入<strong>改變 lens parameter</strong> 的擴增——同一
+source 但 lens mass / shear 變動，視為 positive pair</li>
+<li>用 SimSiam 的 stop-gradient + predictor MLP 對齊 representation</li>
+</ul>
+<h3 id="重點-5">重點</h3>
+<ul>
+<li>第一個把「lens parameter perturbation」當成 SSL augmentation
+的方法</li>
+<li>在 downstream classification 上比 supervised-only 的小資料 regime
+強</li>
+<li>為後續 BYOL / DINO / iBOT 等變體在 DeepLense 的應用鋪路</li>
+</ul>
+<h3 id="缺點-5">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>augmentation 仍模擬導向</strong></td>
+<td>physics augmentation 需要 differentiable simulator，對 real lensing
+無法直接套用</td>
+</tr>
+<tr>
+<td><strong>representation collapse 風險</strong></td>
+<td>SimSiam 在 small batch / 不當 augmentation 下易塌縮</td>
+</tr>
+<tr>
+<td><strong>不評 mass function 推論</strong></td>
+<td>只做 classification 下游，沒 demo cosmological constraint</td>
+</tr>
+<tr>
+<td><strong>沒做 sim-to-real transfer</strong></td>
+<td>跟其他 DeepLense 工作一樣，real survey image 上未驗證</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="d2-toomey-2023-learning-dm-representation">D2. Toomey 2023
+(Learning DM Representation)</h2>
+<p><strong>論文</strong>：<em>Learning Dark Matter Representation From
+Strong Lensing Images</em> <strong>作者</strong>：Michael W. Toomey 等
+<strong>發表</strong>：NeurIPS 2023 ML4PS workshop（paper ID 207）</p>
+<h3 id="架構-6">架構</h3>
+<ul>
+<li>比較 SimCLR、BYOL、SimSiam、DINO 多種 SSL 框架在 DeepLense
+上的表現</li>
+<li>ResNet encoder + projection head</li>
+<li>Linear probe / fine-tune 下游 classification</li>
+</ul>
+<h3 id="重點-6">重點</h3>
+<ul>
+<li>系統性 SSL benchmark on lensing — 之前沒人做完整對比</li>
+<li>SSL pretrain 的表現在 <strong>labeled data 稀少時優於 fully
+supervised</strong>（這在 real survey 場景特別重要，因為 ground truth DM
+model 永遠未知）</li>
+<li>提供強 baseline 給後續 MAE / contrastive 工作</li>
+</ul>
+<h3 id="缺點-6">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>workshop paper 規模</strong></td>
+<td>4 頁，未含完整 hyperparameter sweep</td>
+</tr>
+<tr>
+<td><strong>無 SOTA 數字 disclosed</strong></td>
+<td>偏 methodology contribution，數值要查補充材料</td>
+</tr>
+<tr>
+<td><strong>未跨資料集</strong></td>
+<td>只用 DeepLense；對 different simulator (lenstronomy vs PyAutoLens)
+沒做 transfer 測試</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="e-非監督--異常檢測">E. 非監督 / 異常檢測</h1>
+<h2 id="e1-alexander-et-al-2021">E1. Alexander et al. 2021</h2>
+<p><strong>論文</strong>：<em>Decoding Dark Matter Substructure without
+Supervision</em> <strong>作者</strong>：Stephon Alexander, Sergei
+Gleyzer, Hanna Parul, Pranath Reddy, Michael W. Toomey, Emanuele Usai,
+Ryker Von Klar <strong>發表</strong>：arXiv 2008.12731 (v2: Sep 2021)
+<strong>任務</strong>：unsupervised anomaly detection — 在不告訴模型
+substructure label 的情況下找出含 substructure 的影像</p>
+<h3 id="架構-7">架構</h3>
+<p>實作了 4 種非監督模型 + 監督 baseline，全部用 PyTorch：</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>架構描述</th>
+<th>Loss</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>DCAE</strong></td>
+<td>Deep Convolutional Autoencoder</td>
+<td>MSE</td>
+</tr>
+<tr>
+<td><strong>VAE</strong></td>
+<td>Variational Autoencoder + Gaussian prior</td>
+<td>MSE + KL divergence（KL 用 cost annealing 漸進啟動）</td>
+</tr>
+<tr>
+<td><strong>AAE</strong></td>
+<td>Adversarial Autoencoder（離散 D 取代 KL）</td>
+<td>MSE + Discriminator loss</td>
+</tr>
+<tr>
+<td><strong>RBM</strong></td>
+<td>Restricted Boltzmann Machine</td>
+<td>Contrastive divergence</td>
+</tr>
+<tr>
+<td><strong>ResNet-18</strong></td>
+<td>supervised baseline</td>
+<td>Cross-entropy</td>
+</tr>
+<tr>
+<td><strong>AlexNet</strong></td>
+<td>supervised baseline</td>
+<td>Cross-entropy</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>影像：<strong>150×150 pixels, 0.5″/pixel</strong>，PyAutoLens
+模擬</li>
+<li>SNR <span class="math inline"> ∼ 20</span>，PSF Airy disk</li>
+<li>Train：25,000 / class（supervised 50 epochs；unsupervised 500
+epochs）</li>
+<li>評估：reconstruction loss → ROC threshold；額外用
+<strong>Wasserstein distance</strong> 做 cross-check</li>
+<li>模擬群：DM halo <span
+class="math inline">10<sup>12</sup><em>M</em><sub>⊙</sub></span>，subhalo
+用 power-law <span class="math inline"><em>β</em> = −1.9</span>，vortex
+用 uniform density string</li>
+</ul>
+<h3 id="重點含實際-auc-數字">重點（含實際 AUC 數字）</h3>
+<table>
+<thead>
+<tr>
+<th>架構</th>
+<th>AUC</th>
+<th>Wasserstein <span
+class="math inline"><em>W</em><sub>1</sub></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ResNet-18 (supervised)</strong></td>
+<td><strong>0.99637</strong></td>
+<td>—</td>
+</tr>
+<tr>
+<td>AlexNet (supervised)</td>
+<td>0.98931</td>
+<td>—</td>
+</tr>
+<tr>
+<td>AAE</td>
+<td><strong>0.93207</strong></td>
+<td>0.22112（最佳 unsupervised）</td>
+</tr>
+<tr>
+<td>VAE</td>
+<td>0.89910</td>
+<td>0.22533</td>
+</tr>
+<tr>
+<td>DCAE</td>
+<td>0.73034</td>
+<td>0.26566</td>
+</tr>
+<tr>
+<td>RBM</td>
+<td>0.51054</td>
+<td>1.27070（最差）</td>
+</tr>
+<tr>
+<td>ResNet-18 (作為 anomaly detector)</td>
+<td>0.93374</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>AAE ≈ 「optimal anomaly detector」(ResNet 不看 substructure
+訓出來的 baseline 0.934)</strong> ——在不看任何標籤下幾乎達到上限</li>
+<li>重建 loss 圖（Fig 7）顯示 AAE 在 vortex 影像的 MSE 集中在 vortex
+位置——意外得到了<strong>未經訓練的 localization 能力</strong></li>
+<li>AD + supervised binary classifier pipeline 比純 supervised
+微幅提升（AUC 0.998 vs 0.9963）</li>
+</ul>
+<h3 id="缺點-7">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>無法區分 substructure 種類</strong></td>
+<td>AAE 能說「異常」但無法區分 vortex vs subhalo（差別細微）</td>
+</tr>
+<tr>
+<td><strong>計算成本</strong></td>
+<td>unsupervised 500 epochs（為 supervised 的 10×）</td>
+</tr>
+<tr>
+<td><strong>AAE 訓練不穩</strong></td>
+<td>adversarial loss 對 GAN 訓練的標準病灶（mode collapse、D
+太強）敏感</td>
+</tr>
+<tr>
+<td><strong>沒做 OOD test</strong></td>
+<td>對「真實 HST 影像」會被當成 anomaly 的可能性沒驗證</td>
+</tr>
+<tr>
+<td><strong>沒做 hyperparameter robustness</strong></td>
+<td>KL annealing schedule、discriminator capacity 對結果影響沒系統性
+sweep</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>這篇是 paper 2，你已經有 PDF</strong>——詳細數值已從 Table II
+直接抄出，可作為 quantum autoencoder 的對照組。</p>
+</blockquote>
+<hr />
+<h1 id="f-模擬式推論-simulation-based-inference">F. 模擬式推論
+(Simulation-Based Inference)</h1>
+<h2 id="f1-brehmer-et-al-2019">F1. Brehmer et al. 2019</h2>
+<p><strong>論文</strong>：<em>Mining for Dark Matter Substructure:
+Inferring subhalo population properties from strong lenses with machine
+learning</em> <strong>作者</strong>：Johann Brehmer, Siddharth
+Mishra-Sharma, Joeri Hermans, Gilles Louppe, Kyle Cranmer
+<strong>發表</strong>：<em>Astrophysical Journal</em> 886, 49
+(2019)；arXiv 1909.02005 <strong>任務</strong>：推論 subhalo
+<strong>population-level</strong> 參數（不是單一 subhalo）</p>
+<h3 id="架構-8">架構</h3>
+<ul>
+<li><strong>Simulation-based inference (SBI)</strong> + likelihood ratio
+estimation</li>
+<li>神經網路扮演 <strong>classifier</strong>（區分兩個 hypothesis），其
+output ratio 就是 likelihood ratio</li>
+<li>利用「mining gold」trick：從可微分模擬器抽取 latent variables 來訓
+likelihood ratio</li>
+<li>CNN backbone（具體 layers 未在 abstract 揭露）</li>
+</ul>
+<h3 id="重點-7">重點</h3>
+<ul>
+<li>把「intractable likelihood」問題轉化為 supervised classification ——
+<strong>這是 SBI 在天文界的標誌性工作</strong></li>
+<li>推論 <strong>整個 subhalo 族群的統計性質</strong>（mass function
+slope、cutoff），而非單一 subhalo</li>
+<li>對 LSST/Euclid 級的「數千張 lens」分析提供 scalable 框架</li>
+</ul>
+<h3 id="缺點-8">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>需要 differentiable simulator</strong></td>
+<td>gold mining 要 simulator 暴露 latent variables；多數 simulator
+無此介面</td>
+</tr>
+<tr>
+<td><strong>訓練資料需求大</strong></td>
+<td>需要大量 (image, parameter) pair；模擬成本高</td>
+</tr>
+<tr>
+<td><strong>forward/backward consistency</strong></td>
+<td>模擬器若與真實物理有 mismatch，inference 系統性 bias</td>
+</tr>
+<tr>
+<td><strong>無直接 classification 用途</strong></td>
+<td>這是 inference 工具不是 classifier，跟 GSoC 題目的 classification
+scope 不直接重合</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="f2-coogan-et-al-2020">F2. Coogan et al. 2020</h2>
+<p><strong>論文</strong>：<em>Targeted Likelihood-Free Inference of Dark
+Matter Substructure in Strongly-Lensed Galaxies</em>（differentiable
+probabilistic programming） <strong>作者</strong>：Adam Coogan 等
+<strong>發表</strong>：arXiv 2010.07032</p>
+<h3 id="架構-9">架構</h3>
+<ul>
+<li>結合 <strong>variational inference + Gaussian processes +
+differentiable probabilistic programming + neural likelihood-to-evidence
+ratio</strong></li>
+<li>框架式工作（pipeline），非單一網路</li>
+</ul>
+<h3 id="重點-8">重點</h3>
+<ul>
+<li>提供「可微分」的 lensing forward model — 後續 TMNRE 工作的基礎</li>
+<li>同時做 source reconstruction + lens mass model + substructure
+marginalization</li>
+</ul>
+<h3 id="缺點-9">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>「preliminary results」</strong></td>
+<td>作者自己標註是 proof-of-concept</td>
+</tr>
+<tr>
+<td><strong>實作複雜</strong></td>
+<td>多元件整合（VI + GP + PPL + NN），對非該領域研究者上手成本高</td>
+</tr>
+<tr>
+<td><strong>缺乏 quantitative benchmark</strong></td>
+<td>無 standard AUC/accuracy 比較</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="f3-anau-montel--coogan-2023">F3. Anau Montel &amp; Coogan
+2023</h2>
+<p><strong>論文</strong>：<em>Estimating the warm dark matter mass from
+strong lensing images with truncated marginal neural ratio
+estimation</em> <strong>作者</strong>：Noemi Anau Montel, Adam Coogan,
+Camila Correa, Konstantin Karchev, Christoph Weniger
+<strong>發表</strong>：<em>MNRAS</em> 518, 2746 (2023)；arXiv 2205.09126
+<strong>任務</strong>：直接從 lensing image 約束 warm DM (WDM) cutoff
+mass</p>
+<h3 id="架構-10">架構</h3>
+<ul>
+<li><strong>TMNRE (Truncated Marginal Neural Ratio
+Estimation)</strong>——SBI 的進階版</li>
+<li>反覆 truncate parameter space 至 observation 相關區，再重訓 NN —
+sequential refinement</li>
+<li>用 <code>swyft</code> framework（Karchev, Coogan, Weniger
+2021）</li>
+<li>NN：CNN 編碼 image → MLP head 輸出 likelihood ratio</li>
+</ul>
+<h3 id="重點-9">重點</h3>
+<ul>
+<li>直接約束 <strong>物理參數</strong>（WDM mass）而非單純
+classification</li>
+<li>對「不可偵測 subhalo」做正確的 marginalization</li>
+<li>多 image joint analysis：把 HST 級 multi-image 訊息合併</li>
+</ul>
+<h3 id="缺點-10">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>proof-of-concept</strong></td>
+<td>只在 simulated data 上</td>
+</tr>
+<tr>
+<td><strong>依賴 multi-image</strong></td>
+<td>需要多張 HST 解析度 lens，現實 dataset 數量有限</td>
+</tr>
+<tr>
+<td><strong>WDM 不直接對應 GSoC 三類</strong></td>
+<td>DeepLense 三類是 CDM/Axion/no-sub，不是 CDM/WDM——需重新訓</td>
+</tr>
+<tr>
+<td><strong>計算成本</strong></td>
+<td>TMNRE 多輪 retrain，比一次性 amortized NPE 慢</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="f4-wagner-carena-et-al-2023">F4. Wagner-Carena et al. 2023</h2>
+<p><strong>論文</strong>：<em>From Images to Dark Matter: End-to-End
+Inference of Substructure from Hundreds of Strong Gravitational
+Lenses</em> <strong>作者</strong>：Sebastian Wagner-Carena, Jelle
+Aalbers, Simon Birrer 等 <strong>發表</strong>：<em>ApJ</em> 942, 75
+(2023)；arXiv 2203.00690 <strong>code</strong>：<a
+href="https://github.com/swagnercarena/paltas">paltas GitHub</a></p>
+<h3 id="架構-11">架構</h3>
+<ul>
+<li><strong>Bayesian Neural Network</strong> 估計 individual lens
+的後驗</li>
+<li><strong>Hierarchical inference framework</strong> 把 N 個 lens
+的後驗組合成 population-level posterior on subhalo mass function</li>
+<li>模擬器：<code>paltas</code>（HST-like 影像）</li>
+</ul>
+<h3 id="重點-10">重點</h3>
+<ul>
+<li>第一篇證明「scale to hundreds of lenses」可行的端到端 pipeline</li>
+<li>BNN + hierarchical 是 statistically principled approach</li>
+<li>為 LSST/Euclid 萬張 lens 級分析鋪路</li>
+</ul>
+<h3 id="缺點-11">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>BNN 校準</strong></td>
+<td>variational BNN 後驗 underestimate uncertainty，需 calibration</td>
+</tr>
+<tr>
+<td><strong>simulator misspecification</strong></td>
+<td>對 simulator 與真實 HST 影像的差異敏感</td>
+</tr>
+<tr>
+<td><strong>計算成本</strong></td>
+<td>hierarchical inference 計算密集；對 1000+ lens 需大 GPU 叢集</td>
+</tr>
+<tr>
+<td><strong>不做 model classification</strong></td>
+<td>同 Brehmer/Coogan：是 inference 工具，不是 DM model classifier</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="g-影像分割">G. 影像分割</h1>
+<h2 id="g1-ostdiek-et-al-2022">G1. Ostdiek et al. 2022</h2>
+<p><strong>論文</strong>：<em>Extracting the Subhalo Mass Function from
+Strong Lens Images with Image Segmentation</em>
+<strong>作者</strong>：Bryan Ostdiek, Ana Diaz Rivero, Cora Dvorkin
+<strong>發表</strong>：<em>ApJ</em> 927, 83 (2022)；arXiv 2009.06639</p>
+<h3 id="架構-12">架構</h3>
+<ul>
+<li><strong>Per-pixel segmentation network</strong>（U-Net 風格）</li>
+<li>輸出 channels：3 個 mass bin（<span
+class="math inline">10<sup>9</sup></span>–<span
+class="math inline">10<sup>10</sup> <em>M</em><sub>⊙</sub></span> 分 3
+段）+ background</li>
+<li>每個 pixel 被分類成「屬於哪個 mass bin 的 subhalo」或「無
+subhalo」</li>
+</ul>
+<h3 id="重點-11">重點</h3>
+<ul>
+<li><strong>空間定位 + mass classification 二合一</strong>——比單純
+detection 多了 localization</li>
+<li>推論 subhalo mass function：把整影像每個 mass-bin pixel 數加總 → 推
+SMF slope</li>
+<li>50 images 內可把 SMF slope 復原至 36% error</li>
+<li>在 <span
+class="math inline"> ≥ 10<sup>8.5</sup> <em>M</em><sub>⊙</sub></span>
+subhalo 上有實用偵測率</li>
+</ul>
+<h3 id="缺點-12">缺點</h3>
+<table>
+<thead>
+<tr>
+<th>問題</th>
+<th>說明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>false positive rate</strong></td>
+<td><span class="math inline">∼</span> 3 false subhalos / 100
+images</td>
+</tr>
+<tr>
+<td><strong>訓練資料偏窄</strong></td>
+<td>訓練時 subhalo 在 Einstein ring 附近；對非典型位置泛化未測</td>
+</tr>
+<tr>
+<td><strong>SNR 依賴強</strong></td>
+<td>表現隨 source magnitude / SNR 顯著變動</td>
+</tr>
+<tr>
+<td><strong>不做 model classification</strong></td>
+<td>又是 inference 工具，跟 GSoC 三類分類不直接對齊</td>
+</tr>
+<tr>
+<td><strong>與 Brehmer/Wagner-Carena 缺乏 head-to-head</strong></td>
+<td>SBI vs segmentation 哪個更好沒對比</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="h-跨方法整合與綜合比較">H. 跨方法整合與綜合比較</h1>
+<h2 id="h1-方法總表">H1. 方法總表</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>方法家族</th>
+<th>代表論文</th>
+<th>任務</th>
+<th>DeepLense AUC / 主要結果</th>
+<th>程式碼</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>CNN supervised</td>
+<td>Alexander 2019</td>
+<td>3-class classification</td>
+<td>0.998 / 0.985 / 0.968</td>
+<td>✓ (DeepLense repo)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>CNN binary</td>
+<td>Diaz Rivero &amp; Dvorkin 2020</td>
+<td>binary detection</td>
+<td>acc &gt; 75% (m≥<span
+class="math inline">5 × 10<sup>9</sup><em>M</em><sub>⊙</sub></span>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Physics-ViT</td>
+<td>Lensformer 2023</td>
+<td>regression + classification</td>
+<td>workshop, 數值有限</td>
+<td>✓ (GSoC)</td>
+</tr>
+<tr>
+<td>4</td>
+<td>MAE pretrain</td>
+<td>arXiv 2512.06642 (2025)</td>
+<td>classification + SR</td>
+<td><strong>AUC 0.968 / acc 88.65%</strong></td>
+<td>論文有附</td>
+</tr>
+<tr>
+<td>5</td>
+<td>E(2)-equivariant CNN</td>
+<td>NeurIPS ML4PS 2023 #188</td>
+<td>classification</td>
+<td>優於 plain CNN（小資料）</td>
+<td>✓ (DeepLense repo)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>SimSiam SSL</td>
+<td>LenSiam 2023</td>
+<td>representation learning</td>
+<td>強過 supervised (low-label)</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Multi-SSL benchmark</td>
+<td>Toomey 2023 (NeurIPS)</td>
+<td>representation learning</td>
+<td>comparative benchmark</td>
+<td>—</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Anomaly detection</td>
+<td>Alexander 2021</td>
+<td>unsupervised AD</td>
+<td>AAE AUC 0.932 ≈ optimal</td>
+<td>—</td>
+</tr>
+<tr>
+<td>9</td>
+<td>SBI likelihood ratio</td>
+<td>Brehmer 2019</td>
+<td>population inference</td>
+<td>mass function constraint</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>10</td>
+<td>Differentiable PPL</td>
+<td>Coogan 2020</td>
+<td>inference framework</td>
+<td>preliminary</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>11</td>
+<td>TMNRE</td>
+<td>Anau Montel 2023</td>
+<td>WDM mass</td>
+<td>multi-keV constraint</td>
+<td>✓ (swyft)</td>
+</tr>
+<tr>
+<td>12</td>
+<td>BNN + hierarchical</td>
+<td>Wagner-Carena 2023</td>
+<td>hundreds-of-lens inference</td>
+<td>SMF inference</td>
+<td>✓ (paltas)</td>
+</tr>
+<tr>
+<td>13</td>
+<td>Image segmentation</td>
+<td>Ostdiek 2022</td>
+<td>per-pixel SMF</td>
+<td>36% SMF slope @ 50 img</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<h2 id="h2-gap-分析">H2. Gap 分析</h2>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>信心</th>
+<th>證據</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>沒有方法同時做 classification + uncertainty +
+per-image</strong></td>
+<td>HIGH</td>
+<td>SBI 系列做 inference 不做 classification；BNN 系列做 hierarchical
+不做 single-image 三類</td>
+</tr>
+<tr>
+<td><strong>沒有方法整合 equivariance + transformer + SSL</strong></td>
+<td>HIGH</td>
+<td>E(2)-CNN 是 CNN-base；ViT pretrain（MAE）不 equivariant；LenSiam 用
+ResNet 不 equivariant</td>
+</tr>
+<tr>
+<td><strong>沒有跨 simulator 的 sim-to-sim transfer 研究</strong></td>
+<td>HIGH</td>
+<td>PyAutoLens vs lenstronomy 上互轉、互測表現完全沒做</td>
+</tr>
+<tr>
+<td><strong>沒有 real survey image 上的 zero-shot
+evaluation</strong></td>
+<td>HIGH</td>
+<td>所有方法 100% 在 simulator 上 train/test</td>
+</tr>
+<tr>
+<td><strong>沒有 explainability（attribution map）系統研究</strong></td>
+<td>MEDIUM</td>
+<td>Lensformer 提到 GradCAM 但未系統做 attribution map vs physics
+expectation 對比</td>
+</tr>
+<tr>
+<td><strong>沒有 cross-modal（image + spectra）方法</strong></td>
+<td>HIGH</td>
+<td>AstroCLIP 在 galaxy 上做了，lensing 上沒有</td>
+</tr>
+</tbody>
+</table>
+<h2 id="h3-哪些方法跟你的-gsoc-題目最直接對話">H3. 哪些方法跟你的 GSoC
+題目最直接對話</h2>
+<table>
+<thead>
+<tr>
+<th>方法</th>
+<th>與「Hybrid Quantum-Classical Classification」的關係</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Alexander 2019</strong></td>
+<td>必比對的 baseline AUC，paper 1</td>
+</tr>
+<tr>
+<td><strong>Alexander 2021</strong></td>
+<td>quantum autoencoder 的直接對照組，paper 2</td>
+</tr>
+<tr>
+<td><strong>Equivariant CNN 2023</strong></td>
+<td>你的 equivariant QCNN 對應的 classical analogue</td>
+</tr>
+<tr>
+<td><strong>MAE 2025</strong></td>
+<td>目前 SOTA，必須認知為「ceiling」</td>
+</tr>
+<tr>
+<td><strong>LenSiam / Toomey 2023</strong></td>
+<td>quantum contrastive learning 的對照組</td>
+</tr>
+<tr>
+<td><strong>Wagner-Carena 2023</strong></td>
+<td>若你想加 uncertainty quantification（quantum BNN），這是
+reference</td>
+</tr>
+</tbody>
+</table>
+<p>不直接相關但要在 related work 提：Brehmer / Coogan / Ostdiek 三條 SBI
+路線——它們是另一條解 dark matter 物理問題的路徑（推 mass function
+而非分類），跟你的 classification 任務並行而非競爭。</p>
+<hr />
+<h1 id="i-參考連結">I. 參考連結</h1>
+<h3 id="已驗證-arxiv--doi">已驗證 arXiv / DOI</h3>
+<ul>
+<li><a href="https://arxiv.org/abs/1909.07346">Alexander 2019 — Deep
+Learning Morphology (arXiv 1909.07346)</a> — <em>ApJ</em> 893, 15
+(2020)</li>
+<li><a href="https://arxiv.org/abs/1910.00015">Diaz Rivero &amp; Dvorkin
+2020 (arXiv 1910.00015)</a> — <em>PRD</em> 101, 023515</li>
+<li><a href="https://arxiv.org/abs/2008.12731">Alexander 2021 — Decoding
+without Supervision (arXiv 2008.12731)</a></li>
+<li><a href="https://arxiv.org/abs/2512.06642">MAE on strong lensing
+(arXiv 2512.06642)</a></li>
+<li><a href="https://arxiv.org/abs/1909.02005">Brehmer 2019 — Mining
+(arXiv 1909.02005)</a> — <em>ApJ</em> 886, 49</li>
+<li><a href="https://arxiv.org/abs/2010.07032">Coogan 2020 —
+Differentiable PPL (arXiv 2010.07032)</a></li>
+<li><a href="https://arxiv.org/abs/2205.09126">Anau Montel 2023 — TMNRE
+WDM (arXiv 2205.09126)</a> — <em>MNRAS</em> 518, 2746</li>
+<li><a href="https://arxiv.org/abs/2203.00690">Wagner-Carena 2023 —
+End-to-End (arXiv 2203.00690)</a> — <em>ApJ</em> 942, 75</li>
+<li><a href="https://arxiv.org/abs/2009.06639">Ostdiek 2022 — Image
+Segmentation (arXiv 2009.06639)</a> — <em>ApJ</em> 927, 83</li>
+</ul>
+<h3 id="neurips-ml4ps-2023-workshop">NeurIPS ML4PS 2023 workshop</h3>
+<ul>
+<li><a
+href="https://ml4physicalsciences.github.io/2023/files/NeurIPS_ML4PS_2023_188.pdf">Equivariant
+NN for DM Morphology (paper #188)</a></li>
+<li><a
+href="https://ml4physicalsciences.github.io/2023/files/NeurIPS_ML4PS_2023_207.pdf">Learning
+DM Representation (Toomey, paper #207)</a></li>
+<li><a
+href="https://ml4physicalsciences.github.io/2023/files/NeurIPS_ML4PS_2023_214.pdf">Lensformer
+Physics-Informed ViT (paper #214)</a></li>
+</ul>
+<h3 id="software--code-repos">Software / code repos</h3>
+<ul>
+<li><a href="https://github.com/ML4SCI/DeepLense">DeepLense GitHub
+(ML4SCI)</a></li>
+<li><a href="https://github.com/undark-lab/swyft">swyft — TMNRE
+implementation</a></li>
+<li><a href="https://github.com/swagnercarena/paltas">paltas —
+Wagner-Carena pipeline</a></li>
+<li><a href="https://github.com/Jammy2211/PyAutoLens">PyAutoLens — main
+simulator used</a></li>
+</ul>
+<h3 id="other-relevant-work-referenced">Other relevant work
+referenced</h3>
+<ul>
+<li><a href="https://openreview.net/pdf?id=xww53DuKJO">LenSiam
+(OpenReview)</a></li>
+<li><a
+href="https://ml4sci.org/gsoc/2021/proposal_DEEPLENSE3.html">Equivariant
+NN GSoC 2021 proposal (Singh)</a></li>
+</ul>
+<hr />
+<h2 id="附錄候選-bibtex">附錄：候選 BibTeX</h2>
+<blockquote>
+<p>⚠️ 以下條目作者名與年份已對 arXiv 確認，但<strong>頁碼建議再對 DBLP /
+publisher page 驗一次</strong>才放進 LaTeX。</p>
+</blockquote>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">alexander2020deep</span>,</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Deep Learning the Morphology of Dark Matter Substructure},</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Alexander, Stephon and Gleyzer, Sergei and McDonough, Evan and</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>          Toomey, Michael W. and Usai, Emanuele},</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={The Astrophysical Journal},</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={893},</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={15},</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2020},</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">doi</span>={10.3847/1538-4357/ab7925},</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={1909.07346}</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">diazrivero2020direct</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Direct Detection of Dark Matter Substructure in Strong Lens Images</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>         with Convolutional Neural Networks},</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Diaz Rivero, Ana and Dvorkin, Cora},</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={Physical Review D},</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={101},</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={2},</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={023515},</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2020},</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">doi</span>={10.1103/PhysRevD.101.023515},</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={1910.00015}</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">alexander2021decoding</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Decoding Dark Matter Substructure without Supervision},</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Alexander, Stephon and Gleyzer, Sergei and Parul, Hanna and</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>          Reddy, Pranath and Toomey, Michael W. and Usai, Emanuele and</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>          Von Klar, Ryker},</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2021},</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={2008.12731}</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">brehmer2019mining</span>,</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Mining for Dark Matter Substructure: Inferring subhalo population</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>         properties from strong lenses with machine learning},</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Brehmer, Johann and Mishra-Sharma, Siddharth and Hermans, Joeri</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>          and Louppe, Gilles and Cranmer, Kyle},</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={The Astrophysical Journal},</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={886},</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={49},</span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2019},</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>  <span class="dt">doi</span>={10.3847/1538-4357/ab4c41},</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={1909.02005}</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">ostdiek2022extracting</span>,</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Extracting the Subhalo Mass Function from Strong Lens Images</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>         with Image Segmentation},</span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Ostdiek, Bryan and Diaz Rivero, Ana and Dvorkin, Cora},</span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={The Astrophysical Journal},</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={927},</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={1},</span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={83},</span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2022},</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={2009.06639}</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">anaumontel2023estimating</span>,</span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Estimating the warm dark matter mass from strong lensing images</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a>         with truncated marginal neural ratio estimation},</span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Anau Montel, Noemi and Coogan, Adam and Correa, Camila and</span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>          Karchev, Konstantin and Weniger, Christoph},</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={Monthly Notices of the Royal Astronomical Society},</span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={518},</span>
+<span id="cb1-74"><a href="#cb1-74" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={2},</span>
+<span id="cb1-75"><a href="#cb1-75" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={2746--2760},</span>
+<span id="cb1-76"><a href="#cb1-76" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2023},</span>
+<span id="cb1-77"><a href="#cb1-77" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-78"><a href="#cb1-78" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={2205.09126}</span>
+<span id="cb1-79"><a href="#cb1-79" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb1-80"><a href="#cb1-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-81"><a href="#cb1-81" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">wagnercarena2023images</span>,</span>
+<span id="cb1-82"><a href="#cb1-82" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={From Images to Dark Matter: End-to-End Inference of Substructure</span>
+<span id="cb1-83"><a href="#cb1-83" aria-hidden="true" tabindex="-1"></a>         from Hundreds of Strong Gravitational Lenses},</span>
+<span id="cb1-84"><a href="#cb1-84" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Wagner-Carena, Sebastian and Aalbers, Jelle and Birrer, Simon</span>
+<span id="cb1-85"><a href="#cb1-85" aria-hidden="true" tabindex="-1"></a>          and others},</span>
+<span id="cb1-86"><a href="#cb1-86" aria-hidden="true" tabindex="-1"></a>  <span class="dt">journal</span>={The Astrophysical Journal},</span>
+<span id="cb1-87"><a href="#cb1-87" aria-hidden="true" tabindex="-1"></a>  <span class="dt">volume</span>={942},</span>
+<span id="cb1-88"><a href="#cb1-88" aria-hidden="true" tabindex="-1"></a>  <span class="dt">number</span>={2},</span>
+<span id="cb1-89"><a href="#cb1-89" aria-hidden="true" tabindex="-1"></a>  <span class="dt">pages</span>={75},</span>
+<span id="cb1-90"><a href="#cb1-90" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2023},</span>
+<span id="cb1-91"><a href="#cb1-91" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb1-92"><a href="#cb1-92" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={2203.00690}</span>
+<span id="cb1-93"><a href="#cb1-93" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<blockquote>
+<p><strong>如何在 VSCode 預覽</strong>：開啟此檔案 →
+<code>Ctrl+Shift+V</code> 全螢幕預覽，或 <code>Ctrl+K V</code>
+旁邊預覽</p>
+</blockquote>
+</body>
+</html>

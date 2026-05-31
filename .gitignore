@@ -1,0 +1,33 @@
+# ── Datasets (3+ GB, 178k .npy files) — fetched via download_data.py, never committed ──
+03_Data/Dataset/
+03_Data/__MACOSX/
+*.zip
+*.npy
+
+# ── Upstream mae-lensing clone (achmadardanip/mae-lensing) — referenced via git clone ──
+# These live on disk locally so scripts run, but are NOT part of this repo.
+02_Code/mae-lensing/mainv2.py
+02_Code/mae-lensing/analyze_ablation.py
+02_Code/mae-lensing/outputs_lens/
+02_Code/mae-lensing/*.ipynb
+02_Code/mae-lensing/Masked_Autoencoder_Pretraining_on_Strong_Lensing_Images*.pdf
+
+# ── Generated / scratch artifacts ──
+02_Code/mae-lensing/_paper_text.txt
+03_Data/Dataset/_out2.txt
+**/_out*.txt
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+.venv/
+venv/
+env/
+
+# ── OS / editor ──
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

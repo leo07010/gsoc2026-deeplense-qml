@@ -1,0 +1,16 @@
+# Core ML
+torch
+torchvision
+numpy
+scikit-learn
+matplotlib
+
+# Quantum (NVIDIA CUDA-Q backend; used by quantum_fusion_cudaq.py / train_fusion_cudaq.py)
+# Note: cudaq targets Linux + CUDA. On Windows, use WSL2 or a Linux box.
+cudaq
+
+# Hyperparameter search (used by upstream mainv2.py)
+optuna
+
+# Dataset download from Google Drive (download_data.py)
+gdown

@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Tesi 2024 QONN-ViT Analysis</title>
+  <style>
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
+    pre > code.sourceCode { white-space: pre; position: relative; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+    pre > code.sourceCode > span:empty { height: 1.2em; }
+    .sourceCode { overflow: visible; }
+    code.sourceCode > span { color: inherit; text-decoration: inherit; }
+    div.sourceCode { margin: 1em 0; }
+    pre.sourceCode { margin: 0; }
+    @media screen {
+    div.sourceCode { overflow: auto; }
+    }
+    @media print {
+    pre > code.sourceCode { white-space: pre-wrap; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+    }
+    pre.numberSource code
+      { counter-reset: source-line 0; }
+    pre.numberSource code > span
+      { position: relative; left: -4em; counter-increment: source-line; }
+    pre.numberSource code > span > a:first-child::before
+      { content: counter(source-line);
+        position: relative; left: -1em; text-align: right; vertical-align: baseline;
+        border: none; display: inline-block;
+        -webkit-touch-callout: none; -webkit-user-select: none;
+        -khtml-user-select: none; -moz-user-select: none;
+        -ms-user-select: none; user-select: none;
+        padding: 0 4px; width: 4em;
+        color: #aaaaaa;
+      }
+    pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+    div.sourceCode
+      {   }
+    @media screen {
+    pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+    }
+    code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+    code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+    code span.at { color: #7d9029; } /* Attribute */
+    code span.bn { color: #40a070; } /* BaseN */
+    code span.bu { color: #008000; } /* BuiltIn */
+    code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+    code span.ch { color: #4070a0; } /* Char */
+    code span.cn { color: #880000; } /* Constant */
+    code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+    code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+    code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+    code span.dt { color: #902000; } /* DataType */
+    code span.dv { color: #40a070; } /* DecVal */
+    code span.er { color: #ff0000; font-weight: bold; } /* Error */
+    code span.ex { } /* Extension */
+    code span.fl { color: #40a070; } /* Float */
+    code span.fu { color: #06287e; } /* Function */
+    code span.im { color: #008000; font-weight: bold; } /* Import */
+    code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+    code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+    code span.op { color: #666666; } /* Operator */
+    code span.ot { color: #007020; } /* Other */
+    code span.pp { color: #bc7a00; } /* Preprocessor */
+    code span.sc { color: #4070a0; } /* SpecialChar */
+    code span.ss { color: #bb6688; } /* SpecialString */
+    code span.st { color: #4070a0; } /* String */
+    code span.va { color: #19177c; } /* Variable */
+    code span.vs { color: #4070a0; } /* VerbatimString */
+    code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@5/github-markdown-light.min.css" />
+  <script
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js"
+  type="text/javascript"></script>
+</head>
+<body>
+<header id="title-block-header">
+<h1 class="title">Tesi 2024 QONN-ViT Analysis</h1>
+</header>
+<nav id="TOC" role="doc-toc">
+<ul>
+<li><a
+href="#tesi-et-al-2024--quantum-attention-for-vision-transformers-in-hep"
+id="toc-tesi-et-al-2024--quantum-attention-for-vision-transformers-in-hep">Tesi
+et al. 2024 — Quantum Attention for Vision Transformers in HEP</a>
+<ul>
+<li><a href="#0-為什麼這篇對你-gsoc-是關鍵"
+id="toc-0-為什麼這篇對你-gsoc-是關鍵">0. 為什麼這篇對你 GSoC
+是關鍵</a></li>
+<li><a href="#1-論文身分" id="toc-1-論文身分">1. 論文身分</a></li>
+<li><a href="#2-核心方法quantum-orthogonal-neural-network-qonn"
+id="toc-2-核心方法quantum-orthogonal-neural-network-qonn">2.
+核心方法：Quantum Orthogonal Neural Network (QONN)</a>
+<ul>
+<li><a href="#21-為什麼是orthogonal" id="toc-21-為什麼是orthogonal">2.1
+為什麼是「Orthogonal」</a></li>
+<li><a href="#22-rbs-gatereconfigurable-beam-splitter"
+id="toc-22-rbs-gatereconfigurable-beam-splitter">2.2 RBS
+gate（Reconfigurable Beam Splitter）</a></li>
+<li><a href="#23-pyramid-circuit" id="toc-23-pyramid-circuit">2.3
+Pyramid Circuit</a></li>
+<li><a href="#24-unary-amplitude-encoding"
+id="toc-24-unary-amplitude-encoding">2.4 Unary Amplitude
+Encoding</a></li>
+</ul></li>
+<li><a href="#3-quantum-attention-機制"
+id="toc-3-quantum-attention-機制">3. Quantum Attention 機制</a>
+<ul>
+<li><a href="#31-classical-attention-回顧"
+id="toc-31-classical-attention-回顧">3.1 Classical attention
+回顧</a></li>
+<li><a href="#32-quantum-attention-替代"
+id="toc-32-quantum-attention-替代">3.2 Quantum attention 替代</a></li>
+<li><a href="#33-插入位置" id="toc-33-插入位置">3.3 插入位置</a></li>
+</ul></li>
+<li><a href="#4-實驗設置" id="toc-4-實驗設置">4. 實驗設置</a>
+<ul>
+<li><a href="#41-資料cms-open-data-jet-images"
+id="toc-41-資料cms-open-data-jet-images">4.1 資料：CMS Open Data Jet
+Images</a></li>
+<li><a href="#42-patch-配置" id="toc-42-patch-配置">4.2 Patch
+配置</a></li>
+<li><a href="#43-訓練" id="toc-43-訓練">4.3 訓練</a></li>
+<li><a href="#44-切分" id="toc-44-切分">4.4 切分</a></li>
+</ul></li>
+<li><a href="#5-量化結果" id="toc-5-量化結果">5. 量化結果</a>
+<ul>
+<li><a href="#51-test-set-表現" id="toc-51-test-set-表現">5.1 Test set
+表現</a></li>
+<li><a href="#52-為什麼平手其實是好結果"
+id="toc-52-為什麼平手其實是好結果">5.2
+為什麼「平手」其實是好結果？</a></li>
+</ul></li>
+<li><a href="#6-與你-gsoc-的-5-個直接連結"
+id="toc-6-與你-gsoc-的-5-個直接連結">6. 與你 GSoC 的 5 個直接連結</a>
+<ul>
+<li><a href="#連結-1sergei-gleyzer-共同作者"
+id="toc-連結-1sergei-gleyzer-共同作者">連結 1：Sergei Gleyzer
+共同作者</a></li>
+<li><a href="#連結-2qonn-attention-可直接套到-mae-lensing"
+id="toc-連結-2qonn-attention-可直接套到-mae-lensing">連結 2：QONN
+attention 可直接套到 mae-lensing</a></li>
+<li><a href="#連結-3對比-paper-3-pasquali-2024-qvit-的進化"
+id="toc-連結-3對比-paper-3-pasquali-2024-qvit-的進化">連結 3：對比 paper
+3 (Pasquali 2024 QViT) 的進化</a></li>
+<li><a href="#連結-43-種架構選擇給你-d3-升級"
+id="toc-連結-43-種架構選擇給你-d3-升級">連結 4：3 種架構選擇（給你 D3
+升級）</a></li>
+<li><a href="#連結-5proposal-寫作的-framing-template"
+id="toc-連結-5proposal-寫作的-framing-template">連結 5：Proposal 寫作的
+framing template</a></li>
+</ul></li>
+<li><a href="#7-對你-d3-quantum-mae--fusion-的具體影響"
+id="toc-7-對你-d3-quantum-mae--fusion-的具體影響">7. 對你 D3 (Quantum
+MAE + Fusion) 的具體影響</a>
+<ul>
+<li><a href="#修正版-d3-架構吸收-tesi-2024"
+id="toc-修正版-d3-架構吸收-tesi-2024">修正版 D3 架構（吸收 Tesi
+2024）</a></li>
+</ul></li>
+<li><a href="#8-pennylane--qiskit-實作要點"
+id="toc-8-pennylane--qiskit-實作要點">8. PennyLane / Qiskit 實作要點</a>
+<ul>
+<li><a href="#81-rbs-gate-在-pennylane-中"
+id="toc-81-rbs-gate-在-pennylane-中">8.1 RBS gate 在 PennyLane
+中</a></li>
+<li><a href="#82-pyramid-circuit-範例8-qubits"
+id="toc-82-pyramid-circuit-範例8-qubits">8.2 Pyramid circuit 範例（8
+qubits）</a></li>
+<li><a href="#83-unary-loading向量編碼"
+id="toc-83-unary-loading向量編碼">8.3 Unary loading（向量編碼）</a></li>
+</ul></li>
+<li><a href="#9-已知限制" id="toc-9-已知限制">9. 已知限制</a></li>
+<li><a href="#10-候選-bibtex" id="toc-10-候選-bibtex">10. 候選
+BibTeX</a></li>
+<li><a href="#11-一句話總結" id="toc-11-一句話總結">11.
+一句話總結</a></li>
+<li><a href="#12-更新-04_gsoc_qml_proposalmd-的建議"
+id="toc-12-更新-04_gsoc_qml_proposalmd-的建議">12. 更新
+04_GSoC_QML_Proposal.md 的建議</a>
+<ul>
+<li><a href="#related-work-段加入" id="toc-related-work-段加入">Related
+Work 段加入</a></li>
+<li><a href="#methodology-d3-加入-variant-b"
+id="toc-methodology-d3-加入-variant-b">Methodology D3 加入 Variant
+B</a></li>
+</ul></li>
+<li><a href="#13-待跟進" id="toc-13-待跟進">13. 待跟進</a></li>
+</ul></li>
+</ul>
+</nav>
+<h1
+id="tesi-et-al-2024--quantum-attention-for-vision-transformers-in-hep">Tesi
+et al. 2024 — Quantum Attention for Vision Transformers in HEP</h1>
+<blockquote>
+<p><strong>重要性</strong>：⭐⭐⭐⭐⭐ — <strong>Sergei Gleyzer
+是共同作者</strong>（ML4SCI/DeepLense 主理人；你 paper 1, 2 的 author）
+<strong>分析日期</strong>：2026-05-28 <strong>PDF 位置</strong>：<a
+href="../00_Papers/Quantum_ML/04_Tesi_2024_Quantum_Attention_ViT_HEP.pdf"><code>../00_Papers/Quantum_ML/04_Tesi_2024_Quantum_Attention_ViT_HEP.pdf</code></a></p>
+</blockquote>
+<hr />
+<h2 id="0-為什麼這篇對你-gsoc-是關鍵">0. 為什麼這篇對你 GSoC 是關鍵</h2>
+<table>
+<thead>
+<tr>
+<th>連結</th>
+<th>證據</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>同團隊</strong></td>
+<td>Sergei Gleyzer 是共同作者，他帶 ML4SCI 整個 QMLHEP + DeepLense
+體系</td>
+</tr>
+<tr>
+<td><strong>方法直接可移植</strong></td>
+<td>QONN attention 可套用到 MAE 的 ViT encoder</td>
+</tr>
+<tr>
+<td><strong>誠實 framing 的範本</strong></td>
+<td>結論「quantum 跟 classical 平手」——proposal 寫法可參考</td>
+</tr>
+<tr>
+<td><strong>CMS Open Data 對應 DeepLense</strong></td>
+<td>都是 multi-channel 科學影像（jet 3 channels vs lensing 1
+channel）</td>
+</tr>
+<tr>
+<td><strong>paper 3 Pasquali 2024 的延伸</strong></td>
+<td>同方向但用 QONN 而非 naive QViT</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-論文身分">1. 論文身分</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>內容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>完整標題</strong></td>
+<td><em>Quantum Attention for Vision Transformers in High Energy
+Physics</em></td>
+</tr>
+<tr>
+<td><strong>arXiv</strong></td>
+<td><a href="https://arxiv.org/abs/2411.13520">2411.13520</a> (submitted
+Nov 20, 2024)</td>
+</tr>
+<tr>
+<td><strong>作者</strong> (7 人)</td>
+<td>Alessandro Tesi, Gopal Ramesh Dahale, <strong>Sergei
+Gleyzer</strong>, Kyoungchul Kong, Tom Magorsch, Konstantin T. Matchev,
+Katia Matcheva</td>
+</tr>
+<tr>
+<td><strong>發表</strong></td>
+<td>arXiv preprint（截至目前無正式 venue）</td>
+</tr>
+<tr>
+<td><strong>任務</strong></td>
+<td>Quark vs gluon jet classification（HEP 二元分類）</td>
+</tr>
+<tr>
+<td><strong>資料</strong></td>
+<td>CMS Open Data multi-detector jet images</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-核心方法quantum-orthogonal-neural-network-qonn">2.
+核心方法：Quantum Orthogonal Neural Network (QONN)</h2>
+<h3 id="21-為什麼是orthogonal">2.1 為什麼是「Orthogonal」</h3>
+<table>
+<thead>
+<tr>
+<th>性質</th>
+<th>物理意義</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>正交矩陣 = norm-preserving</strong></td>
+<td>跟 amplitude encoding（要求 <span
+class="math inline">\(\|x\|=1\)</span>）天然相容</td>
+</tr>
+<tr>
+<td><strong>正交矩陣自由度 = <span
+class="math inline">\(n(n-1)/2\)</span></strong></td>
+<td>用 <span class="math inline">\(n(n-1)/2\)</span> 個 RBS gate
+剛好對應（無冗餘）</td>
+</tr>
+<tr>
+<td><strong>梯度穩定</strong></td>
+<td>不會 vanishing/exploding（unitary 子集）</td>
+</tr>
+<tr>
+<td><strong>量子實現便宜</strong></td>
+<td>RBS gate 是 2-qubit ops，shallow circuit</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-rbs-gatereconfigurable-beam-splitter">2.2 RBS
+gate（Reconfigurable Beam Splitter）</h3>
+<p>兩-qubit gate，作用在 <span class="math inline">\(\{|01\rangle,
+|10\rangle\}\)</span> 子空間：</p>
+<p><span class="math display">\[
+\text{RBS}(\theta) = \begin{pmatrix}
+1 &amp; 0 &amp; 0 &amp; 0 \\
+0 &amp; \cos\theta &amp; \sin\theta &amp; 0 \\
+0 &amp; -\sin\theta &amp; \cos\theta &amp; 0 \\
+0 &amp; 0 &amp; 0 &amp; 1
+\end{pmatrix}
+\]</span></p>
+<p>可用 <strong>Hadamard + CZ + 單 qubit rotation</strong> 分解（NISQ
+友善）。</p>
+<h3 id="23-pyramid-circuit">2.3 Pyramid Circuit</h3>
+<pre><code>qubits  0 ─●─────●─────●─────●───
+            │     │     │     │
+qubits  1 ─●─────●─────●─────●───
+                  │     │     │
+qubits  2 ───────●─────●─────●───
+                        │     │
+qubits  3 ─────────────●─────●───
+                              │
+qubits  4 ───────────────────●───
+
+       ↑ 每個 ● 是一個 RBS(θ_k)，總共 n(n-1)/2 個</code></pre>
+<p>對 <span class="math inline">\(n=8\)</span> qubits：<strong>28 個 RBS
+gates → 28 個訓練參數</strong>。</p>
+<h3 id="24-unary-amplitude-encoding">2.4 Unary Amplitude Encoding</h3>
+<p>把 <span class="math inline">\(n\)</span>-維輸入 <span
+class="math inline">\(x\)</span> 編碼到 <span
+class="math inline">\(n\)</span> 個 qubit 的 unary state： <span
+class="math display">\[
+|x\rangle = \sum_{i=0}^{n-1} x_i |0\cdots 1_i \cdots 0\rangle
+\]</span></p>
+<p>只用 <strong><span class="math inline">\(n-1\)</span> 個 RBS
+gate</strong> 完成 encoding（比 amplitude encoding 的 <span
+class="math inline">\(O(2^n)\)</span> depth 便宜很多）。</p>
+<hr />
+<h2 id="3-quantum-attention-機制">3. Quantum Attention 機制</h2>
+<h3 id="31-classical-attention-回顧">3.1 Classical attention 回顧</h3>
+<p><span class="math display">\[
+\text{Attention}(Q,K,V) =
+\text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) V
+\]</span></p>
+<p>每個 entry <span class="math inline">\(A_{ij} \propto \langle q_i,
+k_j\rangle\)</span>（內積）。</p>
+<h3 id="32-quantum-attention-替代">3.2 Quantum attention 替代</h3>
+<p>每個 attention coefficient 計算成： <span class="math display">\[
+A_{ij} = x_i^T W x_j
+\]</span></p>
+<p>其中 <span class="math inline">\(W\)</span> 是 QONN
+學出來的<strong>正交矩陣</strong>。具體量子流程：</p>
+<pre><code>Step 1: Load query x_i via unary encoding (n-1 RBS gates)
+        |0...0⟩ → |x_i⟩
+
+Step 2: Apply orthogonal transformation W
+        |x_i⟩ → W|x_i⟩  (pyramid RBS circuit)
+
+Step 3: Inverse-load key x_j (adjoint encoding)
+
+Step 4: Measure probability of |1⟩ on first qubit
+        P(|1⟩_0) ≈ |x_j^T W x_i|² = A_{ij}²</code></pre>
+<p><strong>關鍵差異</strong>：取代 softmax 為 quantum measurement。</p>
+<h3 id="33-插入位置">3.3 插入位置</h3>
+<pre><code>┌──────────────────────────────────┐
+│  Classical ViT Pipeline:         │
+│  Patch → embed → Q,K,V proj      │
+│         ↓                         │
+│  ┌─────────────────────┐         │
+│  │ ⚛ QUANTUM ATTENTION │  ← 唯一量子部分
+│  │ A_ij = x_i^T W x_j  │         │
+│  └─────────────────────┘         │
+│         ↓                         │
+│  Softmax (classical) → × V       │
+│         ↓                         │
+│  Output proj → MLP → next block  │
+└──────────────────────────────────┘</code></pre>
+<p>不在 Q/K/V projection、不在 output projection——<strong>只在 attention
+coefficient 計算這一步</strong>。</p>
+<hr />
+<h2 id="4-實驗設置">4. 實驗設置</h2>
+<h3 id="41-資料cms-open-data-jet-images">4.1 資料：CMS Open Data Jet
+Images</h3>
+<table>
+<thead>
+<tr>
+<th>屬性</th>
+<th>規格</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>總影像數</td>
+<td>933,206 (sample 出 50,000)</td>
+</tr>
+<tr>
+<td>影像大小</td>
+<td><strong>125×125 pixels</strong></td>
+</tr>
+<tr>
+<td>Channels</td>
+<td>3（Tracks / ECAL / HCAL）</td>
+</tr>
+<tr>
+<td>任務</td>
+<td>quark-initiated vs gluon-initiated jet 二元分類</td>
+</tr>
+<tr>
+<td>Auxiliary features</td>
+<td><span class="math inline">\(p_T\)</span>, <span
+class="math inline">\(m_0\)</span>（min-max scaled to [0,1]）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="42-patch-配置">4.2 Patch 配置</h3>
+<pre><code>125×125 image → 25×25 patches → 25 patches per image
+                                     ↓
+                              projection dim = 8 → 8 qubits</code></pre>
+<h3 id="43-訓練">4.3 訓練</h3>
+<table>
+<thead>
+<tr>
+<th>參數</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Optimizer</td>
+<td>Adam</td>
+</tr>
+<tr>
+<td>Learning rate</td>
+<td>5e-4</td>
+</tr>
+<tr>
+<td>Epochs</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>32</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td>Binary cross-entropy</td>
+</tr>
+<tr>
+<td>Dropout</td>
+<td>0.5</td>
+</tr>
+<tr>
+<td>Transformer blocks</td>
+<td><strong>僅 1 個 encoder block</strong>（小規模）</td>
+</tr>
+<tr>
+<td>Attention heads</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Hardware</td>
+<td>Quantum simulator（未明說）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>作者自承計算限制</strong>：<code>"the simulation requires 26×26 attention circuits per self-attention block, which already pushes the computational limits of current quantum simulators."</code></p>
+<h3 id="44-切分">4.4 切分</h3>
+<p>70% train / 15% val / 15% test，從 50,000 subset 抽</p>
+<hr />
+<h2 id="5-量化結果">5. 量化結果</h2>
+<h3 id="51-test-set-表現">5.1 Test set 表現</h3>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Test Loss</th>
+<th>Test Accuracy</th>
+<th>Test AUC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Classical ViT</strong></td>
+<td>0.6087</td>
+<td>67.88%</td>
+<td><strong>0.7385</strong></td>
+</tr>
+<tr>
+<td><strong>Quantum QViT</strong></td>
+<td>0.6105</td>
+<td>67.55%</td>
+<td><strong>0.7369</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>差距：AUC 差 0.0016（&lt; 0.3%），accuracy 差
+0.33%</strong>——<strong>幾乎完全平手</strong>。</p>
+<h3 id="52-為什麼平手其實是好結果">5.2 為什麼「平手」其實是好結果？</h3>
+<table>
+<thead>
+<tr>
+<th>觀點</th>
+<th>解讀</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>❌ 悲觀</td>
+<td>quantum 沒帶來優勢，理論預期沒實現</td>
+</tr>
+<tr>
+<td>✅ 樂觀</td>
+<td><strong>僅用 28 個量子參數 match 了 classical 完整
+attention</strong>（雖然沒給 classical 參數量）</td>
+</tr>
+<tr>
+<td>✅ 工程</td>
+<td>證明 quantum attention 可訓、不崩、可 reproduce</td>
+</tr>
+<tr>
+<td>✅ Framing</td>
+<td>"<strong>robust performance + promising
+scalability</strong>"——這正是 GSoC proposal 應該採用的措辭</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-與你-gsoc-的-5-個直接連結">6. 與你 GSoC 的 5 個直接連結</h2>
+<h3 id="連結-1sergei-gleyzer-共同作者">連結 1：Sergei Gleyzer
+共同作者</h3>
+<ul>
+<li>他是 ML4SCI 的 PI、DeepLense 的主理人</li>
+<li>你 paper 1 (Alexander 2019) + paper 2 (Alexander 2021) 的
+author</li>
+<li><strong>這篇是 lensing 的 sister project (HEP)，用同樣 quantum
+philosophy</strong></li>
+<li>提案時應引用：「本工作延續 Gleyzer 等於 HEP 領域 (Tesi 2024) 的
+quantum attention 方向，首次應用於 lensing」</li>
+</ul>
+<h3 id="連結-2qonn-attention-可直接套到-mae-lensing">連結 2：QONN
+attention 可直接套到 mae-lensing</h3>
+<p><code>mainv2.py</code> 的 <code>TransformerBlock</code> (line
+394)：</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="kw">class</span> TransformerBlock(nn.Module):</span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">def</span> <span class="fu">__init__</span>(<span class="va">self</span>, dim, num_heads, ...):</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>        <span class="va">self</span>.attn <span class="op">=</span> nn.MultiheadAttention(embed_dim<span class="op">=</span>dim, num_heads<span class="op">=</span>num_heads, ...)</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>        <span class="co"># ← 替換成 QuantumOrthogonalAttention</span></span></code></pre></div>
+<p><strong>插入點明確</strong>：6 個 encoder
+block，可選擇全替換或只替換最後一個。</p>
+<h3 id="連結-3對比-paper-3-pasquali-2024-qvit-的進化">連結 3：對比 paper
+3 (Pasquali 2024 QViT) 的進化</h3>
+<table>
+<thead>
+<tr>
+<th>維度</th>
+<th>Pasquali 2024 QViT</th>
+<th><strong>Tesi 2024 QONN-ViT</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Attention 替換策略</td>
+<td>Naive quantum self-attention</td>
+<td><strong>正交約束的 quantum attention</strong></td>
+</tr>
+<tr>
+<td>量子 gate 設計</td>
+<td>一般 PQC</td>
+<td><strong>RBS pyramid (專為 orthogonal)</strong></td>
+</tr>
+<tr>
+<td>Encoding</td>
+<td>Amplitude (深)</td>
+<td><strong>Unary (淺)</strong></td>
+</tr>
+<tr>
+<td>Parameter efficiency</td>
+<td>較差</td>
+<td><strong><span class="math inline">\(n(n-1)/2\)</span>
+剛好對齊正交矩陣自由度</strong></td>
+</tr>
+<tr>
+<td>結果</td>
+<td>competitive</td>
+<td>competitive</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tesi 是 Pasquali 的進化版</strong>——你 proposal 應該優先引
+Tesi 而非 Pasquali。</p>
+<h3 id="連結-43-種架構選擇給你-d3-升級">連結 4：3 種架構選擇（給你 D3
+升級）</h3>
+<p>把 Tesi 整合進 mae-lensing，得到三種選擇：</p>
+<table>
+<thead>
+<tr>
+<th>變體</th>
+<th>Encoder</th>
+<th>Attention</th>
+<th>Classifier head</th>
+<th>Novelty</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>D3-a (你原本)</strong></td>
+<td>Classical ViT (frozen)</td>
+<td>Classical</td>
+<td><strong>QuantumFusionHead</strong></td>
+<td>中</td>
+</tr>
+<tr>
+<td><strong>D3-b (QONN attention)</strong></td>
+<td>Classical ViT with QONN attention</td>
+<td><strong>Quantum (QONN)</strong></td>
+<td>Classical Linear</td>
+<td>高</td>
+</tr>
+<tr>
+<td><strong>D3-c (full quantum)</strong></td>
+<td>ViT-QONN encoder</td>
+<td><strong>Quantum</strong></td>
+<td><strong>QuantumFusionHead</strong></td>
+<td>極高（但風險大）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>建議</strong>：<strong>D3-b 是甜蜜點</strong>——只動 attention
+一層，其他保持 mae-lensing 原樣，可重用預訓 weights 的大部分。</p>
+<h3 id="連結-5proposal-寫作的-framing-template">連結 5：Proposal 寫作的
+framing template</h3>
+<p>Tesi 結論的寫法（<strong>幾乎完全平手卻仍正面</strong>）：</p>
+<blockquote>
+<p>"The results indicate that embedding quantum orthogonal
+transformations within the attention mechanism can provide
+<strong>robust performance</strong> while offering <strong>promising
+scalability</strong> for machine learning challenges associated with the
+upcoming High Luminosity Large Hadron Collider."</p>
+</blockquote>
+<p>你的 proposal 可仿照：</p>
+<blockquote>
+<p>"本工作將 quantum orthogonal attention 整合進 strong-lensing MAE
+pipeline，預期結果不在 raw accuracy 突破當前 SOTA (AUC 0.968)，而在於
+<strong>(i) 證明 quantum-enhanced architecture 可在 lensing 任務上達到
+comparable performance with parameter efficiency, (ii) 為 LSST 時代
+10⁵-lens scale analysis 提供 quantum scalability path, (iii) 揭示
+orthogonal transformation 在 substructure feature learning 的
+representational advantage。</strong>"</p>
+</blockquote>
+<hr />
+<h2 id="7-對你-d3-quantum-mae--fusion-的具體影響">7. 對你 D3 (Quantum
+MAE + Fusion) 的具體影響</h2>
+<h3 id="修正版-d3-架構吸收-tesi-2024">修正版 D3 架構（吸收 Tesi
+2024）</h3>
+<pre><code>═══════════════════════════════════════════════════════════════
+Phase 1: MAE Pretraining (沿用 mae-lensing 原 code)
+  Classical ViT-Tiny + standard self-attention
+  Pretrain on no_sub class only
+  → mae_encoder.pth  (≈ AUC 0.968 ceiling)
+
+═══════════════════════════════════════════════════════════════
+Phase 2: Quantum Fine-tuning 三種 variants
+═══════════════════════════════════════════════════════════════
+
+Variant A (你原本): QuantumFusionHead
+  └─ Frozen encoder + Cross-attn + TSHF + Linear classifier
+  └─ Quantum 只在 head
+
+Variant B (新加, Tesi-inspired): QONN Attention
+  └─ Replace last encoder block&#39;s attention with QONN (8 qubits, pyramid)
+  └─ Frozen 前 5 blocks，fine-tune 第 6 block + head
+  └─ Quantum 在 attention 內部
+
+Variant C (究極): QONN Attention + QuantumFusionHead
+  └─ Two-place quantum
+  └─ 需要 ablation 區分兩處貢獻</code></pre>
+<p><strong>推薦執行順序</strong>：A → B → C（漸進加深）。</p>
+<hr />
+<h2 id="8-pennylane--qiskit-實作要點">8. PennyLane / Qiskit
+實作要點</h2>
+<h3 id="81-rbs-gate-在-pennylane-中">8.1 RBS gate 在 PennyLane 中</h3>
+<p>PennyLane 沒內建 RBS，但可用 <code>qml.SingleExcitation</code>
+等價：</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pennylane <span class="im">as</span> qml</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> RBS(theta, wires):</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Reconfigurable Beam Splitter on two qubits.&quot;&quot;&quot;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Equivalent to qml.SingleExcitation up to phase</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>    qml.SingleExcitation(theta, wires<span class="op">=</span>wires)</span></code></pre></div>
+<p>或手動分解：</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> RBS(theta, wires):</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>    qml.Hadamard(wires[<span class="dv">0</span>])</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>    qml.Hadamard(wires[<span class="dv">1</span>])</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>    qml.CZ(wires<span class="op">=</span>wires)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    qml.RY(theta <span class="op">/</span> <span class="dv">2</span>, wires<span class="op">=</span>wires[<span class="dv">0</span>])</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    qml.RY(<span class="op">-</span>theta <span class="op">/</span> <span class="dv">2</span>, wires<span class="op">=</span>wires[<span class="dv">1</span>])</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    qml.CZ(wires<span class="op">=</span>wires)</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    qml.Hadamard(wires[<span class="dv">0</span>])</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    qml.Hadamard(wires[<span class="dv">1</span>])</span></code></pre></div>
+<h3 id="82-pyramid-circuit-範例8-qubits">8.2 Pyramid circuit 範例（8
+qubits）</h3>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> pyramid_QONN(thetas, n_qubits<span class="op">=</span><span class="dv">8</span>):</span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Pyramid of n(n-1)/2 = 28 RBS gates for 8x8 orthogonal matrix.&quot;&quot;&quot;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    idx <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> layer <span class="kw">in</span> <span class="bu">range</span>(n_qubits <span class="op">-</span> <span class="dv">1</span>):</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> i <span class="kw">in</span> <span class="bu">range</span>(n_qubits <span class="op">-</span> <span class="dv">1</span> <span class="op">-</span> layer):</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>            RBS(thetas[idx], wires<span class="op">=</span>[i, i <span class="op">+</span> <span class="dv">1</span>])</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>            idx <span class="op">+=</span> <span class="dv">1</span></span></code></pre></div>
+<h3 id="83-unary-loading向量編碼">8.3 Unary loading（向量編碼）</h3>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode python"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="kw">def</span> load_vector(x, n_qubits):</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>    <span class="co">&quot;&quot;&quot;Encode normalized n-d vector into unary state |0...1_i...0⟩.&quot;&quot;&quot;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    qml.PauliX(wires<span class="op">=</span><span class="dv">0</span>)  <span class="co"># Initial state |10...0⟩</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Angles from Givens decomposition of x</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    angles <span class="op">=</span> compute_givens_angles(x)</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> i, theta <span class="kw">in</span> <span class="bu">enumerate</span>(angles):</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>        RBS(theta, wires<span class="op">=</span>[i, i <span class="op">+</span> <span class="dv">1</span>])</span></code></pre></div>
+<hr />
+<h2 id="9-已知限制">9. 已知限制</h2>
+<table>
+<thead>
+<tr>
+<th>限制</th>
+<th>影響</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>僅 1 個 encoder block, 1 head</strong></td>
+<td>比 mae-lensing (6 blocks) 小很多——直接搬不來，要 scale up</td>
+</tr>
+<tr>
+<td><strong>AUC 0.737 非常低</strong></td>
+<td>quark/gluon jet 本來就難分（標準 ML 也僅
+~0.85）；不要拿這數字嚇到</td>
+</tr>
+<tr>
+<td><strong>沒給 parameter count</strong></td>
+<td>無法做嚴格 parameter-matched comparison</td>
+</tr>
+<tr>
+<td><strong>沒跟 El Cherrat 2024 / Guo 2024 比</strong></td>
+<td>引用了但沒實驗對比</td>
+</tr>
+<tr>
+<td><strong>Simulator 計算瓶頸</strong></td>
+<td>26×26 attention circuits/block 已是極限——對 mae-lensing 256×256 =
+4096 attention 計算更難</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>對 mae-lensing 移植的
+implication</strong>：你<strong>不能直接套 QONN attention 到所有 256
+tokens</strong>。可行做法：(a) 只在 CLS token 與 patch tokens 之間做
+QONN attention，(b) 只在 final block 做，(c) 降到 8×8 patches 減少 token
+數。</p>
+</blockquote>
+<hr />
+<h2 id="10-候選-bibtex">10. 候選 BibTeX</h2>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="va">@article</span>{<span class="ot">tesi2024quantum</span>,</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">title</span>={Quantum Attention for Vision Transformers in High Energy Physics},</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">author</span>={Tesi, Alessandro and Dahale, Gopal Ramesh and Gleyzer, Sergei</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>          and Kong, Kyoungchul and Magorsch, Tom and</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>          Matchev, Konstantin T. and Matcheva, Katia},</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">year</span>={2024},</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">archivePrefix</span>={arXiv},</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">eprint</span>={2411.13520},</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">primaryClass</span>={hep-ph}</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<hr />
+<h2 id="11-一句話總結">11. 一句話總結</h2>
+<blockquote>
+<p><strong>Tesi 2024 (含 Gleyzer 共同作者) 用 RBS pyramid 實作 quantum
+orthogonal attention</strong>，<strong>取代 ViT 標準 attention
+的內積運算</strong>，<strong>結果與 classical ViT 平手（AUC 0.737 vs
+0.739）</strong>。這篇是 paper 3 (Pasquali 2024 QViT)
+的<strong>正交化進化版</strong>，<strong>Sergei Gleyzer 同時是 DeepLense
+主理人</strong>——你的 GSoC proposal
+應該<strong>優先引用此篇</strong>，把 D3 升級為「<strong>MAE encoder +
+QONN attention final block + Quantum Fusion
+head</strong>」的三層整合架構。</p>
+</blockquote>
+<hr />
+<h2 id="12-更新-04_gsoc_qml_proposalmd-的建議">12. 更新
+04_GSoC_QML_Proposal.md 的建議</h2>
+<h3 id="related-work-段加入">Related Work 段加入</h3>
+<pre><code>量子注意力機制方向，Tesi et al. 2024 (含 Gleyzer，與 DeepLense 同團隊) 提出
+quantum orthogonal neural network (QONN) attention，使用 RBS pyramid 在 jet
+classification 達到與 classical ViT 持平表現 (AUC 0.737 vs 0.739)。
+本工作將此設計從 jet (HEP) 移植至 lensing (astro)，並與 MAE pretraining 整合。</code></pre>
+<h3 id="methodology-d3-加入-variant-b">Methodology D3 加入 Variant
+B</h3>
+<p>新增 Stage 2 quantum option：</p>
+<ul>
+<li><strong>Q-Attn block</strong>：替換 ViT 第 6 block 的 attention 為
+QONN-pyramid（8 qubits, 28 params）</li>
+<li>Frozen 前 5 blocks，fine-tune Q-Attn + head</li>
+<li>跟 Variant A (QuantumFusionHead) 做 ablation</li>
+</ul>
+<hr />
+<h2 id="13-待跟進">13. 待跟進</h2>
+<ul class="task-list">
+<li><label><input type="checkbox" />讀 Tesi 2024 PDF 的 Section 3-4
+(full method details with figures)</label></li>
+<li><label><input type="checkbox" />找 El Cherrat 2024（QViT
+先驅）對比閱讀</label></li>
+<li><label><input type="checkbox" />把 D3 Variant B 整合進
+<code>mainv2.py</code> 的 <code>TransformerBlock</code></label></li>
+<li><label><input type="checkbox" />在 04_GSoC_QML_Proposal.md v2
+更新引用此篇</label></li>
+</ul>
+<hr />
+<blockquote>
+<p><strong>VSCode 預覽</strong>：<code>Ctrl+Shift+V</code></p>
+</blockquote>
+</body>
+</html>
