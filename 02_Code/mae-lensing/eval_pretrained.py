@@ -71,6 +71,12 @@ def main():
     # Resolve data root
     os.chdir(args.data_root)
     extract_zip_if_exists("Dataset1.zip", ".")
+    # Drop macOS zip metadata so __MACOSX/Dataset isn't mis-picked as the data root
+    # (its AppleDouble ._*.npy decode to random noise). Re-extraction recreates it.
+    import shutil
+    if os.path.isdir("__MACOSX"):
+        shutil.rmtree("__MACOSX")
+        print("[INFO] Removed __MACOSX/ (macOS zip metadata)")
     dataset1_root = find_dataset_root_for_classes(".", ["axion", "cdm", "no_sub"])
     if not dataset1_root:
         raise RuntimeError("Dataset1 not found under " + args.data_root)

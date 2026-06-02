@@ -67,9 +67,18 @@ def main():
 
     os.chdir(args.data_root)
     extract_zip_if_exists("Dataset1.zip", ".")
+    # macOS-zipped archives ship a __MACOSX/ tree of AppleDouble `._*.npy` files.
+    # find_dataset_root_for_classes() can mis-select __MACOSX/Dataset as the data
+    # root (filesystem-order dependent), poisoning every sample with random noise.
+    # extract_zip_if_exists() re-extracts every run, so clean it every run.
+    import shutil
+    if os.path.isdir("__MACOSX"):
+        shutil.rmtree("__MACOSX")
+        print("[INFO] Removed __MACOSX/ (macOS zip metadata)")
     dataset1_root = find_dataset_root_for_classes(".", ["axion", "cdm", "no_sub"])
 
-    train_ds, _, val_ds, class_to_idx = build_task_VI_A_datasets(
+    # build_task_VI_A_datasets returns (mae_ds, train_ds, val_ds, class_to_idx)
+    _, train_ds, val_ds, class_to_idx = build_task_VI_A_datasets(
         dataset1_root=dataset1_root, val_fraction=0.1, target_size=64, seed=args.seed,
     )
     class_names = [None] * len(class_to_idx)
