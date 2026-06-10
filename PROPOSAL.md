@@ -134,10 +134,18 @@ three classes and will confidently mislabel a fourth DM model; the generative en
 |---|---|---|
 | 1 | Leakage-free feature extraction (`extract_features_ssl.py`) | ✅ done |
 | 2 | Ensemble pipeline, 4 arms (`train_qae_ensemble.py`) | ✅ done, smoke-tested |
-| 3 | Full single-seed run on Model_I | 🕐 running (SLURM) |
-| 4 | Leakage quantification row + K (latent-qubit) sweep | pending |
+| 3 | Full single-seed run on Model_I | ✅ done — **H1/H2/H3 all failed**; see [docs/RESULTS.md §4b](docs/RESULTS.md) |
+| 4 | Per pre-registered fallback: pivot the paper to the **leakage-quantification + sham-control methodology** angle; quantum-enhancement claims continue on the end-to-end line (regimes B/C) | active |
 | 5 | Second dataset (Model_IV) — requires fixing a data-caching bug (all models at chance) | pending |
 | 6 | Write-up: NeurIPS ML4PS 2026 workshop → journal extension | pending |
+
+> **Outcome note (2026-06-10).** The decisive run quantified the leakage: the previously
+> reported QAE anomaly AUC 0.9965 collapses to 0.438 on leakage-free self-supervised
+> features, while a zero-parameter Mahalanobis baseline on the same features reaches 0.859.
+> The pre-registered fallback applies: this proposal's empirical core becomes the
+> leakage warning and the controlled-evaluation methodology; the open-set ensemble design
+> remains valid but requires a score that does not saturate (Mahalanobis-class or flow-based)
+> rather than overlap fidelity.
 
 ## 7. Risks
 

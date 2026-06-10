@@ -69,6 +69,37 @@ the paper's learning rate). A recipe-aligned rerun is the designed fix.
 | **QAE anomaly, 192-d CLS features** | **0.9965 @ 72 params** | 0.9956 @ 2,308 params | ⚠️ features label-leaked (fine-tuned encoder) — re-run on SSL features in progress |
 | Few-shot (frozen feats), N=500/class | 0.8389 | 0.9077 | sham wins; frozen-regime caveat applies |
 
+## 4b. QAE ensemble on LEAKAGE-FREE SSL features (2026-06-10, the decisive test)
+
+Class-conditional one-class AE per class on features from the **self-supervised**
+MAE encoder (`enc_I.pth`, no labels anywhere). Full pipeline:
+`experiments/04_qae_ensemble/`. Raw numbers: `results/qae_ensemble_results.csv`.
+
+| Arm | Params/class | 3-class AUC | Anomaly AUC | Open-set mean |
+|---|---|---|---|---|
+| **Mahalanobis** (closed-form) | 0 | **0.913** | **0.859** | 0.563 |
+| Sham AE (dim-matched) | 2,308 | 0.593 | 0.571 | 0.520 |
+| Matched AE (param-matched) | 76 | 0.533 | 0.496 | 0.512 |
+| Quantum QAE | 72 | 0.470 | 0.438 | 0.474 |
+
+**Pre-registered hypotheses — all three failed:**
+
+- **H1 failed:** leakage-free anomaly AUC is 0.44–0.57 for every learned AE — the previously
+  reported **0.9965 was label leakage**, quantified at ≈ 0.44 AUC of inflation.
+- **H2 failed:** quantum (0.438) < param-matched classical (0.496) at equal parameters.
+- **H3 failed:** open-set AUROC ≈ 0.5 for all learned arms.
+
+**Mechanism:** the overlap-fidelity score saturates — classical AEs reconstruct *every*
+sample at fidelity ≈ 0.9999 (calibration σ ≈ 1e-4), the quantum AE compresses *nothing*
+(fidelity ≈ 0.34, σ ≈ 2e-3); neither produces a discriminative score. Meanwhile Mahalanobis
+on the raw 192-d features reaches 0.859/0.913 — **the SSL features do contain the signal;
+the 8-dim fidelity-AE design cannot extract it.**
+
+**Standing conclusions:** (i) frozen-feature anomaly results computed on label-fine-tuned
+encoders are untrustworthy — a quantitative leakage warning for the field; (ii) the
+QAE-on-features route is dead in its current form; the live quantum-vs-sham direction
+remains the end-to-end regime (Sections 2–3).
+
 ## 5. Model_IV dataset — pipeline bug (open)
 
 Every model (classical / quantum / sham, all architectures) scores AUC ≈ 0.50
