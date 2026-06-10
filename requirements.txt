@@ -3,11 +3,13 @@ torch
 torchvision
 numpy
 scikit-learn
+scikit-image
 matplotlib
+tqdm
 
-# Quantum (NVIDIA CUDA-Q backend; used by quantum_fusion_cudaq.py / train_fusion_cudaq.py)
-# Note: cudaq targets Linux + CUDA. On Windows, use WSL2 or a Linux box.
-cudaq
+# Quantum
+pennylane            # primary backend: default.qubit + torch backprop
+# cudaq              # optional: only for models/quantum_fusion_cudaq.py (Linux + CUDA)
 
 # Hyperparameter search (used by upstream mainv2.py)
 optuna

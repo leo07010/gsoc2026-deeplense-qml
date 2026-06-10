@@ -1,123 +1,79 @@
-# GSoC 2026 — Hybrid Quantum-Classical Representation Learning for Dark Matter Substructure Classification
+# Quantum ML × DeepLense — Dark-Matter Substructure from Strong Lensing
 
-> **Program:** Google Summer of Code 2026
-> **Organization:** [ML4SCI](https://ml4sci.org/) — DeepLense
-> **Author:** [@leo07010](https://github.com/leo07010)
+Systematic, **sham-controlled** study of hybrid quantum-classical machine learning on the
+[ML4SCI DeepLense](https://github.com/ML4SCI/DeepLense) dark-matter benchmark
+(3-class: `axion` vortex / `cdm` subhalos / `no_sub`), built on top of the classical
+MAE SOTA ([arXiv:2512.06642](https://arxiv.org/abs/2512.06642), AUC 0.968).
 
-Working repository for a GSoC project applying **quantum machine learning (QML)**
-to strong-gravitational-lensing images, to classify the dark matter substructure
-that produced them. It collects the literature review, design analysis, the
-proposal draft, and the quantum-classical code that extends the current DeepLense
-MAE state of the art.
+**Current proposal:** [PROPOSAL.md](PROPOSAL.md) — *Quantum-Compressed Anomaly Detection of
+Dark-Matter Substructure on Self-Supervised Lensing Representations*
+**All measured numbers:** [docs/RESULTS.md](docs/RESULTS.md)
 
-> **Note on language:** This README and the structural docs are in English. The
-> in-depth literature/analysis notes under [`01_Analysis/`](01_Analysis/) are
-> written in **Traditional Chinese** (the author's working language).
+## Key findings so far
 
----
+1. **Sham controls change the story.** Every quantum model here is paired with a
+   capacity-matched classical control ("sham"). On frozen discriminative features, four
+   different quantum architectures all *exactly tie* their shams (AUC ≈ 0.98) — published
+   hybrid-QML gains without such controls are likely classical-wrapper effects.
+2. **The quantum-vs-classical question is training-regime dependent.** Quantum-over-sham gaps
+   (+0.007–0.010 AUC, concentrated on the hardest class, axion) appear only when gradients
+   flow through the circuit into the representation (end-to-end / pretrain-finetune), never
+   on frozen features. The MAE paper's own frozen-probe result (AUC 0.5365) explains why.
+3. **Strongest quantum result:** a 72-parameter trash-qubit quantum autoencoder matches a
+   2,308-parameter classical AE at substructure-anomaly AUC ≈ 0.996 — now being re-validated
+   on leakage-free self-supervised features with a parameter-matched control
+   (`experiments/04_qae_ensemble/`).
+
+## Method taxonomy
+
+| Category | Question | Scripts | Status |
+|---|---|---|---|
+| `experiments/00_baselines/` | classical reference, error analysis, feature caches | `eval_pretrained` `analyze_errors` `extract_features*` `cache_model` `classical_control` | ✅ measured |
+| `experiments/01_frozen_head/` | quantum heads on frozen features (gated / x-attn / QCT / QVF) | `train_fusion_*` `train_qct` `train_qvf_cls` | ✅ quantum = sham |
+| `experiments/02_generative_ssl/` | QMAE, QAE anomaly, equivariant, few-shot | `train_qmae*` `train_qae_anomaly*` `train_fewshot` | ✅ measured |
+| `experiments/03_end_to_end/` | circuit shapes the representation (scratch / pretrain→finetune) | `train_*_scratch` `pretrain_finetune` | ✅ quantum > sham (single seed) |
+| `experiments/04_qae_ensemble/` | **class-conditional QAE ensemble: anomaly + generative 3-class + open-set discovery** | `train_qae_ensemble` | 🕐 running |
+| `models/` | quantum circuits & hybrid architectures (PennyLane) | `quantum_*` | — |
 
 ## Repository layout
 
 ```
-.
-├── 00_Papers/              # Reference papers (PDF)
-│   ├── Classical_DM_Lensing/   # Deep learning on DM lensing
-│   └── Quantum_ML/             # Quantum ML techniques
-├── 01_Analysis/            # Literature review & proposal (Markdown, 中文)
-├── 02_Code/
-│   └── mae-lensing/        # My quantum-fusion scripts + upstream analysis  ← see its README
-├── 03_Data/                # Dataset location (data fetched via script, not committed)
-├── download_data.py        # Fetch DeepLense datasets from Google Drive
-├── setup_env.ps1           # One-shot env setup (Windows / PowerShell)
-└── requirements.txt        # Python dependencies
+├── PROPOSAL.md              research proposal (current)
+├── docs/
+│   ├── RESULTS.md           consolidated measured results ⭐
+│   └── analysis/            literature surveys, upstream-repo dissection, designs
+├── models/                  quantum circuit / hybrid architecture modules
+├── experiments/             training & evaluation scripts, by method category
+├── slurm/                   HPC job scripts (sbatch + drivers)
+├── results/                 committed artifacts (error analysis, result CSVs)
+├── papers/                  key reference PDFs
+├── data/                    dataset download instructions (data not committed)
+└── download_data.py
 ```
 
-> ⚠️ The ~3 GB dataset (178k `.npy` files) and the upstream
-> [`achmadardanip/mae-lensing`](https://github.com/achmadardanip/mae-lensing)
-> model code are **intentionally not committed**. See
-> [`03_Data/README.md`](03_Data/README.md) and
-> [`02_Code/mae-lensing/README.md`](02_Code/mae-lensing/README.md) for how to fetch them.
-
----
-
-## Quick start
+## Setup
 
 ```bash
-# 1. Environment
-pip install -r requirements.txt          # or: ./setup_env.ps1  (Windows)
-
-# 2. Data (~3.2 GB, downloaded into 03_Data/)
-python download_data.py
-
-# 3. Upstream model code + run (see 02_Code/mae-lensing/README.md)
-git clone https://github.com/achmadardanip/mae-lensing.git
+pip install -r requirements.txt
+python download_data.py            # DeepLense Dataset1/2 → 03_Data/
 ```
 
----
+The MAE upstream code (`mainv2.py`, no license published) is **not** vendored; fetch it from
+[achmadardanip/mae-lensing](https://github.com/achmadardanip/mae-lensing) into your working
+directory. Scripts import sibling modules from `models/` — run with
+`PYTHONPATH=<repo>/models` or from a flat working directory.
 
-## Project idea
+Typical run (see `slurm/`):
 
-Replace / augment the classifier head of the SOTA DeepLense MAE model with a
-**quantum fusion head**, then benchmark the hybrid against the classical baseline.
+```bash
+# leakage-free features from the self-supervised encoder
+python experiments/00_baselines/extract_features_ssl.py --data model_I.npz --encoder enc_I.pth
+# QAE ensemble, all four arms
+python experiments/04_qae_ensemble/train_qae_ensemble.py --arm quantum --seeds 42
+```
 
-Three explored directions (full detail in
-[`01_Analysis/04_GSoC_QML_Proposal.md`](01_Analysis/04_GSoC_QML_Proposal.md)):
+## Honesty rules of this repo
 
-- **D1 — Quanvolution:** 2×2 patch → small variational circuit → CNN
-- **D2 — Equivariant QCNN:** symmetry-aware quantum convolution
-- **D3 — Quantum MAE head:** variational circuit in place of the ViT classifier head
-
-**Baseline to beat** (upstream MAE, mask ratio 0.9): **AUC 0.968 / accuracy 88.65%**.
-
----
-
-## Analysis documents (`01_Analysis/`, 中文)
-
-| # | Document | Contents |
-|---|----------|----------|
-| 01 | [QML Topic Analysis](01_Analysis/01_QML_Topic_Analysis.md) | Problem framing, why QML, technique landscape, must-read list |
-| 02 | [Classical Methods (pre-2024)](01_Analysis/02_Classical_Methods_Pre2024.md) | 13 papers: CNN / ViT / equivariant / SSL / anomaly / SBI / segmentation |
-| 03 | [Classical Methods (2024–2026)](01_Analysis/03_Classical_Methods_2024_2026.md) | 12 newer papers incl. current MAE SOTA |
-| 04 | [GSoC QML Proposal](01_Analysis/04_GSoC_QML_Proposal.md) | Full proposal draft: directions, 12-week timeline, deliverables, risks |
-| 05 | [Tesi 2024 QONN-ViT Analysis](01_Analysis/05_Tesi_2024_QONN_ViT_Analysis.md) | Quantum attention ViT for HEP |
-| 06 | [Pipeline Plan](01_Analysis/06_Pipeline_Plan.md) | End-to-end implementation pipeline |
-
-> Each `.md` has a rendered `.html` sibling for offline reading.
-
----
-
-## Reference papers (`00_Papers/`)
-
-**Classical — DeepLense baselines**
-- Alexander 2019 — Deep Learning the Morphology of Dark Matter Substructure (ResNet, macro AUC 0.984)
-- Alexander 2021 — Decoding Dark Matter Substructure without Supervision (AAE anomaly detection, AUC 0.932)
-
-**Quantum ML techniques**
-- Rauf et al. 2026 — Quanvolution / AstroNet
-- Anwar et al. 2025 — Hybrid QC multiclass (SU(4) ansatz)
-- Pasquali et al. 2024 (CERN) — Quantum Vision Transformer
-- Tesi 2024 — Quantum Attention ViT for HEP
-
----
-
-## Key external links
-
-| | |
-|---|---|
-| ML4SCI DeepLense | <https://github.com/ML4SCI/DeepLense> |
-| Upstream MAE repo | <https://github.com/achmadardanip/mae-lensing> |
-| MAE paper | <https://arxiv.org/abs/2512.06642> |
-| CUDA-Q | <https://nvidia.github.io/cuda-quantum/> |
-| PennyLane | <https://pennylane.ai> |
-| GSoC DeepLense 2025 | <https://ml4sci.org/gsoc/projects/2025/project_DEEPLENSE.html> |
-
----
-
-## Status / TODO
-
-- [x] Literature review (25+ papers)
-- [x] Proposal draft v1
-- [x] `QuantumFusionHead` implementation (CUDA-Q)
-- [ ] Reproduce upstream baseline (AUC 0.968)
-- [ ] 4-way ablation: baseline / quantum-only / concat-fusion / cross-attention fusion
-- [ ] Proposal v2 (integrate fusion + ablation results)
+- Every quantum number ships with its sham control.
+- Single-seed results are labelled as such; incomplete runs are labelled *incomplete*.
+- Negative results are reported, not buried (see Regime A ties, Model_IV data bug).
