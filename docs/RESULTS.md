@@ -100,13 +100,23 @@ encoders are untrustworthy — a quantitative leakage warning for the field; (ii
 QAE-on-features route is dead in its current form; the live quantum-vs-sham direction
 remains the end-to-end regime (Sections 2–3).
 
-## 5. Model_IV dataset — pipeline bug (open)
+## 5. Model_IV dataset — RESOLVED: not a bug, a genuinely hard open problem
 
-Every model (classical / quantum / sham, all architectures) scores AUC ≈ 0.50
-on the cached Model_IV data, while the same code reaches 0.95–0.98 on Model_I.
-MAE pretrain loss also plateaus immediately (0.004 vs 0.001 on Model_I).
-Conclusion: the `cache_model.py` preprocessing (per-image min-max norm) or the
-Model_IV npy structure breaks the signal — **data bug, not a model result**.
+Every model (classical / quantum / sham, all architectures) scores AUC ≈ 0.50 on
+the cached Model_IV data. Investigation (2026-06-10) ruled out every artifact:
+
+| Hypothesis | Test | Verdict |
+|---|---|---|
+| Cache/label corruption | MD5 duplicate check + visual inspection | ✗ clean — no duplicates, images healthy |
+| Training recipe mismatch | exact paper recipe (`pretrain_finetune_v2.py`): Adam 5e-5, wd 1e-5, dropout 0.1, batch 64, 10 ep | ✗ classical still 0.5030 (same recipe reproduces 0.9626 ≈ paper's 0.968 on Model_I) |
+| "MAE paper did 0.97 on this data" | downloaded the paper's actual Dataset1 and inspected | ✗ **Dataset1 is Sérsic-source data (Model_II/III family) — full bright Einstein rings. It is NOT Model_IV.** |
+
+Model_IV (real-galaxy sources + Euclid systematics; thin partial arcs, point-like
+images, extreme morphological diversity) has **no published 3-class result ≥ 0.9
+anywhere in the DeepLense ecosystem** — the GSoC "SSL from real dataset" project
+(iBOT AUC 0.99) is a *different task* (binary lens-finding on 3-channel survey
+data). Model_IV 3-class substructure is an open problem, consistent with
+Tsang 2024 (realistic sources are dramatically harder). Standing AUC: ~0.50.
 
 ## 6. Gradient-engine benchmark (16 qubits, batch 64, H100)
 
