@@ -127,16 +127,26 @@ Sham = same NAE, circuit → `Linear(256→8)`. Quantum uses **fewer** params
 | Model_II | 0.9983 | 0.9928 | 0.9682 | +0.0055 | +0.030 |
 | Dataset1 | 0.9983 | 0.9960 | 0.9672 | +0.0023 | +0.031 |
 
-**Verified real via a data-size sweep (not ceiling noise):** Δ(quantum−sham)
-is positive at **every** sample size on **both** datasets (12/12 points), large
-in the unsaturated regime and shrinking monotonically toward the 0.99 ceiling —
-the signature of a genuine inductive-bias effect, not noise (noise flips sign).
+**Verified real via an 11-point data-size sweep (not ceiling noise):**
+Δ(quantum−sham) is positive at **21 of 22 points** (the lone exception is
+−0.0002, a tie), large in the unsaturated regime (peak +0.11 at N=1500 on
+Model_II) and shrinking into the ±0.006 ceiling band only as both arms reach
+0.99 — the signature of a genuine inductive-bias effect, not noise (noise flips
+sign). Both arms use the same NAE; quantum has **fewer** trainable params
+(142,795 vs sham 144,755; classical MAE baseline 2,722,947).
 
 | N/class | Model_I Δ | Model_II Δ |
 |---|---|---|
+| 100 | +0.0051 | +0.0453 |
+| 250 | +0.0433 | +0.0869 |
 | 500 | +0.0276 | +0.0556 |
+| 750 | +0.0186 | +0.0771 |
 | 1000 | +0.0151 | +0.0970 |
+| 1500 | +0.0149 | +0.1124 |
 | 2000 | +0.0057 | +0.0159 |
+| 3000 | −0.0002 | +0.0048 |
+| 5000 | +0.0011 | +0.0026 |
+| 8000 | +0.0012 | +0.0017 |
 | full (~25k) | +0.0015 | +0.0055 |
 
 See `docs/figures/qvf_quantum_vs_sham_curve.png`. This data-size sweep is a

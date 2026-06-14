@@ -245,23 +245,34 @@ circuit $\to \langle Z\rangle$) \alert{beats both classical and sham at full dat
 \medskip
 
 \scriptsize
-\begin{tabular}{@{}lcccc@{}}
+\begin{tabular}{@{}lccc@{}}
 \toprule
-Dataset & \textcolor{q}{Quantum} & Classical (MAE) & Sham & params (Q\,/\,S) \\
+Dataset & \textcolor{q}{Quantum} & Classical (MAE) & Sham \\
 \midrule
-Model\_I  & \textcolor{good}{0.9805} & 0.9633 & 0.9790 & 142{,}795 / 144{,}755 \\
-Model\_II & \textcolor{good}{0.9983} & 0.9682 & 0.9928 & (quantum fewer) \\
-Dataset1  & \textcolor{good}{0.9983} & 0.9672 & 0.9960 & \\
+Model\_I  & \textcolor{good}{0.9805} & 0.9633 & 0.9790 \\
+Model\_II & \textcolor{good}{0.9983} & 0.9682 & 0.9928 \\
+Dataset1  & \textcolor{good}{0.9983} & 0.9672 & 0.9960 \\
+\midrule
+params & \textbf{142{,}795} & 2{,}722{,}947 & 144{,}755 \\
 \bottomrule
 \end{tabular}
-\medskip
-\normalsize
-
-\textbf{Verified real (not ceiling noise)} by a data-size sweep — $\Delta$(Q$-$S)
-is positive at every $N$, large unsaturated, shrinking to the 0.99 ceiling:
 \smallskip
 
-\centering\includegraphics[width=0.72\linewidth]{../figures/qvf_quantum_vs_sham_curve.png}
+\footnotesize\textit{Quantum wins with the fewest parameters of the three.}
+\normalsize\medskip
+
+\textbf{Verified real (not ceiling noise)} by an 11-point data-size sweep:
+$\Delta$(Q$-$S) positive at \textbf{21 of 22 points} (next slide).
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{\textcolor{good}{Verified win}: $\Delta$(quantum$-$sham) vs data size}
+\centering
+\includegraphics[width=0.97\linewidth]{../figures/qvf_quantum_vs_sham_curve.png}
+\\[2pt]
+{\footnotesize Quantum head $\ge$ sham at 21/22 points across 11 data sizes $\times$ 2
+datasets; gap large when unsaturated (peak $+0.11$), shrinking into the
+$\pm0.006$ ceiling band only as both reach 0.99.}
 \end{frame}
 
 % ---------------------------------------------------------------
