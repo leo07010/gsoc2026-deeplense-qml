@@ -1,0 +1,202 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{metropolis}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\definecolor{q}{RGB}{217,119,6}
+\definecolor{c}{RGB}{37,99,235}
+\definecolor{good}{RGB}{22,163,74}
+\definecolor{bad}{RGB}{220,38,38}
+\newcommand{\tie}{\textcolor{c}{tie}}
+\newcommand{\win}{\textcolor{good}{win}}
+\newcommand{\lose}{\textcolor{bad}{lose}}
+
+\title{Quantum Machine Learning for Dark-Matter Substructure}
+\subtitle{A capacity-matched study on DeepLense strong-lensing images}
+\author{GSoC 2026 — ML4SCI / DeepLense (QML)}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------
+\begin{frame}{The problem \& the target}
+\textbf{Task.} Classify strong-lensing images by dark-matter scenario:
+\textcolor{q}{axion} (vortex) / \textbf{cdm} (subhalos) / \textbf{no\_sub} (smooth).
+\medskip
+
+\textbf{Classical SOTA.} MAE-pretrained ViT — \alert{AUC 0.968} (arXiv:2512.06642).
+The encoder is fine-tuned end-to-end; the head is a single \texttt{Linear(192$\to$3)}.
+\medskip
+
+\textbf{Question.} Does attaching / embedding a \textcolor{q}{quantum} component
+beat the \emph{same architecture without the circuit}?
+\medskip
+
+\begin{alertblock}{The one rule}
+Every quantum model is paired with a \textbf{capacity-matched classical ``sham''}
+(circuit $\to$ classical layer, matched dimensionality).
+\textbf{quantum $-$ sham} is the only honest test.
+\end{alertblock}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{What I tried — 11 distinct directions}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\# & Direction & Quantum placement \\
+\midrule
+1 & Frozen-feature fusion heads (gated/x-attn/QCT/QVF) & readout \\
+2 & Pretrain$\to$finetune with quantum head (NAE) & readout \\
+3 & QCT / QVF from scratch (end-to-end) & token / encoder \\
+4 & Pathology-fixed training (wd=0, U(0,$\pi$) init, qlr sweep) & encoder \\
+5 & Quantum kernels (fidelity + projected), 8/12/16 qubits & kernel \\
+6 & Generative IQP Born machine & generative \\
+7 & Quantum anomaly autoencoder (leakage-free) & generative \\
+8 & Robustness battery (noise / blur / brightness) & encoder \\
+9 & Multi-view quantum fusion (M=1..8) & fusion \\
+10 & Quantum inside the ViT encoder (QViT) & mid-encoder \\
+11 & Equivariant quantum (C4) 2$\times$2 control & encoder \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Discriminative \& training — every arm ties the sham}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & Quantum & Sham & $\Delta$ \\
+\midrule
+Frozen heads (gated/x-attn/QCT) & 0.982--0.984 & 0.982--0.984 & $\approx$0 \tie \\
+QFair qct (pathology-fixed) & 0.9790 & 0.9802 & $-$0.0012 \tie \\
+QFair qvf (pathology-fixed) & 0.9838 & 0.9830 & $+$0.0008 \tie \\
+QCT-scratch (I/II/D1) & .951/.976/.975 & .952/.970/.964 & $\pm$noise \tie \\
+QVF-scratch (I/II/D1) & .981/.998/.998 & .979/.993/.996 & $+$small \tie \\
+QViT (quantum in encoder) & 0.962 & 0.970 & $-$0.008 \lose \\
+\bottomrule
+\end{tabular}
+\medskip
+
+\textbf{Key honesty point.} An early ``$+0.0072$'' (QCT, single seed)
+\alert{did not replicate} — re-run gave $-0.0012$. Isolated positives flip sign
+across seeds $\Rightarrow$ noise.
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Did I actually train the circuit? (instrumented audit)}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Metric & Result & Meaning \\
+\midrule
+circuit grad norm & 0.12--0.32 (nonzero) & no barren plateau \\
+weight drift $\lVert w-w_0\rVert$ & 0.08 $\to$ 8.5 & weights move a lot \\
+output std $\langle Z\rangle$ & 0.05--0.09 & outputs vary (informative) \\
+CNN grad norm & 2--5 & gradient flows upstream \\
+\alert{AUC with circuit zeroed} & \alert{0.5000 (chance)} & \alert{circuit IS the classifier} \\
+\bottomrule
+\end{tabular}
+\medskip
+
+\begin{block}{Verdict}
+The circuit is \textbf{trained, used, and the sole decision pathway} — it still
+ties the sham because the sham computes \emph{the same function}.
+``Training was broken'' is refuted by direct measurement.
+\end{block}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Why it must tie — a certificate, not a guess}
+\textbf{Geometric difference} $g(K_C, K_Q)$ (Huang et al., Nat.\ Commun.\ 2021):
+if $g \ll \sqrt{N}$, \alert{no} quantum-kernel advantage is possible for \emph{any}
+labels.
+\medskip
+
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Kernel & 8 qubits & 12 qubits & 16 qubits \\
+\midrule
+Fidelity $g_{\min}$ & 5.7 & 2.7 & 2.3 \;(shrinks!) \\
+Projected $g_{\min}$ & 11.5 & 12.3 & 10.1 \\
+\midrule
+\multicolumn{4}{c}{advantage threshold $2\sqrt{N}\approx \mathbf{57}$ — never approached} \\
+\bottomrule
+\end{tabular}
+\medskip
+
+Adding qubits makes the fidelity kernel \emph{worse} (exponential concentration,
+Thanasilp 2024). \textbf{The data is classically representable — by theorem.}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{The one thing that moved: symmetry $\neq$ quantum}
+\textbf{Equivariant 2$\times$2} (C4 rotation invariance, low data):
+\medskip
+
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+N/class & q-equiv & c-equiv & q-plain & c-plain \\
+\midrule
+50 & 0.652 & 0.656 & 0.525 & 0.554 \\
+100 & 0.781 & 0.782 & 0.583 & 0.619 \\
+\bottomrule
+\end{tabular}
+\medskip
+
+\begin{itemize}
+\item \textcolor{good}{Equivariance is a large low-data win: $+0.11$ to $+0.18$.}
+\item But \alert{q-equiv $\approx$ c-equiv}: the win is the \textbf{symmetry}, not
+the circuit. A classical equivariant layer of matched size does the same.
+\end{itemize}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{The complete map}
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+Battlefield & Result \\
+\midrule
+Discriminative (12 architectures $\times$ sham) & \tie \\
+Pathology-fixed training & \tie \\
+Fidelity kernel 8/12/16 qubits & \textcolor{bad}{certificate: impossible} \\
+Projected kernel 8/12/16 qubits & \textcolor{bad}{certificate: impossible} \\
+Few-shot (convex SVM + end-to-end) & no edge \\
+Robustness battery & no edge \\
+Generative IQP Born & \lose\ to matched Ising \\
+Multi-view fusion M=1$\to$8 & no positive slope \\
+Quantum-in-encoder (QViT) & quantum \lose \\
+Equivariant 2$\times$2 & symmetry wins, \alert{not the circuit} \\
+Training audit & circuit IS trained correctly \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Conclusion}
+\begin{alertblock}{Headline}
+On classical-simulator strong-lensing images, at $\le 16$ qubits, with
+capacity-matched controls and a verified-trained circuit, \textbf{no quantum
+advantage exists} — and a certificate ($g \ll \sqrt N$) explains \emph{why}.
+\end{alertblock}
+\medskip
+
+\begin{itemize}
+\item Reproduces the largest rigorous QML benchmarks (Bowles 2024; Schnabel 2025,
+20\,000 models) — \textbf{plus} a certificate and an 8-battlefield map.
+\item The ``successful'' QML papers win via engineered/quantum-native data or
+\textbf{missing capacity-matched controls} — our sham would flag them.
+\item \textbf{Contribution:} the first certificate-backed, sham-controlled QML
+study on a real scientific benchmark. A rigorous null \emph{is} the result.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[standout]
+Code, figures, and all numbers:\\[4pt]
+\small github.com/leo07010/gsoc2026-deeplense-qml
+\end{frame}
+
+\end{document}
