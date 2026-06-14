@@ -150,6 +150,40 @@ a "probability-marginal" structure on the NAE energy manifold that a matched
 scarce. ⚠️ Single-seed per point; multi-seed (paused by user) would harden it
 for publication, but the cross-N / cross-dataset monotonic consistency is strong.
 
+## ★★ Quantum placement: readout head (works) vs feature extractor (fails)
+
+Two rigorous experiments at LensPINN's low-data regime (N≤2400/class), each with
+capacity-matched controls, settle where quantum belongs in a hybrid.
+
+**A — LensPINN-physics + QVF quantum HEAD** (Model_II; Model_I broken by the
+log+Laplacian preprocessing destroying its global shortcut):
+
+| N | Q-head | sham-head | classical-head | Q−sham |
+|---|---|---|---|---|
+| 500 | 0.9945 | 0.9931 | 0.9904 | +0.0014 |
+| 1000 | 0.9960 | 0.9942 | 0.9954 | +0.0018 |
+| 2400 | 0.9986 | 0.9962 | 0.9986 | +0.0024 |
+
+Quantum head > sham at all 3 sizes (consistent with QVF-scratch). Best hybrid
+(physics + quantum head) = **0.9986**, far above MAE SOTA 0.968. Quantum head
+uses fewer params (143,083 vs 145,043).
+
+**B — QCNN: quantum REPLACES the CNN feature extractor** (quanvolution vs
+param-matched classical conv, 20,103 vs 20,135 params):
+
+| Data | Quantum | Classical | Δ |
+|---|---|---|---|
+| Model_I N=500/1000/2400 | 0.66 / 0.76 / 0.84 | 0.88 / 0.92 / 0.95 | **−0.11 … −0.21** |
+| Model_II N=500/1000/2400 | 0.90 / 0.94 / 0.96 | 0.89 / 0.95 / 0.96 | ±0.01 |
+
+Quantum loses badly as a feature extractor on Model_I, ties on Model_II —
+confirming the surrogate-theorem prediction (and the earlier QViT result).
+
+**Verdict:** quantum helps as a low-dimensional regularising **readout head**
+(QVF), and hurts/ties as a high-dimensional **feature extractor** (QCNN/QViT).
+Bonus physics finding: LensPINN's edge-detection preprocessing helps real
+substructure (Model_II) but destroys shortcut-driven data (Model_I).
+
 ## The map in one line
 
 | Battlefield | Result |
