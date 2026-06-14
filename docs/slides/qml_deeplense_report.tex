@@ -62,6 +62,90 @@ Every quantum model is paired with a \textbf{capacity-matched classical ``sham''
 \end{frame}
 
 % ---------------------------------------------------------------
+\begin{frame}{Results — classical / quantum / sham (discriminative)}
+\scriptsize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Method & Data & Classical & \textcolor{q}{Quantum} & Sham \\
+\midrule
+Frozen QCT-head      & frozen feats & 0.974$^\dagger$ & 0.9838 & 0.9838 \\
+Frozen X-attn        & frozen feats & 0.974$^\dagger$ & 0.9820 & 0.9822 \\
+QFair qct (fixed)    & Model\_I & 0.9633 & 0.9790 & 0.9802 \\
+QFair qvf (fixed)    & Model\_I & 0.9633 & 0.9838 & 0.9830 \\
+QCT-scratch          & Model\_I & 0.9633 & 0.9509 & 0.9521 \\
+QCT-scratch          & Model\_II & 0.9682 & \textcolor{good}{0.9756} & 0.9700 \\
+QVF-scratch          & Model\_I & 0.9633 & \textcolor{good}{0.9805} & 0.9790 \\
+QVF-scratch          & Model\_II & 0.9682 & \textcolor{good}{0.9983} & 0.9928 \\
+QVF-scratch          & Dataset1 & 0.9672 & \textcolor{good}{0.9983} & 0.9960 \\
+Dual-enc FiLM qct    & Model\_I & 0.9633 & 0.9793 & 0.9806 \\
+Dual-enc FiLM qvf    & Model\_II & 0.9682 & 0.9989 & 0.9991 \\
+QViT (in encoder)    & Model\_I & 0.9670$^\ddagger$ & 0.9622 & 0.9697 \\
+REQAE equiv (full)   & Model\_I & 0.9788$^*$ & 0.9768 & 0.9768$^{**}$ \\
+\bottomrule
+\end{tabular}
+\\[2pt]
+\tiny $\dagger$ shipped linear-probe baseline \;$\ddagger$ plain-ViT (none) \;
+$*$ classical-equiv \;$**$ classical-plain. \textcolor{good}{green}=quantum$>$sham
+(all single-seed, $\le$+0.006, at the saturation ceiling).
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Results — classical / quantum / sham (other tasks)}
+\scriptsize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Task & Metric & Classical & \textcolor{q}{Quantum} & Sham \\
+\midrule
+Multi-view fusion M=8 & AUC (Model\_I) & 0.9796$^c$ & 0.9788 & 0.9788 \\
+Multi-view fusion M=8 & AUC (Model\_II) & 0.9983$^c$ & 0.9971 & 0.9985 \\
+Pretrain$\to$ft NAE head & AUC (Model\_I) & 0.9626 & \lose 0.5028 & 0.4957 \\
+Anomaly detection & AUC (SSL feats) & 0.859$^m$ & \lose 0.438 & 0.571 \\
+Generative (NLL$\downarrow$) & 12-bit latent & 8.237$^I$ & \lose 8.449 & — \\
+Few-shot N=250 equiv & AUC (Model\_I) & 0.904$^e$ & \lose 0.840 & — \\
+Quantum kernel & few-shot AUC & RBF \win & \lose loses all N & — \\
+\bottomrule
+\end{tabular}
+\\[3pt]
+\tiny $c$ concat fusion \;$m$ Mahalanobis (0-param) \;$I$ matched Ising \;
+$e$ classical-equivariant. \lose\ = quantum clearly worse than classical/sham.
+\\[4pt]
+\normalsize
+\textbf{Across every task: quantum $\le$ classical/sham, except tiny ceiling-level
+positives that have not been seed-verified.}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Parameter efficiency — sham always has \emph{more} params}
+The capacity-matched sham (dimension-matched) ends up with \alert{more}
+parameters than the circuit in \emph{every} method:
+\medskip
+
+\scriptsize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Method & \textcolor{q}{Quantum} & Sham & sham excess \\
+\midrule
+QFair qct      & 94{,}555 & 94{,}635 & +80 \\
+QFair qvf      & 143{,}091 & 147{,}107 & +4{,}016 \\
+QCT-scratch    & 106{,}571 & 107{,}547 & +976 \\
+QVF-scratch    & 142{,}795 & 144{,}755 & +1{,}960 \\
+QFusion (M=8 fusion core) & 1{,}320 & 1{,}704 & +384 \\
+QViT           & 210{,}411 & 210{,}795 & +384 \\
+\bottomrule
+\end{tabular}
+\medskip
+\normalsize
+
+\begin{block}{Honest reading}
+Where quantum ties (or slightly beats) the sham, it does so with \textbf{fewer
+parameters} $\Rightarrow$ \emph{parameter efficiency at parity} — the legitimate
+QViT-literature claim, true \emph{without} beating accuracy.
+\alert{Caveat:} the one \emph{truly} param-matched control (QAE anomaly, 76 vs 72)
+had quantum \emph{lose} (0.438 vs 0.496).
+\end{block}
+\end{frame}
+
+% ---------------------------------------------------------------
 \begin{frame}{Discriminative \& training — every arm ties the sham}
 \small
 \begin{tabular}{@{}lccc@{}}

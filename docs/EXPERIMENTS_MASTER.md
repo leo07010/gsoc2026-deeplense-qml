@@ -86,6 +86,16 @@ clean number is 0.438 — quantum is the worst learned arm.
 `q-equiv ≈ c-equiv`: the win is the **symmetry, not the circuit** (the Chang-2023
 lesson). Quantum adds nothing over a classical-equivariant layer of matched size.
 
+**At FULL data (9:1) the bias washes out and quantum loses outright:**
+
+| Full data | q-equiv | c-equiv | q-plain | c-plain | Δ(equiv−plain) |
+|---|---|---|---|---|---|
+| Model_I | 0.9768 | **0.9788** | 0.9698 | **0.9768** | +0.0045 |
+
+quantum < classical in BOTH arms; the equivariance gain collapses from +0.18
+(N=50) to +0.0045 (full). The goal "quantum > classical and > sham at full data"
+is **not achievable** here — consistent with the geometric-difference certificate.
+
 ## 10. Training diagnostic — is the circuit actually trained? (instrumented)
 
 | metric | result | meaning |
