@@ -194,6 +194,26 @@ confirming the surrogate-theorem prediction (and the earlier QViT result).
 Bonus physics finding: LensPINN's edge-detection preprocessing helps real
 substructure (Model_II) but destroys shortcut-driven data (Model_I).
 
+## QVF quantum head: works on CNN, NOT on MAE-ViT (an encoder problem)
+
+The verified QVF win is on a **CNN** encoder (trains end-to-end in low data).
+Putting the same QVF head on an **MAE-pretrained ViT** at low data fails — both
+quantum and sham collapse to ~0.53–0.55 (near chance) on both datasets:
+
+| N | Model_I Q/sham | Model_II Q/sham |
+|---|---|---|
+| 500 | 0.533 / 0.535 | 0.552 / 0.537 |
+| 1000 | 0.537 / 0.549 | 0.549 / 0.542 |
+| 2000 | 0.540 / 0.551 | 0.551 / 0.543 |
+
+**Cause (not quantum):** the MAE-ViT encoder can't be adapted at low data —
+high encoder lr destroys the pretrained weights (→0.50), gentle lr leaves them
+in the frozen-MAE state (linear-AUC 0.5365, the paper's own number). With no
+usable feature base, the quantum-vs-sham gap is meaningless noise.
+The QVF mechanism (low-data regularisation on a *trainable* feature base) needs
+an encoder that actually trains in low data — CNN does, MAE-ViT does not. So the
+clean quantum win stays the **CNN** QVF-scratch result (21/22 points).
+
 ## The map in one line
 
 | Battlefield | Result |
