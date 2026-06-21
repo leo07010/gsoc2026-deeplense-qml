@@ -5,6 +5,8 @@
 \usepackage{amssymb}
 \usepackage{xcolor}
 \usepackage{colortbl}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,shapes.geometric,positioning,fit,backgrounds}
 
 \definecolor{q}{RGB}{217,119,6}
 \definecolor{c}{RGB}{37,99,235}
@@ -72,6 +74,136 @@ ViT with Q/K/V attention projections replaced by RBS butterfly orthogonal layers
 
 \bigskip
 \centerline{\small Common principle: \textbf{geometric constraint (unitary / orthogonal) as a regularizer}}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Method 1 — QVF-Scratch: Flow Diagram}
+\centering
+\begin{tikzpicture}[
+  node distance=3mm and 3mm,
+  box/.style={rectangle, rounded corners=3pt, minimum width=1.55cm, minimum height=0.75cm,
+              text centered, font=\scriptsize, draw, text width=1.5cm},
+  cnn/.style ={box, fill=blue!15,   draw=blue!50},
+  nae/.style ={box, fill=orange!20, draw=orange!60},
+  pqc/.style ={box, fill=green!18,  draw=green!55},
+  cls/.style ={box, fill=gray!12,   draw=gray!50},
+  sham/.style={box, fill=red!10,    draw=red!40},
+  arr/.style ={-Stealth, thick},
+  labl/.style={font=\tiny, above, text=gray},
+]
+
+%% ── Quantum path ──────────────────────────────────────────────
+\node[cls]  (img)  {Image\\$1{\times}64{\times}64$};
+\node[cnn,  right=8mm of img]   (cnn)  {CNN\\Encoder};
+\node[cls,  right=6mm of cnn]   (h)    {$\mathbf{h}\!\in\!\mathbb{R}^{128}$};
+\node[nae,  right=6mm of h]     (nae)  {NAE\\$|a_i|^2\!=\!\text{sf}(-E_\phi)$};
+\node[cls,  right=6mm of nae]   (a)    {$\mathbf{a}\!\in\!\mathbb{R}^{256}$\\$\sum|a_i|^2\!=\!1$};
+\node[pqc,  right=6mm of a]     (pqc)  {8-qubit PQC\\SEL $\times$ 4};
+\node[cls,  right=6mm of pqc]   (z)    {$\langle Z\rangle^8$\\$\in\mathbb{R}^8$};
+\node[cls,  right=6mm of z]     (head) {Head\\LN+Lin};
+\node[cls,  right=6mm of head]  (out)  {$\hat{y}$\\3 classes};
+
+\draw[arr] (img)--(cnn) node[labl,midway]{};
+\draw[arr] (cnn)--(h);
+\draw[arr] (h)--(nae);
+\draw[arr] (nae)--(a);
+\draw[arr] (a)--(pqc);
+\draw[arr] (pqc)--(z);
+\draw[arr] (z)--(head);
+\draw[arr] (head)--(out);
+
+%% ── Sham branch (below) ──────────────────────────────────────
+\node[sham, below=10mm of pqc]  (sham) {Sham\\Lin(256,8)+Tanh};
+\draw[arr,dashed,red!50] (a.south) -- ++(0,-4mm) -| (sham.west);
+\draw[arr,dashed,red!50] (sham.east) -- ++(4mm,0) |- (z.south);
+
+%% ── Labels ───────────────────────────────────────────────────
+\node[font=\tiny,text=blue!60,above=1mm of cnn]  {83k params};
+\node[font=\tiny,text=orange!70,above=1mm of nae]{50k params};
+\node[font=\tiny,text=green!60,above=1mm of pqc] {\textbf{96 angles}};
+\node[font=\tiny,text=red!50,below=1mm of sham]  {sham: 144,755 params (more!)};
+\node[font=\tiny,text=green!60,below=1mm of pqc] {quantum: 142,795 params};
+
+\end{tikzpicture}
+
+\vspace{2mm}
+{\small NAE = Neural Amplitude Encoding \quad SEL = StronglyEntanglingLayers \quad Sham replaces PQC with classical Linear}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Method 2 — QOVT (PyTorch Givens): Flow Diagram}
+\begin{columns}[T]
+
+%% ── Left: overall ViT pipeline ───────────────────────────────
+\begin{column}{0.38\textwidth}
+\centering{\small\textbf{Overall Pipeline}}\\[4pt]
+\begin{tikzpicture}[
+  node distance=4mm,
+  box/.style={rectangle, rounded corners=3pt, minimum width=2.6cm, minimum height=0.65cm,
+              text centered, font=\scriptsize, draw, text width=2.5cm},
+  vit/.style={box, fill=blue!12, draw=blue!45},
+  attn/.style={box, fill=green!15, draw=green!50},
+  cls/.style={box, fill=gray!12, draw=gray!45},
+  arr/.style={-Stealth, thick},
+]
+\node[cls]  (img)   {Image $1{\times}64{\times}64$};
+\node[vit,  below=of img]  (pat)   {Patch Embed\\Conv2d($1{\to}64$, k=8, s=8)};
+\node[cls,  below=of pat]  (tok)   {64 tokens $\in\mathbb{R}^{64}$\\+ CLS + PosEmbed};
+\node[attn, below=of tok]  (blk)   {\textcolor{green!60!black}{RBS-Attn} + MLP\\$\times$ DEPTH = 4};
+\node[cls,  below=of blk]  (cls2)  {CLS token $\in\mathbb{R}^{64}$};
+\node[cls,  below=of cls2] (head)  {Head: Linear($64{\to}3$)};
+\node[cls,  below=of head] (yhat)  {$\hat{y}$: 3 classes};
+
+\draw[-Stealth,thick] (img)--(pat);
+\draw[-Stealth,thick] (pat)--(tok);
+\draw[-Stealth,thick] (tok)--(blk);
+\draw[-Stealth,thick] (blk)--(cls2);
+\draw[-Stealth,thick] (cls2)--(head);
+\draw[-Stealth,thick] (head)--(yhat);
+\end{tikzpicture}
+\end{column}
+
+%% ── Right: RBS-Attention detail ──────────────────────────────
+\begin{column}{0.6\textwidth}
+\centering{\small\textbf{RBS-Attention Block (inside each layer)}}\\[4pt]
+\begin{tikzpicture}[
+  node distance=3mm and 4mm,
+  box/.style={rectangle, rounded corners=3pt, minimum height=0.65cm,
+              text centered, font=\scriptsize, draw},
+  nd/.style  ={box, fill=gray!12,   draw=gray!45,   text width=1.8cm},
+  rb/.style  ={box, fill=green!18,  draw=green!55,  text width=2.0cm},
+  sf/.style  ={box, fill=blue!12,   draw=blue!45,   text width=2.4cm},
+  arr/.style ={-Stealth, thick},
+]
+
+\node[nd] (x)   {$x\in\mathbb{R}^{B\times N\times 64}$};
+\node[nd, below=6mm of x] (xn)  {$x_n=\text{LayerNorm}(x)$};
+
+%% U and V branches
+\node[rb, below left=8mm and 4mm of xn]  (U) {$U$ = RBS Butterfly\\192 Givens angles\\$64{\times}64$ orthogonal};
+\node[rb, below right=8mm and 4mm of xn] (V) {$V$ = RBS Butterfly\\192 Givens angles\\$64{\times}64$ orthogonal};
+
+\node[nd, below=6mm of U] (K) {$K = x_n \cdot W_U$};
+\node[nd, below=6mm of V] (Vn) {$V_{\text{out}} = x_n \cdot W_V$};
+
+\node[sf, below=7mm of K, xshift=1.6cm] (A) {$A_{ij}=\text{softmax}(x_{n,i}\cdot K_j/\sqrt{64})$};
+\node[nd, below=5mm of A] (o)  {$\text{output}=A\cdot V_{\text{out}}$};
+
+\draw[arr] (x)--(xn);
+\draw[arr] (xn.south) -- ++(0,-3mm) -| (U.north);
+\draw[arr] (xn.south) -- ++(0,-3mm) -| (V.north);
+\draw[arr] (U)--(K);
+\draw[arr] (V)--(Vn);
+\draw[arr] (K.south) -- ++(0,-2mm) -| (A.north west);
+\draw[arr] (Vn.south) -- ++(0,-2mm) -| (A.north east);
+\draw[arr] (A)--(o);
+
+\node[font=\tiny, align=left, text=green!60!black, right=1mm of U] {pure PyTorch\\no simulator};
+\node[font=\tiny, align=left, text=red!55,         right=1mm of V] {Sham: Linear(64,64)\\unconstrained};
+\end{tikzpicture}
+\end{column}
+
+\end{columns}
 \end{frame}
 
 % ---------------------------------------------------------------
