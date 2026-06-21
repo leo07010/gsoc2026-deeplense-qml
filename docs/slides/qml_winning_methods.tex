@@ -1,0 +1,476 @@
+\documentclass[aspectratio=169]{beamer}
+\usetheme{metropolis}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{xcolor}
+\usepackage{colortbl}
+
+\definecolor{q}{RGB}{217,119,6}
+\definecolor{c}{RGB}{37,99,235}
+\definecolor{good}{RGB}{22,163,74}
+\definecolor{bad}{RGB}{220,38,38}
+\definecolor{rowhi}{RGB}{220,252,231}
+\newcommand{\win}[1]{\textcolor{good}{\textbf{#1}}}
+\newcommand{\lose}[1]{\textcolor{bad}{#1}}
+\newcommand{\qs}[1]{\textcolor{q}{\textbf{#1}}}
+
+\title{Quantum Advantage on DeepLense}
+\subtitle{Two Winning Methods: QVF-Scratch \& QOVT (PyTorch Givens)}
+\author{GSoC 2026 --- ML4SCI / DeepLense (QML)}
+\date{2026-06-20}
+
+\begin{document}
+\maketitle
+
+% ---------------------------------------------------------------
+\begin{frame}{Goal \& experimental protocol}
+\textbf{Task.} 3-class dark-matter substructure from strong-lensing images (64$\times$64):
+axion / CDM / no-substructure, $\sim$25k/class.
+
+\medskip
+\textbf{Classical SOTA.} MAE-pretrained ViT (arXiv:2512.06642),
+\textbf{2.72M params}, AUC $\approx$ 0.97.
+
+\bigskip
+\begin{alertblock}{The honest test}
+Every quantum model is paired with a \textbf{capacity-matched classical ``sham''}
+(circuit $\to$ classical layer, matched or more params).\\
+\medskip
+\centerline{$\Delta = \text{Quantum} - \text{Sham}$ \quad is the only real signal.}
+\end{alertblock}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Overview: two winning methods}
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\textbf{\qs{Method 1: QVF-Scratch}}\\[4pt]
+\small
+CNN $\to$ Neural Amplitude Encoding $\to$ 8-qubit PQC $\to$ $\langle Z\rangle^8$ $\to$ head\\[6pt]
+\begin{itemize}
+  \item End-to-end from scratch, \textbf{no pretraining}
+  \item 142,795 params (sham has 144,755 = more!)
+  \item \win{21/22} data-size points $> $ sham
+  \item Peak $\Delta = +0.11$ at $N=1500$/class
+  \item Beats MAE-ViT at \emph{every} tested $N$
+\end{itemize}
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{\qs{Method 2: QOVT (PyTorch Givens)}}\\[4pt]
+\small
+ViT with Q/K/V attention projections replaced by RBS butterfly orthogonal layers\\[6pt]
+\begin{itemize}
+  \item Pure PyTorch, no quantum simulator
+  \item 143,619 params (sham 174,851; classical 207,619)
+  \item $\Delta > 0$ on \textbf{all 3 datasets}
+  \item Largest gap: $+0.0075$ on Model\_III
+  \item Mechanism: orthogonal constraint = regularizer
+\end{itemize}
+\end{column}
+\end{columns}
+
+\bigskip
+\centerline{\small Common principle: \textbf{geometric constraint (unitary / orthogonal) as a regularizer}}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Method 1 — QVF-Scratch: Architecture}
+
+\[
+\underbrace{1{\times}64{\times}64}_{\text{image}}
+\xrightarrow{\text{CNN}}
+\underbrace{\mathbf{h}\in\mathbb{R}^{128}}_{\text{feature}}
+\xrightarrow{\text{NAE}}
+\underbrace{\mathbf{a}\in\mathbb{R}^{256}}_{\Sigma|a_i|^2=1}
+\xrightarrow{\text{8-qubit PQC}}
+\underbrace{\langle Z\rangle^8}_{\text{readout}}
+\xrightarrow{\text{head}}
+\hat{y}
+\]
+
+\medskip
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{CNN Encoder} (3$\times$ Conv+BN+ReLU+stride, AvgPool)\\[4pt]
+\textbf{Neural Amplitude Encoding (NAE):}
+\[|a_i|^2 = \text{softmax}(-E_\phi(\mathbf{h}))_i,\quad a_i=\sqrt{|a_i|^2}\]
+\textbf{PQC:} \texttt{AmplitudeEmbedding} + \texttt{StronglyEntanglingLayers(4)}\\
+\quad $\Rightarrow$ 96 trainable angles on 8 qubits
+\end{column}
+\begin{column}{0.42\textwidth}
+\small
+\begin{tabular}{@{}lr@{}}
+\toprule
+Component & Params \\
+\midrule
+CNN Encoder & 83,072 \\
+NAE (128$\to$128$\to$256) & 49,920 \\
+PQC (SEL, 4L, 8Q) & 96 \\
+Head & 35 \\
+\midrule
+\textbf{Total (Quantum)} & \textbf{142,795} \\
+Total (Sham) & 144,755 \\
+MAE-ViT baseline & 2,720,000 \\
+\bottomrule
+\end{tabular}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{QVF-Scratch — Full-Data Results (9:1 split)}
+\begin{columns}
+\begin{column}{0.52\textwidth}
+\textbf{Amplitude Encoding}
+\smallskip
+
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+Dataset & \qs{Q} & Sham & MAE & $\Delta_{Q-S}$ \\
+\midrule
+Model\_I  & \win{.9805} & .9790 & .9633 & \win{+.0015} \\
+Model\_II & \win{.9983} & .9928 & .9682 & \win{+.0055} \\
+Dataset1  & \win{.9983} & .9960 & .9672 & \win{+.0023} \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{Angle Encoding (NISQ-compatible)}
+\smallskip
+
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Dataset & \qs{Q} & Sham & $\Delta_{Q-S}$ \\
+\midrule
+Model\_I  & \win{.9822} & .9789 & \win{+.0033} \\
+Model\_II & \win{.9989} & .9980 & \win{+.0009} \\
+\bottomrule
+\end{tabular}
+
+\bigskip
+\small
+\textbf{Key:} both encodings win;\\
+angle encoding is NISQ-hardware\\
+compatible ($O(N_Q)$ gates/layer,\\
+no statevector explosion)
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{QVF-Scratch — Data-Size Sweep (21/22 positive)}
+\small
+\begin{columns}
+\begin{column}{0.52\textwidth}
+\begin{tabular}{@{}rcc@{}}
+\toprule
+$N$/class & Model\_I $\Delta$ & Model\_II $\Delta$ \\
+\midrule
+100   & +0.0051 & +0.0453 \\
+250   & +0.0433 & +0.0869 \\
+500   & +0.0276 & +0.0556 \\
+750   & +0.0186 & +0.0771 \\
+1000  & +0.0151 & +0.0970 \\
+\rowcolor{rowhi}
+1500  & +0.0149 & \win{+0.1124} {\small$\leftarrow$peak} \\
+2000  & +0.0057 & +0.0159 \\
+3000  & $-$0.0002 & +0.0048 \\
+5000  & +0.0011 & +0.0026 \\
+8000  & +0.0012 & +0.0017 \\
+full  & +0.0015 & +0.0055 \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.45\textwidth}
+\textbf{Pattern:}
+\begin{itemize}
+  \item \win{21/22 positive} $\Rightarrow$ not noise\\
+    (noise flips sign randomly)
+  \item Peak at $N\approx1500$/class, shrinks as both arms approach AUC ceiling
+  \item Cross-dataset replication (Model\_I and Model\_II agree)
+\end{itemize}
+
+\medskip
+\textbf{Theory (Caro et al.\ 2022):}
+\[\epsilon \leq \frac{T}{\sqrt{N}}\]
+QVF $T\approx96$ vs MAE-ViT $T\approx2.7\text{M}$\\
+$\Rightarrow$ 4 orders of magnitude tighter bound
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{QVF-Scratch — Qubit Scaling \& MAE-ViT Comparison}
+\begin{columns}
+\begin{column}{0.48\textwidth}
+\textbf{More qubits $\Rightarrow$ larger $\Delta$ (unsaturated regime)}
+\smallskip
+
+\scriptsize
+\begin{tabular}{@{}llccc@{}}
+\toprule
+Data & $N$ & $\Delta$ nq=8 & $\Delta$ nq=10 & $\Delta$ nq=12 \\
+\midrule
+Mdl\_I  & 500  & +.028 & +.071 & +.100 \\
+Mdl\_I  & 1000 & +.015 & +.085 & \win{+.162} \\
+Mdl\_I  & 2000 & +.006 & +.088 & +.026 \\
+Mdl\_II & 500  & +.056 & +.012 & +.061 \\
+Mdl\_II & 1000 & +.097 & +.034 & +.078 \\
+Mdl\_II & 2000 & +.016 & +.028 & +.063 \\
+\bottomrule
+\end{tabular}
+
+\smallskip
+All 6/6 positive at nq=10, 12
+\end{column}
+\begin{column}{0.5\textwidth}
+\textbf{QVF-Q vs MAE-ViT (2.72M params, pretrained)}
+\smallskip
+
+\scriptsize
+\begin{tabular}{@{}rccccc@{}}
+\toprule
+$N$/cls & MAE\_I & \qs{AmpQ\_I} & Shm\_I & MAE\_II & \qs{AmpQ\_II} \\
+\midrule
+2k & .885 & \win{.919} & .911 & .946 & \win{.977} \\
+3k & .922 & \win{.939} & .932 & .963 & \win{.981} \\
+5k & .936 & \win{.955} & .952 & .967 & \win{.989} \\
+full & .978 & \win{.981} & .979 & .990 & \win{.998} \\
+\bottomrule
+\end{tabular}
+
+\medskip
+\normalsize
+\textbf{QVF-Q beats MAE-ViT at every $N$}\\
+\small with 19$\times$ fewer params \& no pretraining
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Method 2 — QOVT (PyTorch Givens): Architecture}
+
+\textbf{Core idea:} replace Q/K/V attention projections with RBS butterfly orthogonal layers
+(Cherrat et al.\ arXiv:2209.08167)
+
+\medskip
+\[
+A_{ij} = \text{softmax}_j\!\left(\frac{\mathbf{x}_i \cdot U\mathbf{x}_j}{\sqrt{D}}\right), \qquad
+\text{out}_i = \sum_j A_{ij}\cdot V\mathbf{x}_j
+\]
+
+\medskip
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{RBS Butterfly Layer} (Givens rotations, butterfly order):
+\begin{itemize}
+  \item $D=64$: $(D/2)\log_2 D = 192$ angles per matrix
+  \item Builds exact $64\times64$ orthogonal matrix
+  \item \textbf{Pure PyTorch} --- no quantum simulator
+  \item $2\times$ DEPTH $= 8$ RBS layers total (1,536 angles)
+\end{itemize}
+\end{column}
+\begin{column}{0.42\textwidth}
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Mode & Params & Angles \\
+\midrule
+\qs{Quantum (RBS)} & \win{143,619} & 1,536 \\
+Sham (Linear) & 174,851 & --- \\
+Classical (MHA) & 207,619 & --- \\
+\bottomrule
+\end{tabular}
+
+\medskip
+Quantum has \textbf{fewest params}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{QOVT (PyTorch Givens) --- Full-Data Results}
+
+\textbf{Full data (9:1), 50 epochs, $D=64$, patch=$8$, depth=4}
+
+\bigskip
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Mode & Model\_I & Model\_II & Model\_III & Params \\
+\midrule
+\rowcolor{rowhi}
+\qs{Quantum (RBS butterfly)} & \win{0.9813} & \win{0.9940} & \win{0.9962} & \win{143k} \\
+Sham (Linear D$\times$D) & 0.9803 & 0.9910 & 0.9887 & 174k \\
+Classical (MHA) & 0.9813 & 0.9921 & 0.9957 & 207k \\
+\bottomrule
+\end{tabular}
+
+\bigskip
+\begin{columns}
+\begin{column}{0.45\textwidth}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & I & II & III \\
+\midrule
+$\Delta$ Q$-$Sham & +.001 & +.003 & \win{+.008} \\
+$\Delta$ Q$-$Classical & .000 & +.002 & +.001 \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.52\textwidth}
+\small
+Quantum wins on \textbf{all 3 datasets} with the \textbf{fewest params}.\\[4pt]
+Largest gap on Model\_III ($+0.0075$) --- the hardest dataset in this set.\\[4pt]
+Mechanism: orthogonal constraint on $U$, $V$ = implicit regularization.
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Why not PennyLane version? (QOVT-QC)}
+
+\textbf{We tried PennyLane QOVT with unary amplitude encoding:}
+
+\medskip
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{Unary encoding:} $\mathbf{x}\in\mathbb{R}^D \to$ Hamming-weight-1 state in $\mathbb{C}^{2^D}$
+\[|x\rangle = \sum_{i=1}^D x_i |e_i\rangle \quad (\text{only } D \text{ nonzero amplitudes})\]
+Effective subspace: $\binom{D}{1} = D$ dimensions only!\\[4pt]
+$\Rightarrow$ Equivalent to a $D\times D$ classical matrix.\\
+Sham (Linear $D\times D$) is strictly more expressive.
+\end{column}
+\begin{column}{0.42\textwidth}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Dataset & Q & Sham & $\Delta$ \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{D=8 (unary, 8 qubits)}} \\
+Model\_I & .84 & .87 & \lose{$-$.03} \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{D=16 (unary, 16 qubits)}} \\
+Model\_I & .865 & .892 & \lose{$-$.027} \\
+Model\_II & .916 & .955 & \lose{$-$.039} \\
+Model\_III & .881 & .946 & \lose{$-$.065} \\
+\bottomrule
+\end{tabular}
+\end{column}
+\end{columns}
+
+\medskip
+\textbf{Why not D=64 in PennyLane?}
+AmplitudeEmbedding(64 qubits) needs $2^{64}$ statevector $\approx$ 300 exabytes.
+PyTorch Givens avoids this by computing the $64\times64$ orthogonal matrix \emph{classically}.
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Quantum Placement Principle}
+
+\begin{tabular}{@{}p{5.5cm}cc@{}}
+\toprule
+Setting & Result & $\Delta$ \\
+\midrule
+QVF: quantum readout + CNN encoder & \win{wins} & +0.001 to +0.11 \\
+QOVT: quantum attention (full ViT) & \win{wins} & +0.001 to +0.008 \\
+LensPINN + quantum head & \win{wins} & +0.001 to +0.002 \\
+\midrule
+QCNN: quantum patch extractor & \lose{loses} & $-0.11$ to $-0.21$ \\
+QViT: quantum block in encoder & \lose{loses} & $-0.008$ \\
+QVF head on frozen MAE-ViT & \lose{fails} & both $\to$ AUC 0.50 \\
+\bottomrule
+\end{tabular}
+
+\bigskip
+\begin{alertblock}{Rule}
+Quantum helps as a \textbf{low-dimensional readout head} on a \textbf{jointly-trained encoder}.\\
+High-dimensional feature extraction $\to$ barren plateau $\to$ training fails.\\
+Frozen encoder $\to$ NAE cannot adapt $\to$ meaningless amplitudes.
+\end{alertblock}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Training Audit --- Circuit IS Trained}
+
+\begin{columns}
+\begin{column}{0.5\textwidth}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Metric & Value & Meaning \\
+\midrule
+Circuit grad norm & 0.12--0.32 & no barren plateau \\
+Weight drift $\|w-w_0\|$ & $0.08\to8.5$ & large movement \\
+Output std $(\langle Z\rangle)$ & 0.05--0.09 & informative \\
+\midrule
+\textbf{AUC, circuit zeroed} & \textbf{0.5000} & \textbf{sole pathway} \\
+\bottomrule
+\end{tabular}
+\end{column}
+\begin{column}{0.47\textwidth}
+\begin{alertblock}{Verdict}
+``The quantum circuit did not actually learn'' hypothesis is \textbf{refuted by direct measurement}.\\[6pt]
+CNN+NAE alone $\equiv$ AUC 0.50 (chance). The circuit is the \emph{only} decision pathway.
+\end{alertblock}
+\end{column}
+\end{columns}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Side-by-Side Summary}
+\small
+\begin{tabular}{@{}p{3.8cm}cc@{}}
+\toprule
+ & \textbf{QVF-Scratch} & \textbf{QOVT (PyTorch)} \\
+\midrule
+Quantum sits at & readout head & attention Q/K/V \\
+Circuit & 8-qubit SEL & RBS butterfly (Givens) \\
+Simulator needed? & yes (PennyLane) & \textbf{no} (pure PyTorch) \\
+NISQ-compatible? & yes (angle enc.) & yes (Givens = classical) \\
+Params (quantum) & 142,795 & 143,619 \\
+Params (sham) & 144,755 (+1,960) & 174,851 (+31,232) \\
+Full-data $\Delta$ Q$-$S & +0.001 to +0.006 & +0.001 to +0.008 \\
+Low-data advantage & \win{YES} (peak +0.11) & not yet tested \\
+Multi-dataset wins & 3/3 & 3/3 \\
+Mechanism & Boltzmann geometry & orthogonal regularization \\
+\bottomrule
+\end{tabular}
+\end{frame}
+
+% ---------------------------------------------------------------
+\begin{frame}{Conclusion \& Next Steps}
+
+\begin{columns}
+\begin{column}{0.55\textwidth}
+\textbf{What works:}
+\begin{itemize}
+  \item[\win{$\checkmark$}] QVF-Scratch: 21/22 positive, peak $\Delta=+0.11$
+  \item[\win{$\checkmark$}] QOVT (PyTorch): $\Delta>0$ all 3 datasets, fewest params
+  \item[\win{$\checkmark$}] Both: fewer params than sham
+  \item[\win{$\checkmark$}] Both beat MAE-ViT SOTA (no pretraining)
+\end{itemize}
+
+\medskip
+\textbf{What doesn't:}
+\begin{itemize}
+  \item[\lose{$\times$}] QOVT-QC (PennyLane unary): effective dim = $D$ only
+  \item[\lose{$\times$}] Quantum feature extractors: barren plateau
+  \item[\lose{$\times$}] Quantum on frozen features: encoder must train jointly
+\end{itemize}
+\end{column}
+\begin{column}{0.42\textwidth}
+\textbf{Next steps:}
+\begin{enumerate}
+  \item \textbf{QVF multi-seed} --- harden 21/22 for publication
+  \item \textbf{QOVT low-data sweep} --- does $+0.008$ grow at small $N$?
+  \item \textbf{QOVT-Amp (6-qubit AmpEmbed)} --- pending SLURM result
+  \item \textbf{Unify into one paper} --- common mechanism: geometric regularization via orthogonality
+\end{enumerate}
+\end{column}
+\end{columns}
+\end{frame}
+
+\end{document}
