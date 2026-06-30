@@ -59,7 +59,7 @@ in contemporary astronomical machine learning.
 
 Deep learning methods have achieved significant progress on the DeepLense benchmark
 datasets (Mishra-Sharma \& Cranmer; Varma et al.).
-Among these, the MAE-pretrained ViT \cite{mae2024} is the current strongest baseline,
+Among these, the MAE-pretrained ViT \cite{prasha2025masked} is the current strongest baseline,
 achieving AUC $\approx 0.97$ at full data---but at 2.72M parameters
 and with a self-supervised pretraining phase that requires large unlabeled datasets.
 
@@ -87,13 +87,15 @@ Each contains three classes (axion, CDM, no-substructure), $\approx$25k/class,
 $64\times64$ grayscale images.
 
 \paragraph{Generalization bound.}
-Caro et al.\ (2022) \cite{caro2022} give the quantum generalization bound
+Caro et al.\ (2022) \cite{caro2022} prove that the test-train generalization gap of a
+quantum model with $T$ trainable parameters trained on $N$ samples satisfies
 \[
-  \epsilon \leq \frac{T}{\sqrt{N}},
+  \epsilon \leq C\sqrt{\frac{T}{N}},
 \]
-where $T$ is the number of trainable quantum gates and $N$ is the training set size.
-QVF-Scratch has $T \approx 96$ vs.\ MAE-ViT's $T \approx 2.72\times10^6$---four
-orders of magnitude tighter at small $N$, predicting stronger generalization when data is scarce.
+where $C$ is an absolute constant independent of model depth or width.
+QVF-Scratch has $T{=}96$ vs.\ MAE-ViT's $T{\approx}2.72\times10^6$, giving a bound
+$\sqrt{96/N}$ vs.\ $\sqrt{2.72\times10^6/N}$---approximately $168\times$ tighter at any
+fixed $N$, predicting stronger generalization when data is scarce.
 
 \paragraph{Neural Amplitude Encoding (NAE).}
 Wang et al.\ \cite{wang2025} proposed constructing valid quantum amplitudes via a
@@ -369,34 +371,141 @@ Quantum circuits help as low-dimensional readout heads on jointly-trained encode
 and the NISQ-compatible angle encoding variant confirms the effect does not depend
 on exponential statevector simulation.
 
-\begin{thebibliography}{9}
-\bibitem{mae2024}
-\textit{MAE-ViT for DeepLense Strong Lensing Classification}.
-arXiv:2512.06642, 2024.
+\begin{thebibliography}{99}
+
+% ── Baselines & Dataset ─────────────────────────────────────────────────────
+\bibitem{prasha2025masked}
+A.~A.~Prasha et al.,
+\textit{Masked Autoencoder Pretraining on Strong-Lensing Images for Joint Dark-Matter Model Classification and Super-Resolution}.
+arXiv:2512.06642, 2025.
+
+\bibitem{brehmer2019mining}
+J.~Brehmer, S.~Mishra-Sharma, J.~Hermans, G.~Louppe, and K.~Cranmer,
+\textit{Mining for Dark Matter Substructure: Inferring Subhalo Population Properties from Strong Lenses with Machine Learning}.
+The Astrophysical Journal, 886(1):49, 2019.
+
+\bibitem{alexander2020deep}
+S.~Alexander et al.,
+\textit{Deep Learning the Morphology of Dark Matter Substructure}.
+The Astrophysical Journal, 893(1):15, 2020.
+
+\bibitem{hezaveh2017fast}
+Y.~D.~Hezaveh, L.~P.~Levasseur, and P.~J.~Marshall,
+\textit{Fast Automated Analysis of Strong Gravitational Lenses with Convolutional Neural Networks}.
+Nature, 548(7669):555--557, 2017.
+
+\bibitem{lanusse2018cmu}
+F.~Lanusse et al.,
+\textit{CMU DeepLens: Deep Learning for Automatic Image-Based Galaxy--Galaxy Strong Lens Finding}.
+Monthly Notices of the Royal Astronomical Society, 473(3):3895--3906, 2018.
+
+% ── Quantum Generalization Theory ──────────────────────────────────────────
 \bibitem{caro2022}
 M.~C.~Caro et al.,
 \textit{Generalization in Quantum Machine Learning from Few Training Data}.
 Nature Communications, 13:4919, 2022.
+
+\bibitem{liu2021rigorous}
+Y.~Liu, S.~Arunachalam, and K.~Temme,
+\textit{A Rigorous and Robust Quantum Speed-Up in Supervised Machine Learning}.
+Nature Physics, 17(9):1013--1017, 2021.
+
+\bibitem{huang2021power}
+H.-Y.~Huang et al.,
+\textit{Power of Data in Quantum Machine Learning}.
+Nature Communications, 12:2631, 2021.
+
+% ── NAE / Amplitude Encoding ───────────────────────────────────────────────
 \bibitem{wang2025}
-Z.~Wang et al.,
-\textit{Quantum Machine Learning with Amplitude Embedding}.
+S.~Wang, C.~Theobalt, and V.~Golyanik,
+\textit{Quantum Visual Fields with Neural Amplitude Encoding}.
 NeurIPS 2025. arXiv:2508.10900.
+
+\bibitem{mottonen2005transformation}
+M.~M\"{o}tt\"{o}nen, J.~J.~Vartiainen, V.~Bergholm, and M.~M.~Salomaa,
+\textit{Transformation of Quantum States Using Uniformly Controlled Rotations}.
+Quantum Information \& Computation, 5(6):467--473, 2005.
+
+\bibitem{grover2002creating}
+L.~Grover and T.~Rudolph,
+\textit{Creating Superpositions That Correspond to Efficiently Integrable Probability Distributions}.
+arXiv:quant-ph/0208112, 2002.
+
+\bibitem{zoufal2019qgan}
+C.~Zoufal, A.~Lucchi, and S.~Woerner,
+\textit{Quantum Generative Adversarial Networks for Learning and Loading Random Distributions}.
+npj Quantum Information, 5:103, 2019.
+
+% ── PQC Architecture & Expressibility ─────────────────────────────────────
+\bibitem{sim2019expressibility}
+S.~Sim, P.~D.~Johnson, and A.~Aspuru-Guzik,
+\textit{Expressibility and Entangling Capability of Parameterized Quantum Circuits for Hybrid Quantum-Classical Algorithms}.
+Advanced Quantum Technologies, 2(12):1900070, 2019.
+
+\bibitem{abbas2021power}
+A.~Abbas et al.,
+\textit{The Power of Quantum Neural Networks}.
+Nature Computational Science, 1(6):403--409, 2021.
+
+\bibitem{schuld2019kernel}
+M.~Schuld and N.~Killoran,
+\textit{Quantum Machine Learning in Feature Hilbert Spaces}.
+Physical Review Letters, 122(4):040504, 2019.
+
+\bibitem{schuld2021effect}
+M.~Schuld, R.~Sweke, and J.~J.~Meyer,
+\textit{Effect of Data Encoding on the Expressive Power of Variational Quantum-Machine-Learning Models}.
+Physical Review A, 103(3):032430, 2021.
+
+\bibitem{perez2020}
+A.~P\'{e}rez-Salinas et al.,
+\textit{Data Re-uploading for a Universal Quantum Classifier}.
+Quantum, 4:226, 2020.
+
+% ── Hybrid CNN + Quantum ───────────────────────────────────────────────────
+\bibitem{cong2019quantum}
+I.~Cong, S.~Choi, and M.~D.~Lukin,
+\textit{Quantum Convolutional Neural Networks}.
+Nature Physics, 15(12):1273--1278, 2019.
+
+\bibitem{mari2020transfer}
+A.~Mari et al.,
+\textit{Transfer Learning in Hybrid Classical-Quantum Neural Networks}.
+Quantum, 4:340, 2020.
+
+\bibitem{henderson2020quanvolutional}
+M.~Henderson et al.,
+\textit{Quanvolutional Neural Networks: Powering Image Recognition with Quantum Circuits}.
+Quantum Machine Intelligence, 2(2):2, 2020. arXiv:1904.04767.
+
+% ── Quantum INR / Related Encodings ───────────────────────────────────────
+\bibitem{zhao2024quantum}
+J.~Zhao et al.,
+\textit{Quantum Implicit Neural Representations}.
+ICML 2024. arXiv:2406.03873.
+
+\bibitem{zhang2025hqvit}
+H.~Zhang et al.,
+\textit{HQViT: Hybrid Quantum Vision Transformer for Image Classification}.
+arXiv:2504.02730, 2025.
+
+% ── Energy-Based Quantum Models ────────────────────────────────────────────
+\bibitem{amin2018qbm}
+M.~H.~Amin et al.,
+\textit{Quantum Boltzmann Machine}.
+Physical Review X, 8(2):021050, 2018.
+
+% ── Companion Paper & Tools ────────────────────────────────────────────────
+\bibitem{cherrat2024}
+E.~A.~Cherrat et al.,
+\textit{Quantum Vision Transformers}.
+Quantum, 8:1265, 2024.
+
 \bibitem{pennylane}
 V.~Bergholm et al.,
 \textit{PennyLane: Automatic Differentiation of Hybrid Quantum-Classical Computations}.
 arXiv:1811.04968, 2018.
-\bibitem{perez2020}
-A.~Pérez-Salinas et al.,
-\textit{Data Re-uploading for a Universal Quantum Classifier}.
-Quantum, 4:226, 2020.
-\bibitem{schuld2020}
-M.~Schuld et al.,
-\textit{Circuit-Centric Quantum Classifiers}.
-Physical Review A, 101:032308, 2020.
-\bibitem{cherrat2022}
-S.~Cherrat et al.,
-\textit{Quantum Vision Transformers}.
-arXiv:2209.08167, 2022.
+
 \end{thebibliography}
 
 \end{document}
