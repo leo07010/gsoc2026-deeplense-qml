@@ -45,9 +45,9 @@
 \newcommand{\running}{\texttt{*}}
 
 % ============================================================
-\title{\textbf{Quantum Orthogonal Attention for Data-Efficient\\
-Dark Matter Classification in Gravitational Lensing:\\
-Parameter Count Governs the Small-Data Regime}}
+\title{\textbf{A NISQ-Deployable Quantum Orthogonal Attention Circuit for\\
+Dark Matter Classification: Matching, Not Beating, Classical Attention,\\
+and a Cautionary Tale About Training Instability}}
 
 \author{%
   Anonymous Authors\\[2pt]
@@ -63,28 +63,34 @@ Parameter Count Governs the Small-Data Regime}}
 % ─────────────────────────────────────────────────────────────
 \begin{abstract}
 We apply Quantum Orthogonal Vision Transformers (QOVT) to the DeepLense
-gravitational lensing benchmark, evaluating two circuit variants that
-parameterize the query/key/value projection matrices in self-attention
-as unitary operators: a Givens butterfly decomposition
-($T{=}1{,}536$ trainable angles, classical computation) and an
-RY+CNOT ring circuit ($T{=}384$ angles, 6 qubits, NISQ-deployable).
-The central finding is that the number of trainable quantum parameters $T$
-is the primary determinant of small-data performance, as predicted by the
-Caro et al.\ generalization bound $\epsilon \leq C\sqrt{T/N}$:
-at $N{=}500$ samples/class, the RY+CNOT variant achieves AUC $= 0.9144$
-while the Givens butterfly collapses to AUC $= 0.5134$ (near chance).
-This $0.401$ gap---the largest reported in either QOVT or companion
-QVF-Scratch experiments---is fully explained by the $4\times$ parameter ratio
-($T_{\mathrm{Givens}} / T_{\mathrm{RY}} = 4$, bound ratio $\approx 2$).
-As $N$ increases, the Givens butterfly recovers due to greater expressivity,
-reaching AUC $= 0.9940$ on Model\_II at full data ($\approx25{,}000$/class),
-outperforming both a sham control (unconstrained Linear, $22\%$ more parameters)
-and classical multi-head attention (independent Q/K/V, yet more parameters).
-The RY+CNOT ring circuit is directly executable on IBM Quantum and equivalent
-NISQ hardware, runs $10\times$ faster than PennyLane simulation via
-a pure-PyTorch matrix implementation, and constitutes---to our knowledge---
-the first hardware-ready quantum attention architecture validated on real
-astrophysical imaging data.
+simulated gravitational lensing benchmark, evaluating two circuit variants
+that parameterize an attention key/value projection as an orthogonal
+operator: a Givens butterfly decomposition ($T{=}1{,}536$ trainable angles,
+classically simulated) and an RY+CNOT ring circuit ($T{=}384$ angles, 6
+qubits, NISQ-deployable).
+At $N{=}500$ samples/class, RY+CNOT achieves AUC $=0.9144$ versus Givens'
+AUC $=0.526$ (mean of 2 runs, near chance)---but classical multi-head
+attention (unconstrained, more parameters) scores AUC $=0.910$ at the same
+$N$, statistically indistinguishable from RY+CNOT.
+Two further checks that we ran specifically to test our initial
+generalization-bound explanation both contradict it: Givens also collapses
+at $N{=}8{,}000$ (AUC $=0.558$), a size too large to explain by memorization,
+and a circuit-depth ablation shows RY+CNOT's own AUC \emph{increasing}
+monotonically with parameter count $T \in \{192,384,576\}$ at $N{=}500$---
+opposite to the bound's prediction.
+We conclude that the $N{=}500$ Givens failure reflects
+\textbf{architecture-specific optimization instability}, not a
+generalization-theoretic quantum advantage: RY+CNOT and classical attention
+achieve comparable accuracy at every tested data size from $N{=}500$ to full
+data ($\approx25{,}000$/class), where all evaluated architectures---RY+CNOT,
+Givens, sham controls, classical MHA, and a reproduced MAE-pretrained ViT
+baseline---land within $1.5$ AUC points of each other.
+The RY+CNOT ring circuit remains directly executable on IBM Quantum and
+equivalent NISQ hardware, runs $10\times$ faster than PennyLane simulation
+via a pure-PyTorch matrix implementation, and is---to our knowledge---a
+working, hardware-ready quantum attention architecture for astrophysical
+image classification, though we no longer claim it demonstrates a quantum
+advantage over classical attention on this benchmark.
 \end{abstract}
 
 % ─────────────────────────────────────────────────────────────
@@ -133,31 +139,36 @@ different positions in the $T$--expressivity tradeoff.
 
 Our main contributions are:
 \begin{enumerate}
-  \item \textbf{Caro-bound-governed small-data performance}
-        (Section~\ref{sec:sweep}):
-        At $N{=}500$/class, RY+CNOT ($T{=}384$) achieves AUC $0.9144$;
-        Givens butterfly ($T{=}1{,}536$) collapses to AUC $0.5134$.
-        The $0.401$ gap is the largest observed across all experiments in
-        this paper and its companion~\cite{wang2025qvf},
-        and aligns quantitatively with the bound prediction
-        (Section~\ref{sec:caro-prediction}).
-  \item \textbf{Full-data quantum advantage over sham}
-        (Section~\ref{sec:fulldata}):
-        Givens butterfly QOVT (1,536 angles, 143,619 params) achieves
-        AUC $0.9940$ on Model\_II, outperforming the sham control
-        (174,851 params, $22\%$ more) and classical MHA (207,619 params).
-  \item \textbf{First NISQ-deployable quantum attention for astrophysics}
+  \item \textbf{A NISQ-deployable quantum attention circuit that matches
+        classical attention} (Section~\ref{sec:sweep}):
+        RY+CNOT ($T{=}384$) is statistically indistinguishable from classical
+        multi-head attention across every tested data size from $N{=}500$
+        (AUC $0.9144$ vs.\ $0.910$) to full data (AUC $0.985$ vs.\ $0.9921$),
+        while remaining a valid gate-model circuit executable on IBM Quantum,
+        IonQ, and other NISQ hardware.
+  \item \textbf{Identification and diagnosis of Givens-specific training
+        instability} (Sections~\ref{sec:caro-prediction}--\ref{sec:crossover}):
+        The Givens butterfly ($T{=}1{,}536$) fails catastrophically
+        (near-chance AUC) in $50\%$ of logged runs at $N{=}500$ and again at
+        $N{=}8{,}000$---a pattern inconsistent with the memorization account
+        we initially proposed, and better explained by optimization
+        instability in its deeper compositional structure
+        (Section~\ref{sec:analysis}).
+  \item \textbf{A falsifiable Caro-bound prediction, tested and refuted}
+        (Section~\ref{sec:depth}):
+        A circuit-depth ablation ($T \in \{192, 384, 576\}$) predicted
+        smaller $T$ should generalize better at $N{=}500$; we observe the
+        opposite (AUC increases monotonically with $T$), indicating the
+        Caro bound does not bind in this parameter range for this
+        architecture family.
+        We report this negative result because it directly informed our
+        revised interpretation of finding 2.
+  \item \textbf{Efficient classical implementation}
         (Section~\ref{sec:rycnot}):
-        The RY+CNOT ring (6 qubits, 8 RY+CNOT layers) is a valid gate-model
-        circuit for IBM Quantum, IonQ, and other superconducting/trapped-ion
-        architectures.
-        We implement it as a pure-PyTorch matrix product ($10\times$ speedup
-        over PennyLane simulation) with mathematically identical output.
-  \item \textbf{Predicted crossover} (Section~\ref{sec:crossover}):
-        As $N$ grows, the Caro bound predicts a crossover $N^*$ where Givens
-        (larger $T$, higher expressivity) overtakes RY+CNOT.
-        We observe this crossover between $N{=}5000$ and $N{=}8000$/class
-        and provide a quantitative prediction from the bound.
+        We implement the RY+CNOT circuit as a pure-PyTorch matrix product
+        ($10\times$ speedup over PennyLane simulation) with mathematically
+        identical output, enabling the multi-run, multi-$N$ sweeps that
+        revealed findings 2--3 above.
 \end{enumerate}
 
 % ─────────────────────────────────────────────────────────────
@@ -252,28 +263,39 @@ Standard scaled dot-product attention computes:
   \mathrm{Attn}(X) = \mathrm{softmax}\!\left(\frac{(W_Q X)(W_K X)^\top}{\sqrt{D}}\right) W_V X,
 \end{equation}
 where $W_Q, W_K, W_V \in \mathbb{R}^{D\times D}$ are unconstrained learned projections.
-QOVT replaces $W_Q = W_K = U$ and $W_V = V$ with orthogonal matrices
-$U, V \in O(D)$, yielding:
+QOVT sets $W_Q = I$ (the query is left untransformed) and replaces
+$W_K = U$, $W_V = V$ with orthogonal matrices $U, V \in O(D)$
+(this asymmetric choice matches our implementation, Section~\ref{sec:rycnot};
+an alternative, symmetric design with $W_Q = W_K = U$ would additionally
+cancel $U$ from the attention map via $U^\top U = I$, but we did not
+implement that variant), yielding:
 \begin{equation}
-  A_{ij} = \mathrm{softmax}_j\!\left(\frac{(Ux_i)^\top (Ux_j)}{\sqrt{D}}\right)
-         = \mathrm{softmax}_j\!\left(\frac{x_i^\top x_j}{\sqrt{D}}\right),
+  A_{ij} = \mathrm{softmax}_j\!\left(\frac{x_i^\top (Ux_j)}{\sqrt{D}}\right),
   \qquad
   \mathrm{out}_i = \sum_j A_{ij} (V x_j).
   \label{eq:qoattn}
 \end{equation}
-Because $U^\top U = I$, the attention map encodes only the \emph{angular}
-relationship between tokens: $A_{ij} \propto \cos\theta_{ij}$.
-The value matrix $V$ rotates the token representations before aggregation,
-enabling the circuit to learn a task-specific basis for aggregation
-while preserving all pairwise distances.
+Because $U$ is orthogonal, $\|Ux_j\|_2 = \|x_j\|_2$: the key transformation
+preserves the magnitude of each token, so attention scores cannot be inflated
+or suppressed by $U$ scaling up or down individual keys.
+This is a weaker property than full angular-only attention (which would
+require the symmetric $W_Q{=}W_K{=}U$ design): the attention map here still
+depends on the specific rotation $U$ applies to each key, not solely on the
+raw angle between query and key tokens.
+The value matrix $V$ separately rotates token representations before
+aggregation, preserving all pairwise distances among the aggregated values.
 
-This has three beneficial consequences for the low-data regime:
+This has two clearly-established beneficial properties, and one that we
+state more cautiously in light of the asymmetric design:
 (1) \textbf{Parameter efficiency}: $U$ and $V$ are each specified by
 $T/4$ rotation angles rather than $D^2$ free entries;
-(2) \textbf{Spectral stability}: $\|U\|_2 = 1$ prevents gradient explosion
-through the attention layer;
+(2) \textbf{Spectral stability}: $\|U\|_2 = \|V\|_2 = 1$ prevents gradient
+explosion through the attention layer;
 (3) \textbf{Caro bound}: the parameterization falls directly in
-Proposition~\ref{prop:caro}'s hypothesis class.
+Proposition~\ref{prop:caro}'s hypothesis class, though as
+Section~\ref{sec:sweep} shows empirically, the bound's small-$T$-implies-better
+prediction does not consistently manifest against classical MHA at the
+data sizes we tested.
 
 % ─────────────────────────────────────────────────────────────
 \section{Method}
@@ -399,12 +421,12 @@ so any observed quantum advantage cannot be attributed to capacity.
 \toprule
 Variant & Circuit/Attention Params & Total Params \\
 \midrule
-RY+CNOT quantum & 384 angles & 143,619 \\
+RY+CNOT quantum & 384 angles & 142,467 \\
 Givens butterfly quantum & 1,536 angles & 143,619 \\
 Sham (unconstrained Linear) & $4 \times 2 \times 64^2 = 32{,}768$ & 174,851 \\
 Classical MHA (independent Q,K,V) & $12 \times 64^2 = 49{,}152$ & 207,619 \\
 \midrule
-\textit{MAE-ViT baseline (pretrained)} & \textit{---} & \textit{2,720,000} \\
+\textit{MAE-ViT baseline (pretrained)} & \textit{---} & \textit{2,722,947} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -453,9 +475,9 @@ Primary metric: macro-averaged one-vs-rest AUC (each of the three classes is
 treated as the positive class against the other two; AUC is averaged).
 This follows the DeepLense benchmark convention~\cite{alexander2020deep,prasha2025masked}.
 
-\paragraph{Notation.} Entries marked \running{} indicate experiments in
-progress at the time of submission; affected rows are excluded from
-aggregate claims.
+\paragraph{Notation.} $\dagger$ marks cells with $\geq2$ independent runs at
+identical configuration, reported as mean (range); this makes run-to-run
+variance visible rather than reporting a single cherry-picked value.
 
 \subsection{Full-Data Results}
 \label{sec:fulldata}
@@ -463,30 +485,36 @@ aggregate claims.
 \begin{table}[h!]
 \centering
 \caption{Full-data AUC (${\approx}25{,}000$/class, 9:1 split, \texttt{seed=42}).
-\running{} = in progress.
+MAE-ViT is our own reproduction under the protocol of~\cite{prasha2025masked}.
+$\dagger$: mean (range) over multiple single-seed runs at identical config.
 Best per dataset in \textbf{\textcolor{good}{green}}.}
 \label{tab:fulldata}
 \begin{tabular}{@{}lccccc@{}}
 \toprule
 Method & Params & Model\_I & Model\_II & Model\_III \\
 \midrule
-RY+CNOT quantum   & 143,619 & \running{} & \running{} & \running{} \\
-RY+CNOT sham      & 174,851 & \running{} & \running{} & \running{} \\
+RY+CNOT quantum   & 142,467 & 0.979$^\dagger$ & 0.985$^\dagger$ (0.976--0.997) & 0.995$^\dagger$ \\
+RY+CNOT sham      & 174,851 & 0.9801 & 0.991$^\dagger$ & 0.9903 \\
 Givens quantum    & 143,619 & \win{0.9813} & \win{0.9940} & \win{0.9962} \\
 Givens sham       & 174,851 & 0.9803 & 0.9910 & 0.9887 \\
-Classical MHA     & 207,619 & 0.9813 & 0.9921 & 0.9957 \\
-MAE-ViT~\cite{prasha2025masked} & 2,720,000 & 0.9633 & 0.9682 & \running{} \\
+Classical MHA     & 207,619 & 0.9807 & 0.9921 & 0.9957 \\
+MAE-ViT (ours)~\cite{prasha2025masked} & 2,722,947 & 0.9778 & 0.9895 & 0.9895 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Givens quantum outperforms its sham control on all three datasets
-($\Delta{=}{+}0.0010$, $+0.0030$, $+0.0075$ on Models I/II/III respectively),
-despite the sham having 22\% more attention parameters (Table~\ref{tab:params}).
-Both QOVT variants (Givens and sham) substantially outperform the
-2.72M-parameter MAE-ViT, consistent with the companion paper~\cite{wang2025qvf}
-showing that compact quantum-inspired models can match or exceed large
-pretrained baselines on this benchmark.
+At full data, the four architectures (RY+CNOT, Givens, sham, classical MHA)
+cluster tightly within $\approx$1 percentage point of each other on Models
+I and III; on Model\_II, RY+CNOT's mean (0.985) is nominally below classical
+MHA (0.9921) and both sham controls, though its 3-run range (0.976--0.997)
+overlaps them.
+This is a meaningfully different picture from the sham-vs-quantum framing
+in Section~\ref{sec:sweep}: at full data, no architecture in this comparison
+shows an advantage that survives its own run-to-run variance.
+All four architectures, plus our reproduced MAE-ViT (0.978--0.990), comfortably
+exceed 0.97 AUC at full data---the interesting regime for distinguishing
+these methods is the low-$N$ sweep (Section~\ref{sec:sweep}), not the
+full-data ceiling.
 
 \subsection{Data-Efficiency Sweep: Primary Result}
 \label{sec:sweep}
@@ -494,33 +522,57 @@ pretrained baselines on this benchmark.
 \begin{table}[h!]
 \centering
 \caption{AUC vs.\ $N$/class on Model\_II (\texttt{seed=42}).
-This is the primary result of the paper.
-\running{} = in progress.
-Highlighted row: the pivotal comparison at $N{=}500$.}
+$^\dagger$: mean over multiple runs, individual values in parentheses.
+$^\ddagger$: run failed to train (see text); value is the failed run's own
+best-checkpoint AUC, included for completeness rather than excluded.
+Highlighted row: the pivotal $N{=}500$ comparison.}
 \label{tab:sweep}
-\begin{tabular}{@{}rcccr@{}}
+\begin{tabular}{@{}rcccc@{}}
 \toprule
 $N$/class & RY+CNOT quantum & RY+CNOT sham & Givens quantum & Classical MHA \\
 \midrule
 \rowcolor{rowhi}
-500  & \win{0.9144} & \running{} & 0.5134 & \running{} \\
-3000 & \win{0.9638} & \running{} & 0.9389 & \running{} \\
-5000 & \win{0.9700} & \running{} & 0.9613 & \running{} \\
-8000 & 0.9662       & \running{} & \running{} & \running{} \\
-full & \running{}   & \running{} & \win{0.9940} & 0.9921 \\
+500  & 0.9144 & 0.8812 & 0.526$^\dagger$ (0.513, 0.539) & 0.910$^\dagger$ (0.908, 0.912) \\
+3000 & 0.9638 & 0.9595 & 0.9389 & 0.964$^\dagger$ (0.962, 0.966) \\
+5000 & 0.9700 & 0.9613 & 0.9613 & 0.968$^\dagger$ (0.968, 0.968) \\
+8000 & 0.9662 & 0.9653 & 0.558$^\ddagger$ & 0.980$^\dagger$ (0.978, 0.983) \\
+full & 0.985$^\dagger$ (0.976, 0.983, 0.997) & 0.991$^\dagger$ & \win{0.9940} & 0.9921 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The $N{=}500$ result is the paper's central empirical contribution.
-RY+CNOT AUC $= 0.9144$ versus Givens AUC $= 0.5134$: a $0.401$ gap
-at the same $N$, same architecture, same training protocol,
-differing only in circuit parameterization (and hence $T$).
+The headline $N{=}500$ comparison must be read against \emph{two} baselines,
+not one.
+RY+CNOT (AUC $0.9144$) does clearly beat Givens (AUC $0.526$ mean, near
+chance)---but it is statistically indistinguishable from classical MHA
+(AUC $0.910$ mean, $\Delta = +0.004$, well within single-seed noise).
+This changes the paper's central claim: the $N{=}500$ gap is not evidence
+that \emph{quantum parameterization beats classical attention}: it is evidence
+that \emph{the Givens butterfly specifically fails to train reliably at small
+$N$}, while RY+CNOT, its sham control, and unconstrained classical MHA all
+train successfully and land within $\approx$1 point of each other.
 
-\subsubsection{Quantitative Caro Bound Prediction}
+\subsubsection{Is the Givens Failure Memorization or Optimization Failure?}
 \label{sec:caro-prediction}
 
-Applying Corollary~\ref{cor:design} at $N{=}500$:
+The original hypothesis---that Givens' $T{=}1{,}536$ angles memorize the
+$N{=}500{\times}3{=}1{,}500$-example training set---predicts near-perfect
+\emph{training} accuracy alongside near-chance validation AUC.
+We did not log training accuracy for the reported runs, so we cannot confirm
+this directly; however, per-epoch validation curves for the failed runs
+(e.g.\ Model\_II, $N{=}8000$, Section~\ref{sec:crossover}) show
+validation AUC oscillating near $0.50$--$0.55$ for all 50 epochs with a final
+confusion matrix that predicts a single class for every input---behavior
+consistent with the optimizer never escaping a degenerate region of the loss
+landscape, not with a model that fit the training set and failed to
+generalize.
+We regard the "memorization" account as unconfirmed and the "optimization
+instability in the butterfly parameterization" account as the more
+parsimonious explanation given the available evidence; distinguishing them
+rigorously requires logging train-set accuracy, which we leave for future
+work (Section~\ref{sec:limitations}).
+
+For completeness, the Caro bound values at $N{=}500$ are:
 \begin{equation}
   \epsilon_{\mathrm{Givens}}
   \;\leq\; C\sqrt{\frac{1536}{500}} \approx 1.75\,C,
@@ -529,69 +581,84 @@ Applying Corollary~\ref{cor:design} at $N{=}500$:
   \;\leq\; C\sqrt{\frac{384}{500}}  \approx 0.88\,C.
   \label{eq:bound-500}
 \end{equation}
-The Givens bound is ${\approx}2\times$ larger, permitting substantially
-more overfitting.
-The observed collapse to AUC $= 0.51$ (near-chance) for Givens at $N{=}500$
-is consistent with this prediction: the Givens butterfly's 1,536 free angles
-are sufficient to memorize the small training set while failing to generalize.
-The RY+CNOT circuit's 384 angles cannot memorize the training data,
-and the orthogonal constraint forces it to find globally useful angular features.
+This bound predicts a \emph{softer} degradation for Givens (larger worst-case
+generalization gap), not the catastrophic, unstable failures we observe;
+a bound violation of this magnitude is more consistent with an optimization
+pathology outside the bound's assumptions (e.g.\ non-convex landscape
+with poor conditioning) than with the bound's own mechanism.
+We caution against over-crediting the Caro bound for a phenomenon that may
+be architecture-specific optimization behavior.
 
-\subsection{The Crossover and Recovery}
+\subsection{Instability, Not Recovery}
 \label{sec:crossover}
 
-As $N$ increases, the Givens butterfly recovers:
-\[
-  N{=}3000 \to 0.9389; \quad
-  N{=}5000 \to 0.9613; \quad
-  N{=}\text{full} \to \win{0.9940}.
-\]
-The crossover (Givens overtaking RY+CNOT) occurs between $N{=}5000$ and
-$N{=}8000$ (RY+CNOT $= 0.9700$ at $N{=}5000$, $0.9662$ at $N{=}8000$;
-Givens $= 0.9613$ at $N{=}5000$, not yet tabulated at $N{=}8000$).
-
-This crossover is directly predicted by the Caro bound.
-Define $N^*$ as the training size at which the two variants
-achieve equal generalization error.
-Setting $C\sqrt{T_1/N^*} = C\sqrt{T_2/N^*}$ gives trivially $N^* = \infty$
-(the bound alone doesn't predict crossing), but the \emph{expressivity}
-of the Givens butterfly---its ability to represent a richer subset of $O(64)$---
-implies that for $N > N^*$, the additional flexibility of $T{=}1{,}536$
-outweighs the tighter bound.
-Empirically, $N^* \approx 7{,}000$--$8{,}000$/class.
+We initially described Givens' behaviour as $N$ increases as "recovery":
+$N{=}3000 \to 0.9389$; $N{=}5000 \to 0.9613$; $N{=}\text{full} \to 0.9940$.
+This monotone-looking sequence is misleading in isolation: at $N{=}8000$,
+between the ``recovered'' $N=5000$ and full-data points, Givens
+\emph{collapses again} to AUC $0.558$ (Table~\ref{tab:sweep}), with the same
+single-class-prediction failure mode as the $N{=}500$ runs
+(Section~\ref{sec:caro-prediction}).
+The correct description is not a smooth crossover governed by a
+generalization-expressivity trade-off, but \emph{intermittent training
+instability that can occur at any $N$}, whose probability appears to
+decrease (not vanish) as $N$ grows.
+Of the 6 Givens quantum runs we logged across $N \in \{500, 3000, 5000,
+8000, \text{full}\}$ (with 2 seeds at $N{=}500$), 3 failed
+(both $N{=}500$ seeds, and $N{=}8000$)---a $50\%$ failure rate in this
+sample.
+RY+CNOT and classical MHA show no comparable failures in any logged run at
+any $N$.
+We do not have a confirmed mechanism for why the Givens butterfly
+parameterization is more failure-prone; a plausible hypothesis is that its
+deeper compositional structure ($\log_2 D = 6$ sequential Givens rotation
+stages per matrix) creates a more ill-conditioned optimization landscape
+than RY+CNOT's shallower, more redundant ring structure, but this is
+speculative pending a dedicated loss-landscape study.
 
 \subsection{Circuit Depth Ablation}
 \label{sec:depth}
 
 We ablate the number of RY+CNOT layers $L_\mathrm{circ} \in \{4, 8, 12\}$
-to test whether the advantage is monotone in circuit depth.
-Per Corollary~\ref{cor:design}, $T$ scales linearly with $L_\mathrm{circ}$,
-so the Caro bound predicts:
-$L{=}4$ ($T{=}192$) should dominate at small $N$;
-$L{=}8$ ($T{=}384$) peaks at intermediate $N$;
-$L{=}12$ ($T{=}576$) benefits only at large $N$.
+on Model\_II to test whether the small-$N$ advantage is governed by the
+Caro bound, which (via Corollary~\ref{cor:design}, $T$ linear in
+$L_\mathrm{circ}$) predicts $L{=}4$ ($T{=}192$) should \emph{outperform}
+$L{=}8$ ($T{=}384$) at $N{=}500$, since a smaller $T$ gives a tighter bound.
 
 \begin{table}[h!]
 \centering
-\caption{Circuit depth ablation on Model\_II, RY+CNOT quantum mode.
-\running{} = in progress.}
+\caption{Circuit depth ablation on Model\_II, RY+CNOT quantum mode
+(single seed per cell).}
 \label{tab:depth}
 \begin{tabular}{@{}rrrcc@{}}
 \toprule
 $L_\mathrm{circ}$ & Angles/matrix & Total $T$ & AUC @ $N{=}500$ & AUC @ full \\
 \midrule
-4  & 24 & 192 & \running{} & \running{} \\
+4  & 24 & 192 & 0.8961 & 0.9822 \\
 \rowcolor{rowhi}
-8  & 48 & 384 & \win{0.9144} & \running{} \\
-12 & 72 & 576 & \running{} & \running{} \\
+8  & 48 & 384 & \win{0.9144} & 0.985$^\dagger$ \\
+12 & 72 & 576 & \win{0.9298} & 0.9810 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-If the Caro bound is the governing mechanism,
-we predict: AUC($L{=}4$, $N{=}500$) $>$ AUC($L{=}8$, $N{=}500$).
-This is a falsifiable prediction that will be confirmed or refuted
-when the $L{=}4$ and $L{=}12$ runs complete.
+\textbf{The Caro-bound prediction is refuted by this data.}
+AUC increases \emph{monotonically} with $L_\mathrm{circ}$ at $N{=}500$
+($0.8961 \to 0.9144 \to 0.9298$), the opposite of what a bound in which
+smaller $T$ implies better small-$N$ generalization would predict.
+At full data, the three depths are statistically indistinguishable
+($0.981$--$0.985$).
+The most direct reading is that within the RY+CNOT family, more circuit
+layers give the optimizer more expressive power to fit useful angular
+features \emph{without} the instability that afflicts the much larger,
+differently-structured Givens parameterization---i.e., for RY+CNOT,
+capacity is still expressivity-limited rather than generalization-limited
+even at $N{=}500$, and the Caro bound's small-$T$-is-better logic does not
+bind in this range of $T \in [192, 576]$.
+This is consistent with our conclusion in Section~\ref{sec:crossover} that
+the $N{=}500$ Givens failure is better explained by optimization instability
+specific to the butterfly parameterization than by a generalization-bound
+effect that should also, and did not, appear in the RY+CNOT depth sweep.
 
 \subsection{Training Audit}
 \label{sec:audit}
@@ -624,18 +691,18 @@ measurably nonzero throughout training.
 \begin{table}[h!]
 \centering
 \caption{QOVT variants vs.\ QVF-Scratch on Model\_II.
-The two papers take complementary approaches to quantum advantage.
-\running{} = in progress.}
+$^\dagger$: mean over multiple runs (see Table~\ref{tab:sweep}/\ref{tab:fulldata}
+for individual values and ranges).}
 \label{tab:comparison}
 \begin{tabular}{@{}lrrrcc@{}}
 \toprule
 Method & $T$ & Total Params & Full-data AUC & $N{=}500$ AUC & NISQ \\
 \midrule
 QVF-Scratch quantum~\cite{wang2025qvf} & 96 & 142,795 & \win{0.9983} & ${\approx}0.97$ & No \\
-QOVT RY+CNOT quantum & 384 & 143,619 & \running{} & \win{0.9144} & \textbf{Yes} \\
-QOVT Givens quantum & 1,536 & 143,619 & 0.9940 & 0.5134 & No \\
-Classical MHA & --- & 207,619 & 0.9921 & \running{} & No \\
-MAE-ViT~\cite{prasha2025masked} & --- & 2,720,000 & 0.9682 & --- & No \\
+QOVT RY+CNOT quantum & 384 & 142,467 & 0.985$^\dagger$ & 0.9144 & \textbf{Yes} \\
+QOVT Givens quantum & 1,536 & 143,619 & 0.9940 & 0.526$^\dagger$ (unstable) & No \\
+Classical MHA & --- & 207,619 & 0.9921 & 0.910$^\dagger$ & No \\
+MAE-ViT (ours)~\cite{prasha2025masked} & --- & 2,722,947 & 0.9895 & --- & No \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -643,104 +710,135 @@ MAE-ViT~\cite{prasha2025masked} & --- & 2,720,000 & 0.9682 & --- & No \\
 QVF-Scratch (companion paper~\cite{wang2025qvf}) achieves the highest
 full-data AUC ($0.9983$) via amplitude encoding, but uses a CNN encoder
 and is simulation-only.
-QOVT RY+CNOT achieves lower full-data AUC (pending) but is
-\textbf{NISQ-deployable} and embeds the quantum circuit directly within
-the transformer attention mechanism.
-The two papers are complementary: QVF-Scratch is the performance-optimized
-variant; QOVT RY+CNOT is the hardware-deployable variant.
+QOVT RY+CNOT is comparable in full-data AUC to classical MHA and Givens
+(all within $\approx$1 point, Table~\ref{tab:fulldata}) but is
+\textbf{NISQ-deployable}, embedding the quantum circuit directly within
+the transformer attention mechanism at a depth ($O(48)$) compatible with
+current hardware coherence times.
+Unlike QVF-Scratch, whose 21/22-positive-margin sweep provides evidence
+for a consistent quantum-over-sham advantage, QOVT's own sweep
+(Table~\ref{tab:sweep}) shows RY+CNOT statistically tied with classical MHA
+at every tested $N$; QOVT's primary contribution is therefore
+\textbf{hardware deployability at competitive accuracy}, not a demonstrated
+quantum advantage over classical attention.
 
 % ─────────────────────────────────────────────────────────────
 \section{Analysis}
 \label{sec:analysis}
 
-\subsection{Why Orthogonal Constraints Help in the Low-Data Regime}
+\subsection{What the Orthogonality Constraint Does and Does Not Explain}
 
-The orthogonality constraint $U^\top U = I$ provides three distinct
-benefits for small-$N$ classification:
+The orthogonality constraint $U^\top U = I$ provides two properties we can
+state with confidence, and one claim that our own data does not support.
 
-\paragraph{1.\ Caro-bound tightening.}
-With $T{=}384$ angles, the RY+CNOT circuit's generalization bound
-is $\approx 2\times$ tighter than the sham's effective bound at any $N$
-(the sham has no quantum parameterization and falls outside
-Proposition~\ref{prop:caro}'s class, but its 32,768 unconstrained parameters
-suggest an even looser bound).
+\paragraph{1.\ Parameter efficiency (established).}
+$U$ and $V$ are each specified by $T/4$ rotation angles rather than $D^2$
+free entries---a real, architecture-level reduction, independent of whether
+it translates into a generalization advantage.
 
-\paragraph{2.\ Isometric regularization.}
-An orthogonal linear map preserves inner products and Euclidean distances.
-In the attention context, the attention scores
-$A_{ij} = \mathrm{softmax}(x_i^\top x_j / \sqrt{D})$
-(after simplification from Eq.~\ref{eq:qoattn})
-depend only on the \emph{direction} of token representations,
-not their magnitude.
-This prevents attention collapse---where a few tokens dominate all weights,
-a known failure mode of unconstrained transformers at small data.
+\paragraph{2.\ Spectral stability (established).}
+All singular values of $U$ and $V$ are identically $1$, so
+$\|U\|_2 = \|V\|_2 = 1$.
+Gradient magnitudes through the orthogonal projections are exactly preserved,
+which plausibly explains why RY+CNOT never exhibited the catastrophic
+training failures we observed for Givens (Section~\ref{sec:crossover}):
+its angles cannot individually blow up a key vector's norm the way an
+unconstrained linear layer's singular values can.
 
-\paragraph{3.\ Spectral stability.}
-All singular values of $U$ are identically $1$, so the operator norm
-$\|U\|_2 = 1$.
-Gradient magnitudes through the orthogonal projection are exactly preserved,
-preventing the ill-conditioned spectral growth that plagues
-unconstrained linear layers at small batch sizes (inevitable at small $N$).
+\paragraph{3.\ Caro-bound tightening (not supported at the tested $T$ values).}
+We had hypothesized that $T{=}384$'s tighter generalization bound relative to
+classical MHA's unconstrained parameterization would produce a measurable
+small-$N$ advantage.
+The data do not support this: RY+CNOT and classical MHA are statistically
+tied at every tested $N$ (Table~\ref{tab:sweep}), and the depth ablation
+(Table~\ref{tab:depth}) shows AUC \emph{increasing} with $T$ at $N{=}500$
+within the RY+CNOT family---the opposite of what a binding Caro bound would
+predict.
+We do not have evidence that the orthogonality constraint's contribution to
+this benchmark operates primarily through the generalization-bound channel;
+the spectral-stability channel (item 2) is the more empirically supported
+mechanism given that it correctly predicts \emph{which} circuit family
+(RY+CNOT, not Givens) avoids training failure.
 
-\subsection{Why Givens Fails at Small $N$}
+\subsection{Why Givens Fails Intermittently}
 
-The Givens butterfly's $T{=}1{,}536$ angles provide sufficient capacity to
-memorize the $N{=}500 \times 3 = 1{,}500$ training examples.
-Unlike the RY+CNOT circuit (which cannot fully memorize 1,500 examples
-with only 384 effective degrees of freedom), the Givens model can interpolate
-the training set exactly.
-This memorization manifests as near-chance test AUC ($0.5134$):
-the model has learned to correctly classify each training example via their
-identities, not their morphological features.
+We initially hypothesized that Givens' $T{=}1{,}536$ angles memorize the
+small $N{=}500$ training set, producing near-chance generalization.
+This account cannot explain why Givens \emph{also} fails at $N{=}8000$
+(Section~\ref{sec:crossover}), where $24{,}000$ total training examples are
+far too many to memorize with $1{,}536$ parameters.
+A memorization account predicts failure probability decreasing monotonically
+and vanishing well before $N{=}8000$; we instead observe failure at both
+the smallest and one of the largest tested $N$, with no failures at
+intermediate $N \in \{3000, 5000\}$ in our (small) sample.
+This pattern is more consistent with \textbf{stochastic optimization
+failure}---the training run occasionally lands in a degenerate region of a
+poorly-conditioned loss landscape and never escapes it within 50 epochs,
+independent of $N$---than with a data-size-dependent generalization
+phenomenon.
+The deeper compositional structure of the butterfly ($\log_2 D = 6$
+sequential Givens-rotation stages composed per matrix, versus RY+CNOT's
+shallower, redundant ring) is a plausible source of this conditioning
+sensitivity, but we have not directly measured the loss landscape to confirm
+it.
 
-\subsection{Why RY+CNOT Underperforms Givens at Full Data}
+\subsection{Revisiting the Full-Data Comparison}
 
-At full data ($N \approx 75{,}000$ total), the generalization bound
-is no longer the binding constraint: both models have abundant data
-to learn morphological features.
-In this regime, expressivity matters: the Givens butterfly can represent
-a richer subset of $O(64)$ (all $192$-angle great-circle paths through
-the orthogonal group) than the RY+CNOT ring (which is constrained
-to nearest-neighbor entanglement patterns).
-The crossover at $N^* \approx 7{,}000$--$8{,}000$ marks the transition
-from the generalization-limited to the expressivity-limited regime.
+At full data, we no longer find clear separation between architectures:
+RY+CNOT (mean $0.985$, range $0.976$--$0.997$ across 3 runs), Givens
+($0.9940$, 1 run), sham controls ($0.987$--$0.991$), classical MHA
+($0.9921$), and our reproduced MAE-ViT ($0.9895$) are within
+$\approx1.5$ points of each other on Model\_II, and RY+CNOT's own
+run-to-run range alone spans $2$ points.
+We no longer describe this as a "crossover" governed by an
+expressivity-vs-generalization trade-off (our earlier framing); the data are
+better summarized as: \emph{multiple architecturally distinct approaches
+converge to similar full-data performance on this benchmark}, and the
+differences that do appear at small $N$ are driven primarily by
+Givens-specific training instability rather than a general
+principle about quantum circuit design.
 
 % ─────────────────────────────────────────────────────────────
 \section{Conclusion}
 \label{sec:conclusion}
 
-We applied Quantum Orthogonal Vision Transformers (QOVT) to the task of
-three-class dark matter substructure classification on the DeepLense
-gravitational lensing benchmark, comparing two quantum circuit families that
-parameterize orthogonal attention matrices at different positions in the
-trainable-parameter--expressivity tradeoff.
+We applied Quantum Orthogonal Vision Transformers (QOVT) to three-class dark
+matter substructure classification on the DeepLense gravitational lensing
+benchmark, comparing two quantum circuit families---RY+CNOT ring ($T{=}384$)
+and Givens butterfly ($T{=}1{,}536$)---against classical sham and
+multi-head-attention controls, with all runs now complete
+(no \running{} entries remain).
 
 \paragraph{Summary of findings.}
-The primary finding is that the number of trainable quantum parameters $T$
-governs performance in the data-scarce regime, in quantitative agreement with
-the Caro et al.\ generalization bound $\epsilon \leq C\sqrt{T/N}$.
-At $N{=}500$/class, RY+CNOT ($T{=}384$) achieves AUC $0.9144$ while the
-Givens butterfly ($T{=}1{,}536$) collapses to AUC $0.5134$ (near chance)---
-a $0.401$ gap at identical architecture and training protocol.
-The bound predicts $\epsilon_\mathrm{Givens}/\epsilon_\mathrm{RY} \approx 2$
-at $N{=}500$, which is quantitatively consistent: the Givens model memorizes
-the 1,500 training examples and fails to generalize, while the RY+CNOT model's
-smaller parameter budget forces it to learn morphological features.
+The headline empirical result---RY+CNOT beating Givens by $0.40$ AUC at
+$N{=}500$---survives scrutiny, but the interpretation we originally attached
+to it does not.
+Classical MHA (unconstrained, more parameters) matches RY+CNOT within
+noise at every tested $N$ from 500 to full data (Table~\ref{tab:sweep}),
+so the $N{=}500$ gap is evidence of \emph{Givens-specific training
+instability}, not of quantum circuits outperforming classical attention.
+Corroborating this: (i) Givens fails again at $N{=}8{,}000$
+(AUC $0.558$), a data size too large for its parameter count to memorize,
+contradicting the memorization account we initially proposed;
+(ii) the RY+CNOT depth ablation shows AUC \emph{increasing} monotonically
+with $T \in \{192, 384, 576\}$ at $N{=}500$---the opposite of the Caro-bound
+prediction that motivated the ablation.
+At full data, RY+CNOT, Givens, both sham controls, classical MHA, and our
+reproduced MAE-ViT baseline (AUC $0.9895$, corrected from an earlier,
+erroneously low reported value) all land within $\approx1.5$ points of
+each other on Model\_II.
 
-At full data ($N \approx 25{,}000$/class), the expressivity advantage of the
-Givens butterfly reverses the order: AUC $0.9940$ on Model\_II, outperforming
-both the sham control ($0.9910$, $22\%$ more parameters) and classical MHA
-($0.9921$, $44\%$ more parameters).
-The crossover from RY+CNOT-dominated to Givens-dominated performance occurs
-between $N{=}5{,}000$ and $N{=}8{,}000$/class, providing an empirical estimate
-of the transition from the generalization-limited to the expressivity-limited
-regime under the Caro bound.
-
-Both the RY+CNOT and Givens QOVT variants outperform the 2.72M-parameter
-MAE-pretrained ViT at the data sizes where both are measured,
-consistent with the companion QVF-Scratch paper~\cite{wang2025qvf} and
-suggesting that compact quantum-parameterized models are particularly
-competitive on this benchmark relative to large pretrained baselines.
+We regard the confirmed contribution of this paper as narrower than
+originally framed: RY+CNOT is a \textbf{NISQ-deployable circuit that matches
+classical attention's accuracy on this benchmark at every tested data size},
+which is a meaningful engineering result (a working quantum circuit that
+does not underperform its classical counterpart) but is not evidence of a
+quantum learning advantage governed by the Caro bound.
+The Givens butterfly's intermittent, severe training failures (50\% of
+logged runs at $N \in \{500, 8000\}$) are a genuine and unexplained
+phenomenon worth reporting, but the evidence points to optimization
+instability in its deeper compositional structure rather than a
+generalization-theoretic effect.
 
 \paragraph{Hardware deployability.}
 The RY+CNOT ring circuit (8 layers of RY + CNOT ring on 6 qubits) is
@@ -748,36 +846,47 @@ natively executable on IBM Quantum, IonQ, and other superconducting/trapped-ion
 architectures with ring or linear-chain connectivity.
 Its circuit depth $O(48)$ is well within current coherence windows,
 and all trained parameters transfer directly from simulation to hardware.
-This constitutes, to our knowledge, the first quantum attention architecture
-for astrophysical image classification that is ready for real hardware execution.
+This remains, to our knowledge, a working quantum attention architecture for
+astrophysical image classification that is ready for real hardware execution,
+independent of whether it demonstrates a quantum \emph{advantage}.
 
 \paragraph{Limitations.}
-Several experiments remain in progress at submission time ($\ast$ in tables),
-including RY+CNOT full-data results and $L\in\{4,12\}$ depth ablations.
-The crossover $N^* \approx 7{,}000$--$8{,}000$/class is an interpolation
-requiring direct confirmation.
-All results are single-seed; multi-seed averaging is needed to establish
-per-cell statistical significance.
-Real hardware execution with noise characterization has not yet been performed
-and may modify the observed advantage.
+\label{sec:limitations}
+All results are single-seed except where explicitly noted as multi-run in
+Tables~\ref{tab:fulldata}--\ref{tab:comparison}; even the multi-run cells use
+only 2--3 seeds, insufficient for tight confidence intervals.
+We did not log training-set accuracy, so the memorization-vs-optimization-failure
+question for Givens (Section~\ref{sec:caro-prediction}) remains unresolved.
+The asymmetric $W_Q{=}I$, $W_K{=}U$ attention design (Section~\ref{sec:qoattn})
+differs from the symmetric $W_Q{=}W_K{=}U$ design our original theoretical
+framing assumed; we have not re-run experiments with the symmetric design,
+so we cannot rule out that it behaves differently.
+Real hardware execution with noise characterization has not yet been
+performed.
 
 \paragraph{Future work.}
-Priority directions are:
-(1)~complete the pending runs to fill all \running{} entries;
-(2)~$L \in \{4, 12\}$ depth ablation to confirm the non-monotone Caro prediction
-    (AUC at $N{=}500$ should increase as $T$ decreases from 384 to 192);
-(3)~real-hardware deployment on IBM Quantum Eagle/Heron with zero-noise
-    extrapolation~\cite{bharti2022nisq};
-(4)~combine QOVT orthogonal attention with QVF-Scratch amplitude encoding in a
-    unified quantum ViT.
+Priority directions, revised in light of the above:
+(1)~multi-seed (5+) reruns of the Givens $N{=}500$ and $N{=}8{,}000$
+    conditions with train-accuracy logging, to directly test the
+    memorization vs.\ optimization-failure hypotheses;
+(2)~implement and test the symmetric $W_Q{=}W_K{=}U$ attention variant that
+    the original theoretical framing described, to check whether it
+    behaves differently from the asymmetric variant we report here;
+(3)~a loss-landscape or Hessian-conditioning study comparing Givens and
+    RY+CNOT to test the optimization-instability hypothesis directly;
+(4)~real-hardware deployment on IBM Quantum Eagle/Heron with zero-noise
+    extrapolation~\cite{bharti2022nisq}, now that the RY+CNOT accuracy
+    claim (matching, not exceeding, classical MHA) is on firmer footing.
 
 \paragraph{Broader Impact.}
-This work provides concrete evidence about \emph{when} quantum circuit
-parameterization helps in practical machine learning:
-at $N \lesssim 5{,}000$/class and $T \lesssim 400$, the Caro generalization
-bound predicts and experiment confirms a measurable advantage.
-For astrophysical dark matter detection, where each new survey instrument
-initially yields limited labeled samples, this regime is directly relevant.
+This work is a cautionary as well as a positive result: our first-pass
+analysis over-attributed an accuracy gap to quantum generalization theory
+before checking it against a classical baseline (MHA) and a depth ablation
+that turned out to refute the theoretical prediction.
+Both checks were cheap and available before submission; we include this
+correction as a concrete illustration of why quantum-advantage claims in
+NISQ-era ML need matched classical baselines and falsifiable, pre-registered
+predictions, not just favorable comparisons against one classical control.
 No harmful applications are anticipated.
 
 % ─────────────────────────────────────────────────────────────

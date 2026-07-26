@@ -1,6 +1,11 @@
 % ============================================================
-%  QVF-Scratch — NeurIPS-style submission
-%  Neural Amplitude Encoding + 8-qubit PQC for lensing DM classification
+%  QVF-Hybrid — NeurIPS-style submission
+%  Guaranteed-floor hybrid quantum--classical classifier for
+%  dark-matter substructure in strong gravitational lensing.
+%  Rewritten (2026-07-21) from the earlier "QVF-Scratch: Consistent
+%  Quantum Advantage" draft; the earlier narrative is superseded by the
+%  null-baseline / hybrid / MAE-comparison campaign documented in
+%  docs/EXPERIMENTS_MASTER.md. All numbers trace to that master log.
 % ============================================================
 \documentclass[10pt,letterpaper]{article}
 
@@ -38,14 +43,20 @@
 \setlist[enumerate]{leftmargin=*,topsep=2pt,itemsep=1pt}
 \setlength{\parskip}{4pt}
 
-% --- Colors ---
+% --- Colors & helper macros ---
 \definecolor{good}{RGB}{22,163,74}
+\definecolor{bad}{RGB}{190,40,40}
 \definecolor{rowhi}{RGB}{220,252,231}
 \newcommand{\win}[1]{\textcolor{good}{\textbf{#1}}}
+\newcommand{\lose}[1]{\textcolor{bad}{#1}}
+% Placeholders for numbers still being computed (STATS / NOENT / M3).
+\newcommand{\pending}[1]{\textcolor{bad}{\textbf{[#1]}}}
 
 % ============================================================
-\title{\textbf{QVF-Scratch: Consistent Quantum Advantage via Neural Amplitude\\
-Encoding for Data-Efficient Gravitational Lensing Classification}}
+\title{\textbf{QVF-Hybrid: A Guaranteed-Floor Hybrid Quantum--Classical\\
+Architecture for Dark-Matter Substructure Classification}\\[4pt]
+\large Rigorous Controls, a Statistically Significant Module-Level Quantum Contribution,\\
+and an Honest Paradigm Comparison}
 
 \author{%
   Anonymous Authors\\[2pt]
@@ -60,33 +71,51 @@ Encoding for Data-Efficient Gravitational Lensing Classification}}
 
 % ─────────────────────────────────────────────────────────────
 \begin{abstract}
-We propose \textbf{QVF-Scratch} (Quantum Vision Features --- from Scratch),
-a hybrid quantum-classical architecture for classifying dark matter substructure
-in strong gravitational lensing images.
-A compact CNN encoder distills $64\times64$ grayscale images into 128-dimensional
-feature vectors, which are mapped to a valid quantum state via
-\emph{Neural Amplitude Encoding} (NAE)---a learnable Boltzmann normalization---
-and then processed by an 8-qubit Parametric Quantum Circuit (PQC) with
-$T{=}96$ trainable parameters before a linear classification head.
-The entire pipeline is trained end-to-end from random initialization with no
-pretraining or external data.
-
-Evaluated on the DeepLense benchmark (three dark matter models, 3-class AUC),
-QVF-Scratch achieves AUC $= 0.9983$ on Model\_II at full data---outperforming
-a capacity-matched \emph{sham} control (same architecture, circuit replaced by
-$\text{Linear}+\text{Tanh}$, $+$0.2\% more parameters, AUC $= 0.9928$)
-and the state-of-the-art MAE-pretrained ViT ($19\times$ more parameters,
-AUC $= 0.9682$) simultaneously.
-A systematic 11-point data-size sweep shows quantum-over-sham advantages in
-21 of 22 configurations, with a peak margin of $+0.112$ at intermediate $N$.
-Qubit-scaling experiments ($N_Q \in \{8, 10, 12\}$) confirm the advantage grows
-with Hilbert-space dimension in the data-scarce regime, consistent with the
-Caro et al.\ generalization bound $\epsilon \leq C\sqrt{T/N}$.
-We identify a \textbf{placement principle}: quantum PQCs benefit classification
-as low-dimensional readout heads on jointly trained encoders, but degrade
-performance when used as high-dimensional feature extractors.
-An angle-encoding (NISQ-compatible) variant validates the core effect without
-exponential statevector simulation.
+We present \textbf{QVF-Hybrid}, a hybrid quantum--classical architecture for
+classifying dark-matter substructure in strong gravitational-lensing images,
+built together with a control protocol designed to survive the fair-comparison
+standards recently demanded of quantum machine learning
+\cite{bowles2024,schnabel2025}.
+A compact CNN encoder produces a 128-dimensional feature vector $\mathbf{h}$;
+a quantum branch maps $\mathbf{h}$ through a learnable
+\emph{Neural Amplitude Encoding} (NAE) into an 8-qubit state, applies a
+\texttt{StronglyEntanglingLayers} circuit ($T{=}96$ trainable angles), and reads
+out 52 Pauli observables $\mathbf{m}$; a residual head classifies
+$\mathrm{concat}(\mathrm{LN}(\mathbf{h}), \mathrm{LN}(\mathbf{m}))$.
+Zeroing the $\mathbf{m}$-block reduces the head \emph{exactly} to a plain-CNN
+linear classifier (verified numerically, error $=0.0$), so the plain-CNN floor
+holds \emph{by construction}.
+Against three controls we report a three-tier characterization, each with its
+statistical status made explicit.
+\textbf{(1) Module level---vs.\ a parameter-matched sham} (circuit $\to$
+Linear$+$Tanh, with \emph{more} parameters): a \emph{statistically significant}
+low-data quantum contribution at the strongest cell (Model\_II, $N{=}250$),
+confirmed under a pre-registered two-stage sequential design ($n{=}20$, one-sided
+paired Wilcoxon, $p{=}0.0032 < \alpha{=}0.01$); its magnitude ($+1.4\%$ AUC)
+nonetheless stays \emph{below} our $3\%$ practical bar, an ablation attributes it
+to the amplitude-embedding structure and multi-basis readout rather than
+entanglement, and its direction replicates on a third dataset (Model\_III,
+$N{=}250$, $n{=}3$).
+\textbf{(2) Model level---vs.\ a plain-CNN null baseline} (the smallest model in
+the program, $93{,}763$ parameters): a \emph{constructive floor}---the hybrid is
+never materially below plain across all tested cells---but the point estimate over
+plain is not significant ($p{=}0.088$, $n{=}20$), so we make \emph{no} model-level
+advantage claim.
+\textbf{(3) Paradigm level---vs.\ the DeepLense MAE-ViT state-of-the-art}
+($2{,}722{,}947$ parameters, self-supervised pretraining): the hybrid clears the
+\emph{pre-registered} $\geq 3\%$ bar in 10 of 11 cells across three datasets
+($3$-seed, $3/3$ seed-paired, $+3.1$ to $+32.0$ AUC points), and on three
+representative low-$N$ cells this win is \emph{statistically significant}
+($n{=}10$, Holm $p{=}0.003$, $10/10$ seed-paired, $+22$--$28$ AUC points), using
+$1/19$ the parameters and \emph{zero} pretraining data.
+We are explicit that the quantum contribution stays \emph{below} our own $3\%$
+practical-significance bar, that the paradigm win belongs to the CNN
+inductive-bias family rather than to the circuit, and we report the negative
+results---wide-readout regression at mid-$N$, non-transferring qubit scaling, a
+dead circuit-learning-rate lever, and topological-feature and raw-pixel quantum
+failures---that bound the claim.
+To our knowledge this is the most controlled characterization of where a small
+quantum circuit does, and does not, help on gravitational-lensing classification.
 \end{abstract}
 
 % ─────────────────────────────────────────────────────────────
@@ -94,182 +123,193 @@ exponential statevector simulation.
 \label{sec:intro}
 
 Strong gravitational lensing is a promising probe of the substructure of
-dark matter halos~\cite{hezaveh2017fast,alexander2020deep}.
+dark-matter halos~\cite{hezaveh2017fast,alexander2020deep}.
 When light from a distant source passes near a massive foreground object,
 spacetime curvature produces observable arc distortions and ring morphologies.
-The subtle statistics of these distortions encode the foreground dark matter
+The subtle statistics of these distortions encode the foreground dark-matter
 distribution: axion (ultralight) dark matter~\cite{hui2017ultralight},
-cold dark matter (CDM) subhalos, and smooth (substructure-free) halos each
-leave distinct---and difficult to disentangle---morphological imprints in
+cold dark matter (CDM) subhalos, and smooth (substructure-free) halos each leave
+distinct---and difficult to disentangle---morphological imprints in
 $64\times64$ lensing images.
-Traditional inference methods based on flux-ratio anomalies~\cite{dalal2002detecting}
-and gravitational imaging~\cite{brehmer2019mining} are powerful but computationally
-prohibitive at the scale of forthcoming surveys (Rubin LSST, Euclid, Roman Space Telescope),
-which will deliver tens of thousands of strong lensing events.
-Reliably distinguishing these three scenarios in the data-scarce regime
-(few hundred labeled observations per class) is a central challenge.
+Traditional inference methods based on flux-ratio
+anomalies~\cite{dalal2002detecting} and gravitational
+imaging~\cite{brehmer2019mining} are powerful but computationally prohibitive at
+the scale of forthcoming surveys (Rubin LSST, Euclid, Roman Space Telescope),
+which will deliver tens of thousands of strong-lensing events.
+Reliably distinguishing these scenarios in the \emph{data-scarce} regime
+(a few hundred labeled observations per class) is a central challenge, and it is
+the regime in which the classical state-of-the-art is weakest.
 
-Classical deep learning has made substantial progress on automated lens classification.
-Convolutional architectures~\cite{hezaveh2017fast,lanusse2018cmu,alexander2020deep},
+Classical deep learning has made substantial progress on automated lens
+classification. Convolutional
+architectures~\cite{hezaveh2017fast,lanusse2018cmu,alexander2020deep},
 simulation-based inference~\cite{brehmer2019mining}, and most recently
-MAE-pretrained Vision Transformers~\cite{prasha2025masked} have pushed
-the benchmark AUC above $0.97$.
-However, these approaches share a critical limitation in the low-data regime:
-large parameter counts (${\geq}2.7\times10^6$ for MAE-ViT) lead to
-poor generalization when labeled samples number in the hundreds.
-Pretraining partially compensates, but it requires large unlabeled corpora
-that may not be available for novel survey instruments or rare lensing events.
+MAE-pretrained Vision Transformers~\cite{prasha2025masked} have pushed the
+benchmark AUC above $0.97$ at full data.
+Whether a \emph{quantum} circuit can add anything on top of such classical
+pipelines is the question this paper attacks---and it attacks it under the
+methodological microscope the field now requires.
 
-Quantum machine learning offers a different path.
-The Caro et al.\ generalization bound~\cite{caro2022} proves that a quantum
-model with $T$ trainable parameters achieves test-train gap at most
-$C\sqrt{T/N}$---independent of the model's depth, width, or Hilbert space
-dimension.
-With $T{=}96$ trainable circuit parameters, QVF-Scratch's Caro bound is
-$\sqrt{96/N}$, approximately $168\times$ tighter than MAE-ViT's
-$\sqrt{2.72\times10^6/N}$ at any fixed $N$.
-This motivates using quantum circuits not as general-purpose function
-approximators, but as ultra-parameter-efficient readout heads where the
-generalization guarantee is strongest.
+\paragraph{The baseline crisis in quantum machine learning.}
+A recurring lesson from the last two years of QML benchmarking is that reported
+quantum advantages evaporate once the classical control is made honest.
+Bowles et al.~\cite{bowles2024} show that many published hybrid quantum--classical
+models are beaten by trivially small classical baselines once architecture and
+parameter budget are matched; Schnabel et al.~\cite{schnabel2025} extend this to
+a systematic study over thousands of model instances and find no robust quantum
+edge on standard supervised tasks.
+The failure mode is almost always the same: the ``quantum'' model is compared
+against either (i) a much larger classical model it happens to beat for reasons
+unrelated to the circuit, or (ii) a handicapped classical ``sham'' whose deficit
+the circuit merely recovers.
+A companion study of our own on Quantum Orthogonal Vision Transformers reaches an
+identically cautionary conclusion---the orthogonal (RBS) attention circuit
+\emph{matches but does not beat} full classical multi-head attention, and its
+apparent low-data edge is an orthogonality regularizer, not a quantum
+effect~\cite{qovt_companion,cherrat2022}.
+Any credible quantum-contribution claim must therefore be defended against a
+\emph{ladder} of controls, not a single favorable comparison.
 
-Our main contributions are:
+\paragraph{Our contribution: a control ladder and an honest characterization.}
+We do not claim quantum advantage.
+Instead we build the strongest hybrid architecture we can for the quantum side,
+subject it to a complete control ladder, and report precisely what survives.
+Concretely:
 \begin{enumerate}
-  \item \textbf{Consistent quantum advantage} (21/22 positive margins):
-        QVF-Scratch quantum outperforms a capacity-matched sham control across
-        all 11 tested data sizes and both primary datasets, with peak
-        $\Delta{=}{+}0.112$ on Model\_II at $N{=}1500$/class.
-  \item \textbf{State-of-the-art with $19\times$ fewer parameters}:
-        At all tested data sizes up to $N{=}8000$/class,
-        QVF-Scratch (142,795 params, no pretraining) outperforms
-        MAE-ViT (2,720,000 params, pretrained on ImageNet-scale unlabeled data).
-  \item \textbf{Qubit scaling law}: Increasing $N_Q$ from 8 to 12
-        monotonically improves advantage in the unsaturated regime
-        ($N \leq 2000$/class), the opposite of classical capacity saturation.
-  \item \textbf{Placement principle}: Quantum circuits help as low-dimensional
-        readout heads on jointly trained encoders; they hurt as high-dimensional
-        feature extractors (QCNN) or on frozen encoders (QVF on MAE-ViT).
-  \item \textbf{NISQ validation}: Angle encoding (data re-uploading, circuit
-        depth $O(N_Q)$) achieves positive $\Delta$ at full data on both datasets,
-        confirming the effect does not depend on exponential statevector simulation.
+  \item \textbf{A guaranteed-floor architecture.}
+        QVF-Hybrid places the quantum branch \emph{in residual}: the classifier
+        sees $\mathrm{concat}(\mathrm{LN}(\mathbf{h}),\mathrm{LN}(\mathbf{m}))$,
+        and zeroing the quantum block recovers the plain-CNN linear classifier
+        exactly (Proposition~\ref{prop:floor}). The plain-CNN null baseline is a
+        \emph{lower bound by construction}, not by luck.
+  \item \textbf{A statistically significant module-level quantum contribution
+        vs.\ a parameter-matched sham.}
+        On Model\_II at $N{=}250$ the residual quantum branch beats its sham by a
+        margin that is significant under a pre-registered two-stage sequential
+        test ($n{=}20$, $p{=}0.0032 < \alpha{=}0.01$); the effect is small
+        ($+1.4\%$ AUC, below our $3\%$ practical bar), attributable to circuit
+        structure rather than entanglement, and directionally replicated on
+        Model\_III (Section~\ref{sec:significance}).
+  \item \textbf{A large, partly significance-tested paradigm win over MAE-ViT.}
+        With $1/19$ the parameters and no pretraining, QVF-Hybrid clears the
+        \emph{pre-registered} $\geq 3\%$ bar over the MAE-ViT SOTA in 10 of 11
+        cells across three datasets ($3$-seed, $3/3$ seed-paired, $+3.1$ to
+        $+32.0$ AUC points); on three representative low-$N$ cells this win is
+        statistically significant ($n{=}10$, Holm $p{=}0.003$, $10/10$
+        seed-paired, $+22$--$28$ AUC points). We attribute the win to the CNN
+        inductive-bias family, of which the hybrid is the strongest variant
+        (Section~\ref{sec:maecomp}).
+  \item \textbf{An entanglement ablation.}
+        Under the literature's fair-comparison protocol
+        (equal parameter shape, entangling vs.\ entanglement-free vs.\ classical),
+        the entangling circuit strictly beats its Rot-only version, which strictly
+        beats the linear sham, in 6 of 6 three-arm cells on the forced-readout
+        architecture---an ordering that collapses to ENT $\approx$ NOENT once the
+        residual bypass removes the bottleneck, localizing the residual benefit to
+        amplitude-embedding structure rather than the entangling ring
+        (Section~\ref{sec:entanglement}).
+  \item \textbf{Negative results as first-class findings.}
+        We document where the quantum side fails---wide readouts, qubit scaling
+        on the residual architecture, learning-rate levers, topological input
+        features, and raw-pixel quantum encoders---so the reader can see the
+        boundary of the claim, not just its interior (Section~\ref{sec:negative}).
 \end{enumerate}
+
+The organizing theoretical fact, made precise in Section~\ref{sec:analysis}, is a
+\emph{data-processing} constraint: the quantum branch is a deterministic function
+of $\mathbf{h}$, so it can reshape the geometry the linear head sees but cannot
+add label information the CNN has not already extracted. This predicts exactly
+what we observe---a low-$N$ prior with real but bounded value, redundant at high
+$N$---and it explains why the large module-level margins of our earliest
+experiments were an artifact of a handicapping bottleneck rather than a genuine
+quantum information gain.
 
 % ─────────────────────────────────────────────────────────────
 \section{Related Work}
 \label{sec:related}
 
 \paragraph{Deep learning for gravitational lensing.}
-Early CNN approaches to strong-lens classification established the
-feasibility of automated morphological discrimination~\cite{hezaveh2017fast,lanusse2018cmu}.
-Alexander et al.~\cite{alexander2020deep} demonstrated deep morphology learning for dark matter
-substructure, and Brehmer et al.~\cite{brehmer2019mining} introduced simulation-based inference
-to marginalise over subhalo populations.
-The state-of-the-art~\cite{prasha2025masked} applies Masked Autoencoder pretraining
-to a Vision Transformer, reaching AUC ${\approx}0.97$ at full data but requiring
-2.72M parameters and a large-scale pretraining phase.
-Our work addresses the low-data frontier that these methods underserve.
+Early CNN approaches to strong-lens classification established the feasibility of
+automated morphological discrimination~\cite{hezaveh2017fast,lanusse2018cmu}.
+Alexander et al.~\cite{alexander2020deep} demonstrated deep morphology learning
+for dark-matter substructure, and Brehmer et al.~\cite{brehmer2019mining}
+introduced simulation-based inference to marginalize over subhalo populations.
+The current state-of-the-art~\cite{prasha2025masked} applies Masked-Autoencoder
+(MAE) pretraining to a Vision Transformer, reaching AUC ${\approx}0.97$ at full
+data but requiring $2.72\mathrm{M}$ parameters and a large-scale self-supervised
+pretraining phase on unlabeled lensing images. It is the paradigm baseline we
+target, and---crucially---the low-data frontier it underserves is where we test.
+
+\paragraph{Honest benchmarking of quantum models.}
+Our methodology follows the fair-comparison program of
+Bowles et al.~\cite{bowles2024} and the large-scale null study of
+Schnabel et al.~\cite{schnabel2025}, both of which demonstrate that a
+capacity-matched classical control (a ``sham'') is the minimum bar for any
+module-level quantum claim, and that isolated single-seed positives routinely
+flip sign under replication.
+We adopt three of their disciplines directly---capacity-matched shams,
+multi-seed replication, and pre-registered success criteria---and add a
+constructive-floor null baseline and an information-theoretic account of the
+mechanism.
 
 \paragraph{Quantum generalization theory.}
 Foundational results establish that quantum models can generalize from fewer
 samples than their expressivity might suggest.
-Caro et al.~\cite{caro2022} prove that the generalization gap of a $T$-parameter quantum
-circuit on $N$ samples is bounded by $C\sqrt{T/N}$, independent of Hilbert space
-dimension.
-Huang et al.~\cite{huang2021power} examine the comparative advantage of quantum versus
-classical models as a function of data.
-Liu et al.~\cite{liu2021rigorous} give provable quantum speed-up in supervised learning
-for specific kernel classes.
-We leverage the Caro bound as a design principle, not merely a post-hoc analysis.
+Caro et al.~\cite{caro2022} prove that the generalization gap of a $T$-parameter
+quantum circuit on $N$ samples is bounded by $C\sqrt{T/N}$, independent of
+Hilbert-space dimension. Huang et al.~\cite{huang2021power} examine the
+comparative advantage of quantum versus classical models as a function of data,
+and Liu et al.~\cite{liu2021rigorous} give a provable quantum speed-up for
+specific kernel classes, building on the feature-Hilbert-space view of quantum
+models~\cite{schuld2019kernel}. We use the Caro bound as a design principle for the
+\emph{parameter efficiency} of the quantum branch, while being careful
+(Section~\ref{sec:analysis}) not to over-read it as a promise of advantage.
 
 \paragraph{Hybrid quantum-classical architectures.}
-Quanvolutional networks~\cite{henderson2020quanvolutional} and quantum CNNs~\cite{cong2019quantum}
-established the hybrid paradigm.
+Quanvolutional networks~\cite{henderson2020quanvolutional} and quantum
+CNNs~\cite{cong2019quantum} established the hybrid paradigm.
 Transfer learning~\cite{mari2020transfer} between classical and quantum components
 showed that classical pretraining followed by quantum fine-tuning is viable.
 Hybrid Quantum Vision Transformers have been applied to high-energy
-physics~\cite{unlu2024hybrid,comajoan2024quantum,tesi2024quantum}.
-Our \emph{placement principle} (Section~\ref{sec:placement}) unifies several
-of these findings: the quantum advantage is localized to the readout head,
-not the feature extraction stage.
+physics~\cite{unlu2024hybrid,comajoan2024quantum,tesi2024quantum}, and orthogonal
+(RBS) attention circuits to image
+classification~\cite{cherrat2022}. Our own companion negative result on the
+latter~\cite{qovt_companion}, together with quantum-MAE
+studies~\cite{andrews2025qmae}, motivates the residual, guaranteed-floor design
+here: rather than replacing a classical stage with a quantum one and hoping it
+does not regress, we add the quantum branch \emph{in parallel} so that the worst
+case is exactly the classical baseline.
 
 \paragraph{Amplitude encoding.}
 Efficient state preparation is a long-standing challenge in quantum
 computing~\cite{mottonen2005transformation,grover2002creating}.
 Zoufal et al.~\cite{zoufal2019qgan} used quantum GANs for distribution loading.
-Wang et al.~\cite{wang2025} proposed Neural Amplitude Encoding---a learnable Boltzmann
-normalization that jointly trains the encoder and circuit---in the context of
-quantum implicit neural representations.
-We adapt NAE to the astrophysical classification setting, demonstrating that
-end-to-end training from scratch is critical for the advantage to emerge.
+Wang et al.~\cite{wang2025} proposed \emph{Neural Amplitude Encoding}---a
+learnable Boltzmann normalization that jointly trains an encoder and circuit---in
+the context of quantum implicit neural representations~\cite{zhao2024quantum}.
+We borrow the NAE state-preparation map only; our task (classification), circuit
+ansatz, and readout differ from theirs.
 
 \paragraph{Expressibility and trainability of PQCs.}
-Sim et al.~\cite{sim2019expressibility} characterize PQC expressibility via the deviation
-from Haar-random distributions.
-McClean et al.~\cite{mcclean2018barren} identify barren plateaus as the central trainability
-bottleneck for deep quantum circuits, and Cerezo et al.~\cite{cerezo2021cost} show that
-cost-function locality can mitigate them.
-Schuld et al.~\cite{schuld2021effect} analyze how data encoding affects the expressive power
-of variational models.
-Our training audit (Section~\ref{sec:audit}) verifies absence of barren plateaus
-in the 8-qubit SEL configuration used in QVF-Scratch.
+Sim et al.~\cite{sim2019expressibility} characterize PQC expressibility via
+deviation from Haar-random distributions.
+McClean et al.~\cite{mcclean2018barren} identify barren plateaus as the central
+trainability bottleneck for deep quantum circuits, and
+Cerezo et al.~\cite{cerezo2021cost} show that cost-function locality can mitigate
+them. Schuld et al.~\cite{schuld2021effect} analyze how data encoding affects the
+expressive power of variational models. Our training audit
+(Section~\ref{sec:analysis}) verifies the absence of barren plateaus in the
+8-qubit configuration used here.
 
 % ─────────────────────────────────────────────────────────────
-\section{Theoretical Background}
-\label{sec:theory}
-
-\subsection{The Caro Generalization Bound}
-
-\begin{proposition}[\cite{caro2022}]
-\label{prop:caro}
-Let $\mathcal{F}$ be a hypothesis class of quantum models parameterized by
-$T$ trainable rotation angles, and let $\hat{h}\in\mathcal{F}$ be the empirical
-risk minimizer over $N$ i.i.d.\ samples.
-Then, with probability at least $1-\delta$,
-\[
-  \mathcal{R}(\hat{h}) - \hat{\mathcal{R}}(\hat{h})
-  \;\leq\;
-  C\sqrt{\frac{T}{N}} + O\!\left(\sqrt{\frac{\log(1/\delta)}{N}}\right),
-\]
-where $C$ is a universal constant independent of model depth, width, or
-Hilbert space dimension.
-\end{proposition}
-
-\begin{corollary}
-\label{cor:qvf-caro}
-QVF-Scratch has $T_{\mathrm{QVF}} = 96$ circuit parameters.
-The 2.72M-parameter MAE-ViT baseline can be interpreted as having
-$T_{\mathrm{MAE}} \approx 2.72\times10^6$ in an analogous classical bound.
-The ratio $\sqrt{T_{\mathrm{MAE}}/T_{\mathrm{QVF}}} \approx 168$
-quantifies the bound tightening of QVF-Scratch at any fixed $N$.
-\end{corollary}
-
-\begin{remark}
-The bound depends on $T$, the number of \emph{trainable quantum rotation angles},
-not on the total number of classical parameters in the hybrid pipeline.
-The CNN encoder's 83,072 classical parameters do not enter $T$; only the 96
-PQC rotation angles do.
-This is why a small $T$ can coexist with a larger overall parameter count.
-\end{remark}
-
-\subsection{Neural Amplitude Encoding}
-
-A valid $n$-qubit state requires amplitudes $\{a_i\}_{i=0}^{2^n-1}$ satisfying
-$a_i \in \mathbb{R}$, $a_i \geq 0$, and $\sum_i a_i^2 = 1$.
-Naïve normalization of arbitrary network outputs can produce near-degenerate
-states (one amplitude dominates) that saturate the AmplitudeEmbedding circuit.
-Wang et al.~\cite{wang2025} proposed the Boltzmann normalization:
-\begin{equation}
-  a_i = \sqrt{\mathrm{softmax}(-E_\phi(h))_i},
-  \label{eq:nae}
-\end{equation}
-where $E_\phi : \mathbb{R}^d \to \mathbb{R}^{2^n}$ is a learned energy function.
-This guarantees $\sum_i a_i^2 = 1$ identically for any $E_\phi$,
-and the negative-energy formulation encourages high-energy states
-(representing rare patterns) to receive lower amplitude weight---a
-physically motivated prior for anomaly-style tasks.
-
-% ─────────────────────────────────────────────────────────────
-\section{Method}
+\section{Method: A Diagnosis-Driven Architecture}
 \label{sec:method}
+
+We present the architecture as it actually developed---a sequence of
+controls, each of which falsified a simpler story and forced the next design
+choice. This ordering is not narrative decoration; it is the evidence that the
+final residual design is a considered response to specific failures rather than a
+lucky configuration.
 
 \subsection{Notation}
 \label{sec:notation}
@@ -285,40 +325,40 @@ $x \in \mathbb{R}^{64 \times 64}$ & Input lensing image (grayscale) \\
 $\mathbf{h} \in \mathbb{R}^{128}$ & CNN feature vector \\
 $\mathbf{a} \in \mathbb{R}^{256}$ & Valid quantum amplitude vector ($\sum_i a_i^2 = 1$) \\
 $|\psi\rangle$ & 8-qubit quantum state ($2^8 = 256$ amplitudes) \\
-$\mathbf{m} \in [-1,1]^8$ & PQC output: Pauli-$Z$ expectation values \\
-$T$ & Number of trainable quantum rotation angles (96) \\
+$\mathbf{m}$ & PQC readout: Pauli expectation values ($8$ or $52$, see text) \\
+$T$ & Number of trainable quantum rotation angles ($96$) \\
 $N$ & Number of training samples per class \\
 $N_Q$ & Number of qubits \\
-$\theta$ & All trainable parameters: $\{\theta_\mathrm{CNN}, \theta_\mathrm{NAE}, \theta_\mathrm{PQC}, \theta_\mathrm{head}\}$ \\
+$\theta$ & All trainable parameters $\{\theta_\mathrm{CNN}, \theta_\mathrm{NAE}, \theta_\mathrm{PQC}, \theta_\mathrm{head}\}$ \\
 \bottomrule
 \end{tabular}
 \label{tab:notation}
 \end{table}
 
-\subsection{Overall Architecture}
+\subsection{Step 1 --- QVF-Scratch: the quantum readout head}
+\label{sec:scratch}
 
-The model $f_\theta : \mathbb{R}^{64\times64} \to \mathbb{R}^3$ consists of
-four jointly trained modules:
+\paragraph{Pipeline.}
+The starting architecture, \emph{QVF-Scratch}, is a four-stage pipeline
+$f_\theta : \mathbb{R}^{64\times64} \to \mathbb{R}^3$ trained end-to-end from
+random initialization with no pretraining or external data:
 \begin{equation}
   x
   \;\xrightarrow{\mathrm{CNN}}\;
   \mathbf{h} \in \mathbb{R}^{128}
   \;\xrightarrow{\mathrm{NAE}}\;
   \mathbf{a} \in \mathbb{R}^{256}
-  \;\xrightarrow{\mathrm{8\text{-}qubit\ PQC}}\;
-  \mathbf{m} \in [-1,1]^8
+  \;\xrightarrow{\text{8-qubit PQC}}\;
+  \mathbf{m} \in [-1,1]^{8}
   \;\xrightarrow{\mathrm{head}}\;
   \hat{y} \in \mathbb{R}^3.
   \label{eq:pipeline}
 \end{equation}
-All modules are trained jointly via PennyLane \texttt{backprop}
-(automatic differentiation through the quantum circuit).
-No pretraining or external data is used.
+All modules are trained jointly via PennyLane \texttt{backprop} (automatic
+differentiation through the exact statevector).
 
-\subsection{CNN Encoder}
-
-Three strided convolution blocks reduce $1\times64\times64$ to a 128-dimensional
-feature vector:
+\paragraph{CNN encoder.}
+Three strided convolution blocks reduce $1\times64\times64$ to $\mathbf{h}$:
 \begin{equation}
   \mathbf{h}
   = \mathrm{AdaptiveAvgPool2d}(1)\!\left(
@@ -327,480 +367,870 @@ feature vector:
       \mathrm{ConvBnReLU}_{32}(x)
     \right) \in \mathbb{R}^{128},
 \end{equation}
-where each $\mathrm{ConvBnReLU}_c$ uses kernel size 3, stride 2, padding 1.
+each $\mathrm{ConvBnReLU}_c$ using kernel size $3$, stride $2$, padding $1$
+($93{,}120$ parameters total).
 
-\subsection{Neural Amplitude Encoding}
-
-A two-layer energy MLP maps $\mathbf{h}$ to 256 valid quantum amplitudes:
+\paragraph{Neural Amplitude Encoding.}
+A two-layer energy MLP maps $\mathbf{h}$ to $256$ valid amplitudes via the
+Boltzmann construction of~\cite{wang2025}:
 \begin{align}
-  E_\phi(\mathbf{h}) &= W_2 \tanh(W_1 \mathbf{h} + b_1) + b_2
-                      \;\in\; \mathbb{R}^{256}, \label{eq:energy} \\
-  \mathbf{a}         &= \sqrt{\mathrm{softmax}(-E_\phi(\mathbf{h}))} + \varepsilon \mathbf{1},
-                      \quad \|\mathbf{a}\|_2 = 1. \label{eq:nae-full}
+  E_\phi(\mathbf{h}) &= W_2 \tanh(W_1 \mathbf{h} + b_1) + b_2 \;\in\; \mathbb{R}^{256}, \label{eq:energy}\\
+  \mathbf{a}         &= \sqrt{\mathrm{softmax}(-E_\phi(\mathbf{h}))} + \varepsilon\mathbf{1},
+                       \qquad \|\mathbf{a}\|_2 = 1, \label{eq:nae}
 \end{align}
-The $\sqrt{\mathrm{softmax}(-\cdot)}$ construction ensures non-negativity and
-normalization for any $E_\phi$, and the small regularizer $\varepsilon = 10^{-6}$
-prevents zero-amplitude entries.
+with $\varepsilon = 10^{-6}$. The $\sqrt{\mathrm{softmax}(-\cdot)}$ form guarantees
+non-negativity and unit norm for \emph{any} $E_\phi$, so it never saturates the
+\texttt{AmplitudeEmbedding} circuit.
 
-\subsection{Quantum Circuit}
-
-\paragraph{AmplitudeEmbedding.}
-The 256-component vector $\mathbf{a}$ is loaded as the amplitude vector of an
-8-qubit state via PennyLane's \texttt{AmplitudeEmbedding}:
+\paragraph{Quantum circuit and measurement.}
+The amplitudes are loaded as an 8-qubit state
+$|\psi_0\rangle = \sum_{i=0}^{255} a_i |i\rangle$, then rotated by four
+\texttt{StronglyEntanglingLayers} (SEL)~\cite{pennylane},
 \begin{equation}
-  |\psi_0\rangle
-  = \sum_{i=0}^{255} a_i |i\rangle,
-  \quad \sum_i a_i^2 = 1.
+  |\psi_\mathrm{out}\rangle = U(\theta_\mathrm{PQC})\,|\psi_0\rangle,
+  \qquad T = 3 \times 8 \times 4 = 96 \text{ angles,}
 \end{equation}
+each layer applying arbitrary single-qubit rotations followed by a CNOT
+entanglement ring. The scratch readout is the vector of Pauli-$Z$ expectations
+$\mathbf{m} = [\langle \hat{Z}_q\rangle]_{q=0}^{7} \in [-1,1]^{8}$, and the head is
+$\hat{y} = W_\mathrm{cls}\,\mathrm{LayerNorm}(\mathbf{m}) + b_\mathrm{cls}$.
+The \emph{sham} control replaces the PQC with $\mathrm{Linear}(256,8)+\mathrm{Tanh}$,
+keeping every other module identical; the sham has \emph{more} parameters
+($144{,}755$) than the quantum model ($142{,}795$).
 
-\paragraph{StronglyEntanglingLayers.}
-Four layers of \texttt{StronglyEntanglingLayers} (SEL; \cite{pennylane}) apply
-a parameterized unitary $U(\theta_\mathrm{PQC})$:
-\begin{equation}
-  |\psi_\mathrm{out}\rangle = U(\theta_\mathrm{PQC}) |\psi_0\rangle,
-  \qquad T = 3 \times 8 \times 4 = 96 \text{ rotation angles.}
-\end{equation}
-Each SEL layer applies arbitrary single-qubit rotations (3 angles per qubit)
-followed by a full CNOT entanglement ring.
-
-\paragraph{Measurement.}
-The measurement output is the vector of Pauli-$Z$ expectation values:
-\begin{equation}
-  \mathbf{m} = \bigl[\langle \hat{Z}_q \rangle\bigr]_{q=0}^{7}
-             = \bigl[\langle \psi_\mathrm{out} | Z_q | \psi_\mathrm{out}\rangle\bigr]_{q=0}^{7}
-             \in [-1,1]^8.
-\end{equation}
-
-\subsection{Classification Head}
-
-\begin{equation}
-  \hat{y} = W_\mathrm{cls} \cdot \mathrm{LayerNorm}(\mathbf{m}) + b_\mathrm{cls}
-          \in \mathbb{R}^3,
-\end{equation}
-where $W_\mathrm{cls} \in \mathbb{R}^{3 \times 8}$ and $b_\mathrm{cls} \in \mathbb{R}^3$.
-The LayerNorm re-centres the PQC outputs before the linear projection,
-stabilizing training when expectation values drift early in optimization.
-
-\subsection{Training Protocol}
-\label{sec:training}
-
-\textbf{Optimizer.} AdamW with learning rate $3\times10^{-4}$, weight decay $0.01$,
-$(\beta_1, \beta_2) = (0.9, 0.999)$.
-
-\textbf{Schedule.} Cosine annealing from the initial learning rate to $0$
-over 50 epochs; no warm-up.
-
-\textbf{Batch size.} 64 samples.
-
-\textbf{Loss.} Cross-entropy on 3-class labels (axion / CDM / no-substructure).
-
-\textbf{Evaluation.} The checkpoint achieving the highest one-vs-rest macro-averaged
-AUC on the validation split is retained.
-Final metrics are reported on this best-val-AUC checkpoint, \emph{not} the last epoch
-(cyclical KL schedules in related work can cause last-epoch instability;
-we avoid this by checkpoint selection).
-
-\textbf{Reproducibility.} Random seed \texttt{42} is fixed for data splitting
-and weight initialization in all experiments.
-No data augmentation is applied; images are loaded as $64\times64$ single-channel
-grayscale tensors normalized to $[0,1]$.
-
-\textbf{Hardware and software.} NVIDIA H200 GPU; PennyLane 0.38 with
-\texttt{default.qubit} simulator and \texttt{backprop} differentiation method
-(exact statevector, no shot noise, allows gradient flow through the circuit).
-
-\subsection{Sham Control}
-\label{sec:sham}
-
-The sham replaces the PQC with
-$\mathrm{Linear}(256, 8) + \mathrm{Tanh}$,
-keeping the CNN encoder, NAE, and classification head identical.
-The sham has \emph{more} classical parameters (144,755) than the quantum
-model (142,795), so any observed advantage cannot be attributed to capacity.
-The sham is the primary ablation control throughout this paper.
-
-\subsection{Parameter Summary}
+\paragraph{The apparent win---and why it is not the end of the story.}
+QVF-Scratch beats both its sham and the MAE-ViT SOTA at full data on all three
+datasets (Table~\ref{tab:scratch-full}), and an 11-point data-size sweep
+(single seed) found the quantum-over-sham margin positive at $21$ of $22$ points,
+peaking at $\Delta{=}{+}0.112$ at $N{=}1500$/class on Model\_II. Taken alone, this is exactly
+the kind of result the benchmarking literature warns against: a favorable
+comparison against a handicapped sham and an oversized ViT. The rest of this
+section is the ladder of controls that recontextualizes it.
 
 \begin{table}[h!]
 \centering
-\caption{Parameter counts for all model components.}
-\begin{tabular}{@{}lrr@{}}
+\caption{QVF-Scratch full data ($\approx 25{,}000$/class, 9:1 split,
+\texttt{seed=42}, single seed). The apparent win that motivated the controls
+below. MAE-ViT is our own protocol-matched reproduction of~\cite{prasha2025masked}
+(reproduces its self-reported $0.968$).}
+\label{tab:scratch-full}
+\begin{tabular}{@{}lcccc@{}}
 \toprule
-Component & QVF-Quantum & QVF-Sham \\
+Dataset & QVF-Q (142.8k) & QVF-Sham (144.8k) & MAE-ViT (2.72M) & Q$-$Sham \\
 \midrule
-CNN Encoder (ConvBnReLU $\times$3) & 83,072 & 83,072 \\
-NAE (Linear 128$\to$128$\to$256) & 49,920 & 49,920 \\
-PQC / Linear+Tanh & 96 & 2,056 \\
-Head (LayerNorm + Linear 8$\to$3) & 35 & 35 \\
-\midrule
-\textbf{Total} & \textbf{142,795} & \textbf{144,755} \\
-\midrule
-\textit{MAE-ViT baseline (pretrained)} & \textit{2,720,000} & --- \\
+Model\_I  & \win{0.9805} & 0.9790 & 0.9778 & $+0.0015$ \\
+Model\_II & \win{0.9983} & 0.9928 & 0.9895 & $+0.0055$ \\
+Dataset1  & \win{0.9983} & 0.9960 & 0.9895 & $+0.0023$ \\
 \bottomrule
 \end{tabular}
-\label{tab:params}
 \end{table}
 
-\subsection{Angle Encoding Variant (NISQ-Compatible)}
-\label{sec:angle}
+\subsection{Step 2 --- The null baseline: a plain CNN Pareto-dominates}
+\label{sec:tax}
 
-Amplitude encoding requires $O(2^{N_Q})$ circuit operations for state preparation
-and is simulation-only at scale.
-Our angle-encoding variant replaces \texttt{AmplitudeEmbedding} with
-data re-uploading~\cite{perez2020}: CNN features are encoded as RY rotation
-angles and re-uploaded at each of 8 layers.
-Circuit depth is $O(N_Q)$, directly executable on NISQ hardware.
+The control a reviewer actually demands is neither a handicapped sham nor an
+oversized ViT: it is a \emph{plain classical CNN with a direct readout}, same
+encoder, same protocol, \emph{fewer} parameters. We built two:
+\begin{itemize}
+  \item \textbf{plain-lin}: $\mathrm{CNN}\to\mathrm{LayerNorm}\to\mathrm{Linear}(128,3)$,
+        \textbf{$93{,}763$ params}---the smallest model in the entire program;
+  \item \textbf{plain-mlp}: $\mathrm{CNN}\to\mathrm{Linear}(128,371)\to\mathrm{ReLU}
+        \to\mathrm{LN}\to\mathrm{Linear}(371,3)$, $142{,}837$ params
+        (capacity-matched to the quantum model).
+\end{itemize}
+Run under the identical protocol, the $93{,}763$-parameter plain-lin CNN
+\emph{matches or beats every quantum variant} (QVF-scratch, and the QOVT variants
+of the companion study) \emph{and} the $2.72\mathrm{M}$ MAE-ViT at essentially
+every $(\text{dataset}, N)$. At $N{=}500$/class on Model\_II it beats QVF-scratch
+quantum by $+0.092$---the very low-data regime where quantum regularization was
+supposed to be strongest.
+
+\paragraph{A three-column ledger.}
+The apparent scratch win decomposes into a \emph{bottleneck tax} and a partial
+\emph{recovery}. Forcing all $128$ CNN dimensions through the NAE$\,\to\,$circuit
+readout costs information (tax); the quantum circuit recovers part of it over the
+linear sham (recovery); the \emph{net} against the un-taxed plain CNN is what
+matters. Table~\ref{tab:ledger} shows the ledger at the worst-tax cell.
+
+\begin{table}[h!]
+\centering
+\caption{The bottleneck-tax ledger at Model\_II, $N{=}500$/class
+(single-seed diagnostic values, job 162187/186817). The forced readout loses to
+plain-lin (\emph{tax}); the circuit recovers over the linear sham
+(\emph{recovery}); the net is still negative until the residual bypass of
+Section~\ref{sec:hybrid}.}
+\label{tab:ledger}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Quantity & AUC & vs.\ plain-lin \\
+\midrule
+plain-lin (un-taxed CNN, $93.8$k) & 0.9129 & --- \\
+QVF-scratch quantum (forced $8$-dim readout) & 0.8206 & \lose{$-0.092$} (tax) \\
+QVF-scratch sham (forced linear readout) & 0.7683 & \lose{$-0.145$} \\
+\midrule
+\emph{recovery} (quantum $-$ sham, inside bottleneck) & \multicolumn{2}{c}{$+0.052$} \\
+\emph{net} (quantum $-$ plain-lin) & \multicolumn{2}{c}{\lose{$-0.092$}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The reading is unambiguous: the $8$-dimensional measurement bottleneck is a
+\emph{handicap}, not a regularizer (it loses even at $N{=}500$, where
+regularization should help most), and the ``$21/22$ quantum $>$ sham'' result was
+measured entirely inside a family that a plain CNN dominates. This is the
+null-baseline correction that the earlier draft of this work lacked.
+
+\subsection{Step 3 --- QVF-Wide: widening the readout is not enough}
+\label{sec:wide}
+
+If the tax is a width problem, widening the readout should remove it. We widened
+$\mathbf{m}$ from $8$ to $52$ observables
+($8\langle Z\rangle + 8\langle X\rangle + 8\langle Y\rangle + 28\langle Z_iZ_j\rangle$),
+head $\mathrm{LayerNorm}(52)\to\mathrm{Linear}(52,3)$; sham
+$\mathrm{Linear}(256,52)+\mathrm{Tanh}$ ($156{,}283$ params vs.\ quantum
+$143{,}015$). Table~\ref{tab:wide} shows the outcome (single-seed diagnostic).
+
+\begin{table}[h!]
+\centering
+\caption{QVF-Wide ($52$ observables), Model\_II, single-seed (job 168089;
+plain-lin from job 162187, both single-seed). Widening helps where the tax was
+worst but \emph{regresses} at mid-$N$ and the sham \emph{wins} at $N{=}8000$.}
+\label{tab:wide}
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+$N$/class & wide-Q (52) & wide-sham & orig-Q (8) & plain-lin \\
+\midrule
+500  & 0.8450 & 0.7850 & 0.8206 & \win{0.9129} \\
+3000 & \lose{0.9631} & 0.9575 & 0.9808 & \win{0.9849} \\
+8000 & 0.9861 & \lose{0.9906} & 0.9896 & \win{0.9942} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Findings.}
+(i) Widening helps exactly where the tax was worst: $+0.024$ over orig-Q at
+$N{=}500$, quantum-vs-sham margin $+0.060$---but still $-0.068$ vs.\ plain.
+(ii) It \emph{regresses} at mid-$N$ ($0.9631$ vs.\ orig $0.9808$ at $N{=}3000$),
+and the sham \emph{beats} quantum at $N{=}8000$ ($-0.0045$): more observables are
+not a free lunch; the $52$-dim head dilutes the $\langle Z\rangle$ signal that
+carried the original margin.
+The tax is therefore not merely readout \emph{width}---forcing all $128$ CNN
+dimensions through the NAE$\to$circuit path is \emph{itself} the tax. This
+directly motivates the residual design.
+
+\subsection{Step 4 --- QVF-Hybrid: a guaranteed-floor residual head}
+\label{sec:hybrid}
+
+The final architecture keeps the CNN feature $\mathbf{h}$ on a \emph{bypass} and
+adds the quantum readout $\mathbf{m}$ (the $52$-observable branch of
+Section~\ref{sec:wide}) as a residual:
+\begin{equation}
+  \hat{y} = W_\mathrm{head}\;
+  \mathrm{concat}\!\big(\mathrm{LayerNorm}(\mathbf{h}),\,\mathrm{LayerNorm}(\mathbf{m})\big) + b_\mathrm{head},
+  \qquad W_\mathrm{head}\in\mathbb{R}^{3\times 180}.
+  \label{eq:hybrid-head}
+\end{equation}
+Write $W_\mathrm{head} = [\,W_h \mid W_m\,]$ with $W_h\in\mathbb{R}^{3\times128}$
+acting on $\mathrm{LN}(\mathbf{h})$ and $W_m\in\mathbb{R}^{3\times52}$ on
+$\mathrm{LN}(\mathbf{m})$.
+
+\begin{proposition}[Plain-CNN floor by construction]
+\label{prop:floor}
+Setting $W_m = 0$ makes the QVF-Hybrid predictor
+$\hat{y} = W_h\,\mathrm{LayerNorm}(\mathbf{h}) + b_\mathrm{head}$, which is
+\emph{identically} the plain-lin classifier
+$\mathrm{CNN}\to\mathrm{LayerNorm}\to\mathrm{Linear}(128,3)$.
+Hence the QVF-Hybrid hypothesis class contains the plain-lin hypothesis class,
+and the optimal QVF-Hybrid training risk is no larger than the optimal plain-lin
+training risk. The quantum branch can only help or be ignored; it cannot make the
+model worse than the plain CNN.
+\end{proposition}
+
+\begin{remark}
+The reduction is exact, not asymptotic: we verified numerically before launch
+that zeroing the $\mathbf{m}$-block reproduces the plain-lin forward pass to
+floating-point error $0.0$. Proposition~\ref{prop:floor} bounds the
+\emph{training} objective; on held-out data the floor holds empirically within the
+noise band across all 8 tested cells (Section~\ref{sec:hybrid-main}), with a worst
+case of $-0.009$ AUC against the stronger of the two plain baselines.
+\end{remark}
+
+The quantum branch is unchanged from Section~\ref{sec:wide}
+(NAE $\to$ 8-qubit SEL, $T{=}96$, $52$ observables). Table~\ref{tab:params}
+gives the parameter budget of every arm; the quantum model uses fewer parameters
+than its sham and than the MAE-ViT it is compared against.
+
+\begin{table}[h!]
+\centering
+\caption{Parameter counts for the QVF-Hybrid arms and baselines. The quantum
+model is smaller than its sham; both plain CNNs are smaller still; MAE-ViT is
+$19\times$ larger than the quantum model.}
+\label{tab:params}
+\begin{tabular}{@{}lr@{}}
+\toprule
+Model & Parameters \\
+\midrule
+plain-lin (CNN $\to$ LN $\to$ Linear) & 93,763 \\
+plain-mlp (CNN $\to$ MLP head) & 142,837 \\
+QVF-Hybrid quantum ($T{=}96$ circuit branch) & \textbf{143,655} \\
+QVF-Hybrid sham (Linear$+$Tanh branch) & 156,923 \\
+\midrule
+\textit{MAE-ViT baseline (pretrained)~\cite{prasha2025masked}} & \textit{2,722,947} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Controls Protocol}
+\label{sec:controls}
+
+Every comparison in this paper follows a fixed protocol, set before the runs and
+applied identically to all arms.
+\begin{itemize}
+  \item \textbf{Capacity-matched sham.} Each quantum result is paired with a sham
+        in which the circuit is replaced by a classical $\mathrm{Linear}+\mathrm{Tanh}$
+        of matched I/O dimension; the sham always has \emph{more} parameters than
+        the quantum model ($156{,}923 \geq 143{,}655$), so no observed margin can be
+        attributed to capacity~\cite{bowles2024}.
+  \item \textbf{Bit-identical subsampling.} At each seed, the training subset is
+        drawn with a fixed RNG (\texttt{seed}\,$+\,1000$) shared across all methods,
+        giving \emph{bit-identical} training subsets per seed. We numerically
+        verified this alignment on the MAE side so that the paradigm comparison
+        (Section~\ref{sec:maecomp}) trains every method on exactly the same images.
+  \item \textbf{Best-val-AUC checkpoint.} We report the checkpoint with the highest
+        one-vs-rest macro-averaged validation AUC, never the last epoch.
+  \item \textbf{Multi-seed replication.} All headline cells use $3$ seeds
+        ($42/43/44$); we report the mean and the per-seed sign pattern.
+  \item \textbf{Practical-significance bar.} We treat single-cell differences below
+        $3\%$ AUC as within our noise band and do not claim them as effects; a
+        margin is a ``win'' only if it clears $3\%$ \emph{and} is seed-consistent.
+  \item \textbf{Pre-registration.} Success criteria (e.g.\ ``hybrid-Q beats
+        $\max(\text{plain-lin},\text{plain-mlp})$ by $\geq 3\%$ in $\geq 2$ cells at
+        $N\leq1500$, seed-consistent'') were fixed \emph{before} launching the runs,
+        following~\cite{schnabel2025}.
+\end{itemize}
+
+\textbf{Training details (all arms).} AdamW, learning rate $10^{-3}$, weight decay
+$10^{-4}$, cosine schedule, label smoothing $0.05$, batch $128$, $20$ epochs, 9:1
+train/val split. Cross-entropy on the three classes (axion / CDM / no-substructure).
+Hardware/software: NVIDIA H200; PennyLane \texttt{default.qubit} with
+\texttt{backprop} (exact statevector, no shot noise). MAE-ViT additionally receives
+its \emph{full} recipe (mask-$0.9$ pretraining on \emph{no\_sub}, Adam $5\times10^{-5}$,
+$50$ epochs, rot90/flip augmentation)---i.e.\ every advantage its paper prescribes.
 
 % ─────────────────────────────────────────────────────────────
 \section{Experiments}
 \label{sec:experiments}
 
-\subsection{Experimental Setup}
+\subsection{QVF-Hybrid main results: vs.\ sham and vs.\ plain CNN}
+\label{sec:hybrid-main}
 
-\paragraph{Datasets.}
-We evaluate on three DeepLense simulation datasets~\cite{alexander2020deep}:
-\begin{itemize}
-  \item \textbf{Model\_I}: simulates Euclid-like weak-axion signal conditions
-        ($64\times64$, lower SNR); AUC ceiling $\approx 0.96$ for all evaluated models.
-  \item \textbf{Model\_II}: simulates Euclid-like strong-axion signal conditions
-        ($64\times64$, higher SNR); AUC ceiling $\approx 0.99$; \emph{primary evaluation dataset}.
-  \item \textbf{Dataset1}: byte-identical to Model\_II; used solely to confirm
-        numerical reproducibility of reported numbers.
-\end{itemize}
-Each dataset contains ${\approx}25{,}000$ images per class
-(axion, CDM subhalos, no substructure), all $64\times64$ grayscale.
-The three-class imbalance is negligible (${\pm}2\%$ across classes).
-Data is split 9:1 train/validation at \texttt{seed=42}.
-
-\paragraph{Baselines.}
-The \textbf{sham control} is described in Section~\ref{sec:sham}:
-same architecture with PQC replaced by \texttt{Linear+Tanh}, verified to have
-\emph{more} parameters than the quantum model.
-The \textbf{MAE-ViT} is the current state-of-the-art~\cite{prasha2025masked}:
-a ViT encoder pretrained with Masked Autoencoder on unlabeled lensing images,
-then fine-tuned for 3-class classification.
-We evaluate it under the same protocol (best-val-AUC checkpoint at each $N$)
-to ensure a fair comparison.
-
-\subsection{Full-Data Results}
-\label{sec:fulldata}
-
-Table~\ref{tab:fulldata} shows results at full data (${\approx}25{,}000$/class).
-QVF-Quantum outperforms both the sham control and the MAE-ViT baseline on
-all three datasets.
+Tables~\ref{tab:hybrid-II} and~\ref{tab:hybrid-I} give the $3$-seed mean best-AUC
+of the four in-family arms across $N$; Figure~\ref{fig:main} plots the same
+comparison against the plain-CNN and MAE-ViT baselines on all three datasets.
+Two facts stand out.
+First, \textbf{the bottleneck tax is eliminated}: the worst cell of Model\_II went
+from $-0.092$ (scratch) / $-0.068$ (wide) to \emph{positive} vs.\ plain-lin at
+$N{=}500$, and no cell anywhere is worse than $-0.009$ (Model\_I, $N{=}1500$, vs.\
+plain-mlp)---inside the noise band, as Proposition~\ref{prop:floor} guarantees.
+Second, \textbf{a low-$N$ quantum contribution emerges on Model\_II}:
+the $3$-seed means are $+0.023$ at $N{=}500$ and $+0.019$ at $N{=}250$ over
+plain-lin (positive in $3/3$ seeds at each cell). These point estimates shrink
+under larger replications, but a pre-registered two-stage test confirms that the
+quantum-over-\emph{sham} contribution at $N{=}250$ is statistically significant
+($n{=}20$, $p{=}0.0032$; Section~\ref{sec:significance}); the effect stays
+\emph{below} our $3\%$ practical bar regardless---we say so plainly.
 
 \begin{table}[h!]
 \centering
-\caption{Full-data AUC (${\approx}25{,}000$/class, 9:1 split, \texttt{seed=42}).
-Best entry per dataset in \textbf{\textcolor{good}{green}}.}
-\label{tab:fulldata}
-\begin{tabular}{@{}lcccc@{}}
+\caption{Model\_II (signal dataset): $3$-seed mean best-AUC. hybrid-Q is the
+$T{=}96$ quantum branch; ``$Q-$best-plain'' compares against
+$\max(\text{plain-lin},\text{plain-mlp})$. Low-$N$ contribution is positive but
+sub-$3\%$. Values at $N\in\{100,250,500,1000\}$ from job 200091; at
+$N\in\{1500,3000,8000\}$ from job 188794.}
+\label{tab:hybrid-II}
+\begin{tabular}{@{}rccccc@{}}
 \toprule
-Dataset & QVF-Quantum & QVF-Sham & MAE-ViT & Q$-$Sham \\
+$N$/class & hybrid-Q & hybrid-sham & plain-lin & plain-mlp & $Q-$best-plain \\
 \midrule
-Model\_I  & \win{0.9805} & 0.9790 & 0.9633 & \win{$+$0.0015} \\
-Model\_II & \win{0.9983} & 0.9928 & 0.9682 & \win{$+$0.0055} \\
-Dataset1  & \win{0.9983} & 0.9960 & 0.9672 & \win{$+$0.0023} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-At full data, quantum advantage over sham is modest ($+0.0015$ to $+0.0055$),
-consistent with both arms approaching the dataset's AUC ceiling.
-Critically, QVF-Quantum (142,795 params, no pretraining) outperforms
-MAE-ViT (2,720,000 params, pretrained) by $+0.017$ to $+0.031$.
-
-\subsection{Data-Size Sweep}
-\label{sec:sweep}
-
-\begin{table}[h!]
-\centering
-\caption{Quantum-over-sham AUC margin $\Delta = \mathrm{AUC}_Q - \mathrm{AUC}_S$
-vs.\ $N$/class (amplitude encoding, \texttt{seed=42}).
-21 of 22 entries are positive.
-Highlighted row: peak advantage.}
-\label{tab:sweep}
-\begin{tabular}{@{}rcc@{}}
-\toprule
-$N$/class & $\Delta$ on Model\_I & $\Delta$ on Model\_II \\
-\midrule
-100   & $+0.0051$ & $+0.0453$ \\
-250   & $+0.0433$ & $+0.0869$ \\
-500   & $+0.0276$ & $+0.0556$ \\
-750   & $+0.0186$ & $+0.0771$ \\
-1000  & $+0.0151$ & $+0.0970$ \\
+100  & 0.5662 & 0.5609 & 0.5708 & 0.5423 & $-0.005$ (all $\sim$chance) \\
 \rowcolor{rowhi}
-1500  & $+0.0149$ & \win{$+0.1124$} \\
-2000  & $+0.0057$ & $+0.0159$ \\
-3000  & $-0.0002$ & $+0.0048$ \\
-5000  & $+0.0011$ & $+0.0026$ \\
-8000  & $+0.0012$ & $+0.0017$ \\
-full  & $+0.0015$ & $+0.0055$ \\
+250  & \win{0.8347} & 0.8136 & 0.8155 & 0.6951 & \win{$+0.019$} ($3/3$) \\
+\rowcolor{rowhi}
+500  & \win{0.9216} & 0.9063 & 0.8984 & 0.8361 & \win{$+0.023$} ($3/3$) \\
+1000 & 0.9709 & 0.9702 & 0.9702 & 0.9113 & $+0.001$ (ceiling) \\
+1500 & 0.9789 & 0.9775 & 0.9782 & 0.9544 & $+0.001$ \\
+3000 & 0.9843 & 0.9842 & 0.9841 & 0.9816 & $+0.0002$ \\
+8000 & 0.9915 & 0.9922 & 0.9924 & 0.9908 & $-0.0009$ \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The advantage peaks at intermediate $N$ ($\Delta{=}{+}0.112$ at $N{=}1500$/class
-on Model\_II) and diminishes at large $N$ as both arms saturate.
-The single negative entry ($-0.0002$ at $N{=}3000$ on Model\_I) is within
-experimental noise given the absence of multi-seed averaging.
-The pattern is qualitatively consistent with Corollary~\ref{cor:qvf-caro}:
-the tighter Caro bound of QVF-Quantum dominates at small $N$,
-and the sham's marginally higher classical capacity marginally closes
-the gap near saturation.
-
-\subsection{Comparison with MAE-ViT at Varying Data Sizes}
-\label{sec:maecomp}
-
 \begin{table}[h!]
 \centering
-\caption{QVF-Quantum (142k params, no pretraining) vs.\
-MAE-ViT (2.72M params, pretrained) at varying $N$/class.
-QVF-Quantum wins at \emph{every} tested data size.}
-\label{tab:maecomp}
-\begin{tabular}{@{}rccccccc@{}}
+\caption{Model\_I: $3$-seed mean best-AUC (job 188794; $N{=}1000$ row from job
+200091). No low-$N$ quantum signal: the hybrid ties plain-lin within noise and
+plain-mlp edges it at $N\geq1000$. This is the honest negative half of the
+in-family picture.}
+\label{tab:hybrid-I}
+\begin{tabular}{@{}rccccc@{}}
 \toprule
-& \multicolumn{3}{c}{Model\_I} & \multicolumn{3}{c}{Model\_II} \\
-\cmidrule(lr){2-4}\cmidrule(lr){5-7}
-$N$/cls & MAE-ViT & QVF-Q & QVF-S & MAE-ViT & QVF-Q & QVF-S \\
+$N$/class & hybrid-Q & hybrid-sham & plain-lin & plain-mlp & $Q-$best-plain \\
 \midrule
-2000 & 0.885 & \win{0.919} & 0.911 & 0.946 & \win{0.977} & 0.939 \\
-3000 & 0.922 & \win{0.939} & 0.932 & 0.963 & \win{0.981} & 0.976 \\
-5000 & 0.936 & \win{0.955} & 0.952 & 0.967 & \win{0.989} & 0.988 \\
-full & 0.978 & \win{0.981} & 0.979 & 0.990 & \win{0.998} & 0.993 \\
+500  & $0.8281^{\dagger}$ & 0.8256 & 0.8252 & 0.8182 & $+0.003$ (noise) \\
+1000 & 0.9043 & --- & 0.8993 & \win{0.9204} & \lose{$-0.016$} \\
+1500 & 0.9333 & 0.9343 & 0.9253 & \win{0.9426} & \lose{$-0.009$} \\
+3000 & 0.9530 & 0.9533 & 0.9490 & \win{0.9554} & \lose{$-0.002$} \\
+8000 & 0.9676 & 0.9673 & 0.9659 & \win{0.9701} & \lose{$-0.003$} \\
 \bottomrule
-\end{tabular}
+\end{tabular}\\[2pt]
+{\footnotesize $^{\dagger}$ The same cell scores $0.8312$ in
+Tables~\ref{tab:mae} and~\ref{tab:qubit-neg} (jobs 200091/200238); the $0.0031$
+gap between these two independent jobs at identical seeds reflects GPU
+non-determinism (within the observed $\leq 0.005$ run-to-run band), the same
+effect noted for the MAE full-data reproduction.}
 \end{table}
 
-QVF-Quantum outperforms MAE-ViT at every tested $N$, with the largest gap
-at $N{=}2000$ ($+0.034$ on Model\_I, $+0.031$ on Model\_II).
-The MAE-ViT's gap to QVF-Quantum \emph{widens} at lower $N$, contrary to
-the expectation that pretraining should help most in the low-data regime---
-supporting the hypothesis that pretraining on unrelated data (ImageNet-scale)
-does not transfer to the specialized morphological features of lensing images.
+\paragraph{Where the effect lives.}
+Any low-$N$ quantum gain is confined to $N\in\{250,500\}$ on Model\_II: below
+$N{=}250$ every architecture collapses to $\sim$chance (nothing learns from
+$\sim$300 images) and above $N{=}1000$ all arms converge into the ceiling. In this
+window the effect is small ($+1.4\%$ AUC at $N{=}250$, $n{=}20$) but, for the
+quantum-over-sham contrast at $N{=}250$, statistically significant under the
+pre-registered two-stage design (Section~\ref{sec:significance}); the
+quantum-over-plain contrast at the same cell is positive but not significant.
+Against the \emph{capacity-matched}
+plain-mlp the same cells still clear the practical bar decisively---$+8.6\%$
+($N{=}500$) and $+14.0\%$ ($N{=}250$), $3/3$ seeds---but that comparison reflects
+the plain-mlp's weakness at low $N$, so we report the stricter plain-lin
+comparison as the headline because plain-lin is the smaller, harder baseline.
 
-\subsection{Qubit Scaling}
-\label{sec:qubitscale}
+\subsection{Statistical significance}
+\label{sec:significance}
+
+To make a defensible inferential claim we replicated the two signal cells
+(Model\_II, $N\in\{250,500\}$) to $n{=}10$ seeds (seeds $42$--$51$, job 200728)
+and ran, per cell, a paired one-sided Wilcoxon signed-rank test for both the
+quantum-over-plain and quantum-over-sham contrasts, with Holm family-wise
+correction over the six tests. Table~\ref{tab:signif} gives the result.
+\textbf{At $n{=}10$ under Holm correction the quantum-specific effect is only
+marginal}: the strongest cell (Model\_II $N{=}250$, Q$>$sham) reaches
+$p_{\mathrm{Holm}}{=}0.059$, and the $3$-seed Q$-$sham $+1.6\%$ at
+(Model\_II, $N{=}500$) shrank to $+0.002$ at $n{=}10$---partly seed luck exposed
+by the larger replication. Because $(\text{II},250)$ Q$>$sham was the pre-specified strongest
+cell, we had pre-registered a two-stage sequential extension of exactly this
+contrast to $n{=}20$ at $\alpha{=}0.01$ (disclosed as sequential).
+\textbf{Stage 2 confirms it}: at $n{=}20$ (seeds $42$--$61$, job 200800) the
+quantum-over-sham contribution at $(\text{II},250)$ is $+0.0140$ ($95\%$ CI
+$[+0.0048,+0.0233]$, $15/20$ positive), one-sided paired Wilcoxon
+$p{=}0.0032 < \alpha{=}0.01$---\emph{statistically significant}. The
+quantum-over-\emph{plain} contrast at the same cell remains non-significant
+($+0.0081$, CI $[-0.0010,+0.0172]$, $11/20$, $p{=}0.088$). The confirmed effect is
+therefore a \emph{module-level} statement (circuit vs.\ matched classical layer);
+it is small ($+1.4\%$, below our $3\%$ practical bar); and---per the entanglement
+ablation (Table~\ref{tab:ent-hybrid})---it comes from the amplitude-embedding
+structure and multi-basis readout, not the entangling ring. Its direction
+independently replicates on Model\_III at $N{=}250$ ($n{=}3$;
+Section~\ref{sec:generalization}).
 
 \begin{table}[h!]
 \centering
-\caption{$\Delta = \mathrm{AUC}_Q - \mathrm{AUC}_S$ vs.\ qubit count $N_Q$
-and $N$/class (all $N \leq 2000$, unsaturated regime).
-In 5 of 6 conditions the net advantage from $N_Q{=}8$ to $N_Q{=}12$ is positive;
-2 of 6 show non-monotone behaviour at $N_Q{=}10$ before recovering at $N_Q{=}12$.}
-\label{tab:qubit}
+\caption{Significance of the low-$N$ quantum contribution. \emph{Stage 1}: all six
+contrasts at $n{=}10$ (seeds $42$--$51$, job 200728), paired one-sided Wilcoxon
+with Holm correction over the six tests. \emph{Stage 2}: the pre-registered
+sequential confirmation of the strongest cell at $n{=}20$ (seeds $42$--$61$,
+job 200800), $\alpha{=}0.01$. ``pos'' is the number of seeds with a positive
+paired delta. Only the Stage-2 quantum-over-sham contrast at
+(Model\_II, $N{=}250$) clears significance.}
+\label{tab:signif}
+{\footnotesize
+\begin{tabular}{@{}llccccl@{}}
+\toprule
+Cell & contrast & pos & mean $\Delta$ [95\% CI] & $p$ raw & $p$ Holm & verdict \\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Stage 1 --- all cells, $n{=}10$, Holm over 6 tests}} \\
+Model\_II $N{=}250$ & Q$>$plain & $7/10$ & $+0.0153$ $[-0.0005,+0.0311]$ & $0.032$ & $0.161$ & n.s. \\
+Model\_II $N{=}250$ & Q$>$sham  & $8/10$ & $+0.0189$ $[+0.0057,+0.0322]$ & $0.0098$ & $0.059$ & \textit{marginal} \\
+Model\_II $N{=}500$ & Q$>$plain & $7/10$ & $+0.0096$ $[-0.0045,+0.0237]$ & $0.077$ & $0.309$ & n.s. \\
+Model\_II $N{=}500$ & Q$>$sham  & $4/10$ & $+0.0017$ $[-0.0085,+0.0119]$ & $0.539$ & $1.000$ & n.s. \\
+Model\_I  $N{=}500$ & Q$>$plain & $6/10$ & $+0.0009$ & $0.237$ & $0.712$ & n.s. \\
+Model\_I  $N{=}500$ & Q$>$sham  & $5/10$ & $-0.0010$ & $0.615$ & $1.000$ & n.s. \\
+\midrule
+\multicolumn{7}{@{}l}{\textit{Stage 2 --- pre-registered sequential confirmation, $n{=}20$, $\alpha{=}0.01$}} \\
+Model\_II $N{=}250$ & Q$>$sham  & $15/20$ & $+0.0140$ $[+0.0048,+0.0233]$ & \win{$\mathbf{0.0032}$} & --- & \win{\textbf{significant}} \\
+Model\_II $N{=}250$ & Q$>$plain & $11/20$ & $+0.0081$ $[-0.0010,+0.0172]$ & $0.088$ & --- & n.s. \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\subsection{Entanglement ablation: is it the circuit or just the structure?}
+\label{sec:entanglement}
+
+The decisive control demanded by~\cite{bowles2024,schnabel2025} for any
+module-level quantum claim isolates \emph{entanglement} at fixed parameter shape:
+same architecture, same $96$-angle budget ($4$ layers $\times$ $8$ qubits
+$\times$ $3$ angles), same AmplitudeEmbedding and $\langle Z\rangle$ readout, but
+per-qubit \texttt{Rot} only (\textbf{NOENT}), with \emph{no} CNOT ring. The three
+arms are ENT (full SEL), NOENT (Rot-only), and SHAM (Linear$+$Tanh).
+
+On the \emph{forced-readout} (scratch) architecture the ordering is strict in all
+six three-arm cells (Table~\ref{tab:ent-scratch}): $\mathrm{ENT} > \mathrm{NOENT}
+> \mathrm{SHAM}$. At the peak cell (Model\_II, $N{=}1500$) entanglement carries
+$\approx 66\%$ of the total quantum-over-sham margin (ENT$-$NOENT $=+0.071$ vs.\
+NOENT$-$SHAM $=+0.037$); at $N{=}500$ the structure term dominates
+(ENT$-$NOENT only $+0.005$); at $N{=}8000$ all three arms converge.
+
+\begin{table}[h!]
+\centering
+\caption{Three-arm entanglement ablation on the forced-readout (scratch)
+architecture (single seed, job 186817). Strict ordering
+$\mathrm{ENT} > \mathrm{NOENT} > \mathrm{SHAM}$ in $6/6$ cells.}
+\label{tab:ent-scratch}
 \begin{tabular}{@{}llccc@{}}
 \toprule
-Dataset & $N$/class & $\Delta$ @ $N_Q=8$ & $\Delta$ @ $N_Q=10$ & $\Delta$ @ $N_Q=12$ \\
+Dataset & $N$/class & ENT (SEL) & NOENT (Rot only) & SHAM (Linear$+$Tanh) \\
 \midrule
-Model\_I  & 500  & $+0.028$ & $+0.071$ & $+0.100$ \\
-Model\_I  & 1000 & $+0.015$ & $+0.085$ & \win{$+0.162$} \\
-Model\_I  & 2000 & $+0.006$ & $+0.088$ & $+0.026$ \\
-Model\_II & 500  & $+0.056$ & $+0.012$ & $+0.061$ \\
-Model\_II & 1000 & $+0.097$ & $+0.034$ & $+0.078$ \\
-Model\_II & 2000 & $+0.016$ & $+0.028$ & $+0.063$ \\
+Model\_II & 500  & \win{0.8206} & 0.8158 & 0.7683 \\
+Model\_II & 1500 & \win{0.9529} & 0.8820 & 0.8451 \\
+Model\_II & 3000 & \win{0.9808} & 0.9711 & 0.9652 \\
+Model\_II & 8000 & \win{0.9896} & 0.9885 & 0.9871 \\
+Model\_I  & 1500 & \win{0.9086} & 0.8989 & 0.8878 \\
+Model\_I  & 3000 & \win{0.9390} & 0.9347 & 0.9319 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Increasing $N_Q$ from 8 to 12 expands the Hilbert space from $2^8{=}256$
-to $2^{12}{=}4096$ dimensions, giving the NAE energy manifold
-exponentially more room to represent inter-class geometry.
-In 5 of 6 tested conditions the advantage is larger at $N_Q{=}12$ than $N_Q{=}8$
-(the sole exception is Model\_II, $N{=}1000$: $\Delta$ drops from $+0.097$ at
-$N_Q{=}8$ to $+0.078$ at $N_Q{=}12$).
-The non-monotone dip at $N_Q{=}10$ visible in several rows likely reflects
-training instability at intermediate Hilbert-space dimension, where the 10-qubit
-state preparation requires a longer CNOT ring but the advantage from additional
-entanglement dimension has not yet fully emerged.
-The overall positive trend across qubit counts is the opposite of classical capacity
-saturation---where adding parameters past an optimal point degrades generalization---
-and suggests that the quantum Hilbert space provides a qualitatively different
-inductive bias.
-Multi-seed runs (left for future work) would be needed to confirm statistical
-significance of individual cells.
-
-\subsection{NISQ-Compatible Angle Encoding}
-\label{sec:angle-exp}
+The same three-arm ablation on the final \emph{residual} (hybrid) architecture
+tells a different story (Table~\ref{tab:ent-hybrid}, $n{=}10$). Once the CNN
+feature bypasses the bottleneck, \textbf{ENT $\approx$ NOENT}: the trainable
+entangling ring adds nothing over the entanglement-free Rot-only circuit
+(ENT$-$NOENT $=+0.0022$, $p{=}0.22$ at $N{=}250$; $-0.0000$, $p{=}0.47$ at
+$N{=}500$). The residual branch's small benefit therefore stems from the
+amplitude-embedding structure and multi-basis readout, \emph{not} from the
+entangling ring---a dissociation we make precise in Section~\ref{sec:analysis}.
 
 \begin{table}[h!]
 \centering
-\caption{Angle encoding (data re-uploading, NISQ-executable) results at full data.}
-\label{tab:angle}
-\begin{tabular}{@{}lccc@{}}
+\caption{Three-arm entanglement ablation on the final \emph{residual}
+(QVF-Hybrid) architecture, $n{=}10$ (seeds $42$--$51$, job 200728;
+mean$\pm$sd). ENT $\approx$ NOENT: the trainable entangling ring adds nothing
+once features bypass the bottleneck (cf.\ the strict $6/6$ ordering of the
+forced-readout architecture, Table~\ref{tab:ent-scratch}).}
+\label{tab:ent-hybrid}
+{\footnotesize
+\begin{tabular}{@{}llccccc@{}}
 \toprule
-Dataset & QVF-Quantum & QVF-Sham & Q$-$Sham \\
+Dataset & $N$ & ENT (SEL) & NOENT (Rot only) & SHAM (Lin$+$Tanh) & plain-lin & ENT$-$NOENT \\
 \midrule
-Model\_I  & \win{0.9822} & 0.9789 & \win{$+0.0033$} \\
-Model\_II & \win{0.9989} & 0.9980 & \win{$+0.0009$} \\
+Model\_II & 250 & $0.8339{\pm}0.021$ & $0.8317{\pm}0.022$ & $0.8149{\pm}0.018$ & $0.8186{\pm}0.026$ & $+0.0022$ ($p{=}0.22$) \\
+Model\_II & 500 & $0.9198{\pm}0.017$ & $0.9198{\pm}0.015$ & $0.9181{\pm}0.018$ & $0.9102{\pm}0.020$ & $-0.0000$ ($p{=}0.47$) \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
-The positive advantage persists under angle encoding, confirming
-that the core effect does not depend on amplitude encoding's
-exponential statevector simulation.
-Angle encoding's slightly higher full-data AUC on Model\_II ($0.9989$ vs.\
-amplitude encoding's $0.9983$) may reflect the data re-uploading scheme's
-richer feature extraction across layers.
+\subsection{Paradigm comparison: QVF-Hybrid vs.\ the MAE-ViT SOTA}
+\label{sec:maecomp}
 
-\subsection{Quantum Placement Ablation}
-\label{sec:placement}
+This is the head-to-head the paper leads with, and the one place a
+\emph{pre-registered} $\geq 3\%$ criterion is met. Both methods are trained on
+bit-identical subsets per seed; MAE-ViT receives its full pretrain$+$finetune
+recipe and $2.5\times$ the epochs. Success was pre-registered as
+$\Delta \geq 3\%$ \emph{and} $3/3$ seed-paired positive.
+Figure~\ref{fig:main} shows the resulting curves on all three datasets: the
+MAE-ViT paradigm collapses below $N \approx 1000$/class while the CNN family
+degrades gracefully, and QVF-Hybrid tracks or leads the family throughout.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/hybrid_vs_baselines.pdf}
+\caption{Macro-OVR AUC vs.\ labeled samples per class on the three DeepLense
+datasets (Model\_I / Model\_II / Model\_III), $3$ seeds, mean $\pm$ s.d.
+\textbf{QVF-Hybrid} ($143{,}655$ params, no pretraining) tracks or leads the
+plain-CNN family across every regime, and the guaranteed-floor construction
+(Proposition~\ref{prop:floor}) prevents it from falling materially below plain.
+\textbf{MAE-ViT} ($2{,}722{,}947$ params, full unlabeled pretraining plus
+augmentation and $2.5\times$ epochs) collapses toward chance below
+$N \approx 1000$/class despite those advantages, which is what the pre-registered
+paradigm comparison measures. Statistical tests for the quantum-vs-sham and
+paradigm contrasts are reported in Table~\ref{tab:signif} and in this section
+(Holm $p{=}0.003$, $10/10$ seed-paired, on three representative low-$N$ cells).}
+\label{fig:main}
+\end{figure*}
 
 \begin{table}[h!]
 \centering
-\caption{Ablation: effect of quantum circuit placement.
-QVF-Scratch (readout head on jointly trained encoder) is the only configuration
-that consistently shows positive advantage.}
-\label{tab:placement}
-\begin{tabular}{@{}p{7.2cm}cc@{}}
+\caption{QVF-Hybrid ($143.7$k params, no pretraining) vs.\ MAE-ViT
+($2.72$M, self-supervised pretraining), $3$-seed mean best-AUC (job 200238).
+plain-lin shown alongside to locate the win within the CNN family.
+Pre-registered win $=$ $\Delta \geq 3\%$ and $3/3$ seed-paired positive:
+\textbf{6 of 7 cells pass} here (Models I/II); with the four Model\_III cells of
+Table~\ref{tab:m3} the total is \textbf{10 of 11 across three datasets}.}
+\label{tab:mae}
+\begin{tabular}{@{}llccccc@{}}
 \toprule
-Configuration & Outcome & $\Delta$ range \\
+Dataset & $N$/class & QVF-Hybrid & MAE-ft & $\Delta$ & plain-lin & verdict \\
 \midrule
-\textbf{QVF-Scratch}: quantum readout + CNN encoder & \win{wins} & $+0.001$ to $+0.112$ \\
-Quantum readout + LensPINN encoder & \win{wins} & $+0.001$ to $+0.002$ \\
-QCNN (quantum feature extractor, classical head) & loses & $-0.11$ to $-0.21$ \\
-QViT (quantum block within ViT encoder) & loses & $-0.008$ \\
-QVF on frozen MAE-ViT encoder & fails & both $\to 0.50$ \\
+Model\_II & 250  & \win{0.8347} & 0.5623 & \win{$+0.272$} & 0.8155 & \win{PASS $3/3$} \\
+Model\_II & 500  & \win{0.9216} & 0.6125 & \win{$+0.309$} & 0.8984 & \win{PASS $3/3$} \\
+Model\_II & 1000 & \win{0.9709} & 0.9074 & \win{$+0.064$} & 0.9702 & \win{PASS $3/3$} \\
+Model\_II & 3000 & 0.9843 & 0.9604 & $+0.024$ & 0.9841 & \lose{$\times$ ($<3\%$)} \\
+Model\_I  & 500  & \win{0.8312} & 0.5627 & \win{$+0.269$} & 0.8252 & \win{PASS $3/3$} \\
+Model\_I  & 1000 & \win{0.9043} & 0.8520 & \win{$+0.052$} & 0.8993 & \win{PASS $3/3$} \\
+Model\_I  & 3000 & \win{0.9530} & 0.9147 & \win{$+0.038$} & 0.9490 & \win{PASS $3/3$} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The pattern is consistent and interpretable.
-\textbf{Quantum feature extraction (QCNN) fails}: large-width quantum circuits
-operating on raw image patches encounter barren plateaus~\cite{mcclean2018barren},
-as the gradient vanishes exponentially with circuit depth.
-\textbf{Quantum on frozen encoder fails}: without joint training,
-the NAE energy manifold cannot be aligned to the task geometry,
-so the circuit receives a fixed representation that does not correspond to
-a quantum-advantageous encoding.
-\textbf{The readout head succeeds}: the CNN encoder learns to produce
-representations for which the energy manifold is meaningful,
-and the $T{=}96$-parameter circuit provides the tightest possible
-Caro bound at this model size.
+\paragraph{The MAE representation is not linearly usable at low data.}
+A frozen-encoder linear probe of the pretrained MAE (N=500) scores $0.4939$
+(Model\_I) / $0.5136$ (Model\_II)---random level---replicating the earlier
+frozen-CLS finding ($0.5365$). The pretrained representation carries no linearly
+accessible class signal at this data scale; MAE-ViT below $\sim3000$ labeled
+images is near chance \emph{despite} pretraining, augmentation, and $2.5\times$
+epochs. At full data it recovers (Model\_I $0.9778$ / Model\_II $0.9895$, job
+200239, matching our QOVT-paper reproduction exactly) but still sits at or below
+the CNN family (plain-lin $0.9748/0.9986$; QVF-scratch $0.9805/0.9983$).
 
-\subsection{Training Audit: Verifying Circuit Contribution}
-\label{sec:audit}
+\paragraph{Honest attribution.}
+The paradigm win belongs to the \emph{CNN inductive-bias family}, not to the
+circuit: plain-lin also crushes MAE-ft at low $N$ (Model\_II $N{=}500$:
+$0.8984$ vs.\ $0.6125$). The ViT$+$MAE paradigm simply collapses below
+$\sim3000$ labeled images on this data. Within the winning family, QVF-Hybrid is
+the strongest variant on Model\_II (top score in every claim cell, $+2\%$ over
+plain-lin), while on Model\_I plain-mlp edges it at $N\geq1000$
+(Table~\ref{tab:hybrid-I}). The three-tier chain is therefore:
+(1) vs.\ sham---a statistically significant (but sub-$3\%$) module-level low-$N$
+quantum contribution at (Model\_II, $N{=}250$) (Section~\ref{sec:significance});
+(2) vs.\ plain CNN---a guaranteed floor;
+(3) vs.\ MAE paradigm---a \emph{statistically significant}, pre-registered
+$\geq 3\%$ win with $1/19$ the parameters and zero pretraining data.
+The paradigm-level significance tests confirm tier (3): at $n{=}10$ (seeds
+$42$--$51$, job 200800), hybrid-Q $>$ MAE-ft with Holm-corrected $p{=}0.0029$ and
+$10/10$ seed-paired positives in every tested cell---$(\text{II},250)$ $+0.2781$
+$[+0.260,+0.296]$, $(\text{II},500)$ $+0.2245$ $[+0.140,+0.309]$, and
+$(\text{I},500)$ $+0.2429$ $[+0.196,+0.290]$. The paradigm win is thus significant
+as well as large ($+22$--$28$ AUC points), even though we attribute it to the CNN
+inductive-bias family rather than to the circuit.
+
+\subsection{Negative results}
+\label{sec:negative}
+
+We regard the following failures as first-class findings: they bound the claim and
+prevent the over-reading that the benchmarking literature warns against.
+
+\paragraph{(a) Qubit scaling does not transfer to the residual architecture.}
+On the \emph{scratch} (forced-bottleneck) architecture, widening the Hilbert space
+($N_Q: 8\to12$) amplified the quantum-over-sham margin (up to $+0.162$ at
+Model\_I, $N{=}1000$)---a result the earlier draft advertised as a scaling law.
+On the \emph{hybrid} architecture the same lever is dead
+(Table~\ref{tab:qubit-neg}): Model\_II $N{=}500$ is \emph{identical} at
+$N_Q{=}8$ and $12$ ($0.9216 = 0.9216$), Model\_II $N{=}250$ is slightly worse,
+and on Model\_I the $N_Q{=}12$ \emph{sham} ($0.8471$) \emph{beats} the
+$N_Q{=}12$ quantum ($0.8387$). The old amplification was
+bottleneck-\emph{compensation}, not usable capacity: with the residual bypass
+there is no tax to relieve. $N_Q{=}12$ also inflates the branch to $639{,}313$
+params, destroying the parameter story. Lever closed.
 
 \begin{table}[h!]
 \centering
-\caption{Circuit health diagnostics (Model\_II, full data).
-All metrics indicate a well-trained, actively contributing circuit.}
-\label{tab:audit}
-\begin{tabular}{@{}lcc@{}}
+\caption{Qubit scaling on the residual hybrid ($3$ seeds, job 200091). No
+transfer: Model\_II identical, Model\_I \emph{inverts} (sham $>$ quantum at
+$N_Q{=}12$).}
+\label{tab:qubit-neg}
+\begin{tabular}{@{}llcccc@{}}
 \toprule
-Diagnostic & Value & Interpretation \\
+Dataset & $N$/class & Q @ $N_Q{=}8$ & Q @ $N_Q{=}12$ & sham @ $N_Q{=}12$ & note \\
 \midrule
-Circuit gradient norm (epoch 25-50) & $0.12$--$0.32$ & No barren plateau \\
-Weight drift $\|\theta - \theta_0\|$ (final) & $0.08 \to 8.5$ & Substantial training \\
-Output std $\sigma(\langle\hat{Z}\rangle)$ & $0.05$--$0.09$ & Informative outputs \\
-\textbf{AUC with circuit weights zeroed} & \textbf{0.5000} & \textbf{Circuit is sole pathway} \\
+Model\_II & 250 & 0.8347 & 0.8303 & --- & slightly worse \\
+Model\_II & 500 & 0.9216 & 0.9216 & --- & identical \\
+Model\_I  & 500 & 0.8312 & \lose{0.8387} & \win{0.8471} & sham wins \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The zeroed-circuit diagnostic is crucial: when PQC weights are set to zero
-(identity-like circuit), the model outputs random chance ($\mathrm{AUC} = 0.5$),
-confirming that the CNN and NAE do not encode useful information without
-the circuit---the quantum path is the sole information channel to the classifier.
+\paragraph{(b) Circuit learning-rate lever is inert.}
+Raising the circuit-angle learning rate to $10^{-2}$ has no effect at the signal
+cell (Model\_II $N{=}500$: $0.9188$ vs.\ $0.9216$). Lever closed.
+
+\paragraph{(c) Wide readout regresses at mid-$N$.}
+As shown in Table~\ref{tab:wide}, the $52$-observable readout without the residual
+bypass regresses at $N{=}3000$ and loses to its sham at $N{=}8000$. Width alone is
+not the fix.
+
+\paragraph{(d) Topological input features add nothing (TDA line closed).}
+We tested whether a label-free \emph{input}-side information source---cubical
+persistent homology (H0$+$H1 superlevel, $72$ persistence-image dims, zero learned
+params)---could push the model past $3\%$ at mid/high $N$. Across all $8$ cells,
+tda-only vs.\ plain-lin deltas are within $\pm0.004$ (noise), and decisively the
+pairing-broken null (\emph{tda-shuf}, features shuffled against labels) matches or
+exceeds the real features in every cell (e.g.\ Model\_II $N{=}500$: shuf $0.9273$
+vs.\ real $0.8946$). The persistent-homology content carries no label information
+beyond what the CNN already extracts; all three pre-registered TDA criteria
+failed. Line closed.
+
+\paragraph{(e) Raw-pixel quantum encoders lose (QMAE).}
+Removing the CNN front-end and amplitude-embedding raw pixels
+directly~\cite{andrews2025qmae} loses to a sham linear projection across every
+configuration: layer sweep $L\in\{3,10,20\}$, resolution $16\to64$, and qubits
+$N_Q\in\{12,13,14\}$. At the best quantum setting ($N_Q{=}12$, $L{=}20$) the gap to
+the $45{,}125$-param sham is $-0.033$ / $-0.012$ / $-0.017$ on Models
+I/II/III (Table~\ref{tab:qmae-neg}); zero-padding to more qubits makes it worse
+(the extra amplitudes sit in the $|0\rangle$-dominated sector). Root cause: QVF
+works \emph{because} the CNN produces compact intermediate features before
+amplitude encoding; QMAE lacks this stage.
+
+\begin{table}[h!]
+\centering
+\caption{QMAE (raw-pixel amplitude encoder, no CNN), $64\times64$, layer sweep
+(jobs 130435--131040). The classical sham wins on all datasets at every depth.}
+\label{tab:qmae-neg}
+\begin{tabular}{@{}lrccc@{}}
+\toprule
+Mode & Params & Model\_I & Model\_II & Model\_III \\
+\midrule
+Quantum $L{=}3$  & 108 & 0.9174 & 0.9462 & 0.9438 \\
+Quantum $L{=}10$ & 360 & 0.9184 & 0.9657 & 0.9620 \\
+Quantum $L{=}20$ & 720 & 0.9262 & 0.9681 & 0.9659 \\
+\textbf{Sham (L2-norm linear)} & \textbf{45,125} & \win{0.9595} & \win{0.9805} & \win{0.9828} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{(f) Angle encoding is unstable at full data on Model\_III.}
+The NISQ-compatible angle-encoding variant (RY data re-uploading~\cite{perez2020},
+$8$ layers) matches amplitude encoding on Models I/II but, at \emph{full} data on Model\_III,
+the quantum arm fails to converge in $25$ epochs (AUC oscillates $0.27$--$0.61$ in
+epochs $16$--$24$ before a late jump), finishing at $0.9762$ vs.\ sham $0.9994$
+($-0.0232$). The sham converges cleanly. This is a training-stability failure of
+the angle encoder at ceiling, not a fundamental quantum weakness (at low data,
+angle encoding on Model\_I beats sham consistently, $+0.013$ to $+0.033$), but it
+is a real limitation we do not paper over.
+
+\subsection{Generalization: Model\_III and a fourth (hard) dataset}
+\label{sec:generalization}
+
+\paragraph{Model\_III.}
+The multi-seed sweep on Model\_III (higher-SNR sibling of Model\_II; job 200729)
+completes the generalization picture (Table~\ref{tab:m3}, $3$-seed means; the
+full-data row is single-seed). Two findings replicate the Model\_II story.
+\emph{(i) Directional replication of the low-$N$ contribution.} At the same
+$N{=}250$ regime, hybrid-Q beats its sham by $+0.027$ ($3/3$ seed-paired:
+$+0.042/+0.037/+0.002$) and plain-lin by $+0.023$ ($2/3$)---a directionally
+consistent replication on a third dataset, for which we make no significance
+claim at $n{=}3$.
+\emph{(ii) Paradigm win.} Against MAE-ft the hybrid wins by
+$+32.0/+26.4/+6.6/+3.1$ points at $N{=}250/500/1000/3000$, all $3/3$ seed-paired,
+so all four Model\_III cells clear the pre-registered $\geq 3\%$ criterion. Adding
+them to Table~\ref{tab:mae} brings the paradigm scorecard to \textbf{10 of 11
+cells across three datasets} (the lone miss remains Model\_II $N{=}3000$ at
+$+2.4\%$). The full-data row sits in the single-seed ceiling-noise band---%
+hybrid-sham $0.9993 >$ hybrid-Q $0.9906$ is a single-seed jitter example, shown
+as-is---and MAE-ft at full data ($0.9895$) matches our QOVT-paper reproduction
+exactly.\footnote{The identical MAE-ft full-data value ($0.9895$) across the
+QVF-Hybrid comparison, the QOVT companion paper, and job 200239 is a
+protocol-closure check: the same MAE recipe and evaluation reproduce the same
+number across independent runs.} MAE-probe at $N{=}500$ scores $0.5086$
+(random-level, consistent with the $0.4939/0.5136$ of Models I/II).
+
+\begin{table}[h!]
+\centering
+\caption{QVF-Hybrid on Model\_III (job 200729): $3$-seed mean best-AUC, except the
+full-data row (single seed, ceiling-noise band). $\Delta$ vs.\ MAE is
+hybrid-Q $-$ MAE-ft; all four sub-full cells clear the pre-registered $\geq 3\%$
+bar ($3/3$ seed-paired). In-family best per row in \textbf{\textcolor{good}{green}}.}
+\label{tab:m3}
+\begin{tabular}{@{}rcccccc@{}}
+\toprule
+$N$/class & hybrid-Q & hybrid-sham & plain-lin & plain-mlp & MAE-ft & $\Delta$ vs.\ MAE \\
+\midrule
+250        & \win{0.8585} & 0.8314 & 0.8353 & 0.7082 & 0.5387 & \win{$+0.320$} \\
+500        & 0.9504 & 0.9460 & \win{0.9551} & 0.8988 & 0.6868 & \win{$+0.264$} \\
+1000       & 0.9867 & 0.9856 & \win{0.9879} & 0.9767 & 0.9207 & \win{$+0.066$} \\
+3000       & 0.9968 & 0.9968 & \win{0.9969} & 0.9945 & 0.9660 & \win{$+0.031$} \\
+full$^{*}$ & 0.9906 & 0.9993 & 0.9956 & \win{0.9996} & 0.9895 & $+0.001$ \\
+\bottomrule
+\end{tabular}\\[2pt]
+{\footnotesize $^{*}$ Single seed; full-data differences lie within the
+ceiling-noise band (hybrid-sham $>$ hybrid-Q here is single-seed jitter).}
+\end{table}
+
+\paragraph{A fourth dataset: CommonTest (a genuine hard case).}
+Because the official Model\_IV data is unobtainable (the DeepLenseSim link has been
+empty since 2022) we use CommonTest---the GSoC official test set
+(vortex / sphere / no-substructure, $10$k/class, $64\times64$)---as an
+out-of-family generalization probe. Its morphology signal is far subtler than
+Models I/II: at the locked $20$-epoch protocol every $\leq143$k from-scratch arm
+underfits (plain-lin full-data curve is flat $\sim0.53$ until epoch $17$). At $80$
+epochs (seed $42$, full data) the ordering nonetheless \emph{replicates}:
+plain-mlp $0.8087$ / plain-lin $0.7951$ / hyb-S $0.8025$ / hyb-Q $0.7968$ /
+MAE-ft $0.6207$. Three findings transfer: (i) the paradigm ordering holds---CNN
+family ($0.79$--$0.81$) $\gg$ MAE-ft ($0.62$), MAE-probe random; (ii) the hybrid
+floor holds (hyb $\approx$ plain, never materially below); (iii) quantum
+$\approx$ sham (no branch effect in the underfit regime---consistent, since the
+low-$N$ gain lives in a regime CommonTest never reaches).
+A $128$-resolution probe ($0.7754 \leq 0.7951$) shows resolution is \emph{not} the
+bottleneck, so we do not pursue higher resolution; the external $0.9838$ reference
+reflects an $11$M-parameter pretrained ResNet-18 at native $150\times150$, outside
+our matched-budget from-scratch family. We report CommonTest as a
+generalization-boundary result, not a tuned benchmark.
 
 % ─────────────────────────────────────────────────────────────
-\section{Analysis}
+\section{Analysis: What the Quantum Branch Can and Cannot Do}
 \label{sec:analysis}
 
-\paragraph{Geometric view of the quantum advantage.}
-The NAE Boltzmann amplitudes constrain $\mathbf{a}$ to the unit hypersphere
-$\mathcal{S}^{255}$ (the 255-sphere in $\mathbb{R}^{256}$).
-The PQC applies a \emph{unitary} rotation on this sphere: $\mathbf{a} \mapsto U\mathbf{a}$
-where $U \in SU(256)$.
-A classical \texttt{Linear}+\texttt{Tanh} (the sham) applies an affine map
-$W\mathbf{a} + b$ that does \emph{not} preserve the sphere geometry:
-it can scale, shear, or collapse the distribution.
-The unitary constraint is a form of isometric regularization---strongest when
-data is scarce (few anchor points to define the class geometry) and weakening
-as $N \to \infty$ (both arms approach the dataset's AUC ceiling).
+\paragraph{A data-processing constraint.}
+The quantum branch output $\mathbf{m}$ is a \emph{deterministic} function of the
+CNN feature $\mathbf{h}$: $\mathbf{m} = g(\mathbf{h})$ with
+$g = \langle Z\rangle \circ U_{\theta} \circ \mathrm{NAE}$. For any label $Y$, the
+data-processing inequality~\cite{cover2006} gives
+\begin{equation}
+  I(Y; \mathbf{h}) \;\geq\; I\big(Y; g(\mathbf{h})\big) = I(Y; \mathbf{m}),
+  \qquad\text{and}\qquad
+  I\big(Y; (\mathbf{h}, \mathbf{m})\big) = I(Y; \mathbf{h}),
+\end{equation}
+the last equality because $\mathbf{m}$ is a function of $\mathbf{h}$. \textbf{The
+quantum branch adds no label information the CNN has not already extracted.}
+Whatever it does must therefore be \emph{geometric}: it changes the coordinate
+system the linear head reads, not the information content.
 
-\paragraph{Why the advantage peaks at intermediate $N$.}
-At $N \leq 100$/class, both models are severely underfit
-(insufficient data for either to learn the axion morphology).
-At $N \sim 1000$--$2000$, the quantum regularization provides the largest
-relative benefit: the sham's unconstrained map begins to overfit the training
-distribution, while the unitary constraint prevents this.
-At $N \geq 5000$, the dataset provides enough diversity that the sham's
-additional capacity is no longer detrimental, and both arms converge
-to near-ceiling performance.
+\paragraph{Why a geometric prior helps at low $N$ and is redundant at high $N$.}
+Re-expressing $\mathbf{h}$ through the NAE$\to$unitary$\to$expectation map imposes
+a structured, isometry-flavored coordinate (amplitudes live on the unit sphere
+$\mathcal{S}^{255}$; $U_\theta\in SU(256)$ preserves it). When labeled data is
+scarce (few anchor points to fix the decision geometry), this prior reduces
+variance and is worth its bias---exactly the $+2\%$ we see at $N\in\{250,500\}$ on
+Model\_II. When data is abundant, the CNN features already determine the geometry
+and the extra coordinate is redundant, so the margin decays to zero
+(Tables~\ref{tab:hybrid-II}--\ref{tab:hybrid-I}). This is precisely the behavior a
+data-processing-limited regularizer must exhibit, and it is consistent with the
+Caro small-$T$ generalization picture~\cite{caro2022} without requiring any
+quantum-advantage claim.
 
-\paragraph{Reconciling Corollary~\ref{cor:qvf-caro} with the single negative entry.}
-The Caro bound is a \emph{worst-case} upper bound; it does not prohibit
-isolated instances of $\Delta < 0$.
-The single negative entry ($\Delta = -0.0002$ at $N = 3000$, Model\_I)
-is within one standard deviation of the noise floor for single-seed AUC
-estimation~\cite{huang2021power} and should not be interpreted as evidence
-against the quantum hypothesis.
+\paragraph{The decisive mechanism check: forced vs.\ hybrid at the peak cell.}
+The same $(\text{dataset}, N)$ cell settles the question. On the forced-bottleneck
+architecture, Model\_II $N{=}1500$ gave a quantum-over-sham margin of
+$\mathbf{+0.108}$ (three-arm rerun; $+0.112$ in the original sweep). On the
+residual hybrid, the identical cell gives $\mathbf{+0.001}$
+(Table~\ref{tab:hybrid-II}). The $100\times$ collapse is the signature of
+compensation, not information: the large module-level margin existed \emph{only}
+while the network was forced through the $8$-dim bottleneck, where the circuit was
+recovering a handicap the linear sham could not. Once $\mathbf{h}$ bypasses the
+bottleneck, there is nothing left for the circuit to recover, and the honest
+residual contribution is the small low-$N$ prior above. This is the cleanest
+in-house demonstration of the null-baseline lesson of~\cite{bowles2024}.
+
+\paragraph{Entanglement follows the same two-stage logic.}
+The entanglement ablation makes the identical point at the level of the circuit's
+internal structure, and this is---we believe---the most scientifically informative
+finding in the study. On the \emph{forced-readout} architecture the entangling
+ring is \emph{load-bearing}: ENT $>$ NOENT $>$ SHAM in $6/6$ three-arm cells, and
+at the peak cell (Model\_II, $N{=}1500$) entanglement supplies $\approx 66\%$ of
+the quantum-over-sham margin (Table~\ref{tab:ent-scratch}). On the \emph{residual}
+architecture the same ablation collapses to ENT $\approx$ NOENT
+(Table~\ref{tab:ent-hybrid}: $n{=}10$ deltas $+0.0022$ and $-0.0000$, both
+non-significant). The synthesis is exactly the data-processing story above:
+entanglement's apparent contribution in the forced setting was \emph{compensation}
+for information the $8$-dimensional bottleneck destroyed---the entangling ring
+helped reconstruct a usable representation from a crippled one. Once $\mathbf{h}$
+reaches the head directly there is no lost information to reconstruct, and all
+that remains of the quantum branch is a structural prior (amplitude-embedding
+geometry $+$ multi-basis readout) that neither the entangling ring nor extra
+qubits (Section~\ref{sec:negative}) improve. Entanglement matters exactly when,
+and because, the architecture is handicapped, and stops mattering when it is
+not---fully consistent with the impossibility of adding label information
+downstream of $\mathbf{h}$.
+
+\paragraph{Training audit (the circuit is genuinely trained).}
+Lest the small margins be read as an untrained circuit: direct instrumentation
+shows non-zero circuit gradient norms ($0.12$--$0.32$, no barren
+plateau~\cite{mcclean2018barren}), substantial weight drift
+($\|\theta-\theta_0\|: 0.08\to8.5$), informative outputs
+($\sigma(\langle Z\rangle) = 0.05$--$0.09$), and---on the scratch architecture
+where the circuit is the sole pathway---AUC collapses to exactly $0.5000$ when the
+circuit is zeroed. The circuit is trained, used, and decisive; it simply computes
+a function a matched classical layer can also compute.
+
+% ─────────────────────────────────────────────────────────────
+\section{Limitations}
+\label{sec:limitations}
+
+\begin{itemize}
+  \item \textbf{Simulator only.} All quantum results use exact-statevector
+        simulation ($\leq16$ qubits, \texttt{default.qubit}, \texttt{backprop});
+        we do not report NISQ-hardware runs. The angle-encoding variant is the
+        hardware-realistic path but is itself only simulated here.
+  \item \textbf{Magnitude below the practical threshold.} Although the
+        quantum-over-sham contribution at $(\text{Model\_II}, N{=}250)$ is
+        statistically significant ($n{=}20$, $p{=}0.0032$), its magnitude
+        ($+1.4\%$ AUC) is \emph{below} our $3\%$ practical-significance bar. We do
+        not claim quantum advantage.
+  \item \textbf{Single MAE encoder.} The paradigm comparison uses one
+        MAE-pretrained ViT recipe~\cite{prasha2025masked}; a different
+        self-supervised encoder or a much larger pretraining corpus could shift
+        the low-data collapse we observe.
+  \item \textbf{Scope of the significance claim.} The confirmed module-level
+        effect is single-cell: only the quantum-over-sham contrast at
+        $(\text{Model\_II}, N{=}250)$ reaches significance; the quantum-over-plain
+        contrast there ($p{=}0.088$) and the other Stage-1 cells at $n{=}10$ do
+        not (Table~\ref{tab:signif}). We make no broader module-level claim than
+        this one cell.
+  \item \textbf{Sequential design disclosed.} Significance was established with a
+        pre-registered two-stage sequential procedure (Stage-1 $n{=}10$, then
+        Stage-2 $n{=}20$ at $\alpha{=}0.01$ on the pre-specified strongest cell).
+        We disclose the sequential testing explicitly so the inference is
+        transparent; the confirmatory $\alpha$ was fixed before Stage 2.
+  \item \textbf{CommonTest budget.} The fourth-dataset result is a
+        boundary characterization at a fixed compute budget, not a tuned benchmark;
+        the underfit regime prevents any branch-level conclusion there.
+\end{itemize}
 
 % ─────────────────────────────────────────────────────────────
 \section{Conclusion}
 \label{sec:conclusion}
 
-We introduced QVF-Scratch, a hybrid quantum-classical model for
-gravitational-lensing dark matter substructure classification.
-The core design is a four-stage pipeline—CNN encoder $\to$ Neural Amplitude
-Encoding $\to$ 8-qubit StronglyEntanglingLayers PQC ($T{=}96$) $\to$
-linear head—trained end-to-end from random initialization on the DeepLense
-benchmark.
+We set out to determine, under the fair-comparison standards the field now
+requires, whether a small quantum circuit helps on gravitational-lensing
+dark-matter classification---and to report the answer honestly, whichever way it
+came out. The answer is nuanced and, we believe, more useful than a headline
+advantage claim.
 
-\paragraph{Summary of findings.}
-QVF-Scratch produces a \emph{consistent} quantum advantage over a
-capacity-matched sham control: 21 of 22 positive margins across 11 data sizes
-and 2 datasets, peak advantage $\Delta{=}{+}0.112$ at $N{=}1500$/class on
-Model\_II, and 5 of 6 qubit-scaling conditions showing larger advantage at
-$N_Q{=}12$ than $N_Q{=}8$.
-Simultaneously, QVF-Scratch (142,795 params, no pretraining) outperforms
-MAE-ViT (2,720,000 params, ImageNet pretraining) at \emph{every} tested data
-size, with the gap widening as $N$ decreases---the opposite of what ImageNet
-pretraining would suggest.
-The advantage survives in the NISQ-compatible angle-encoding variant,
-confirming it is not an artifact of amplitude-encoding's statevector simulation.
+QVF-Hybrid is a guaranteed-floor residual architecture: zeroing its quantum block
+recovers the plain-CNN classifier exactly (Proposition~\ref{prop:floor}), so the
+strongest classical null baseline is a lower bound by construction. Against a
+parameter-matched sham, the residual quantum branch delivers a module-level
+contribution that is \emph{statistically significant} at the strongest cell
+(Model\_II, $N{=}250$; quantum vs.\ sham, pre-registered two-stage design,
+$n{=}20$, $p{=}0.0032 < \alpha{=}0.01$) yet small ($+1.4\%$ AUC, below our $3\%$
+practical bar) and, per the entanglement ablation, driven by amplitude-embedding
+structure rather than the entangling ring---which is load-bearing in the
+forced-readout architecture ($6/6$ strict ordering) but reduces to
+ENT $\approx$ NOENT once the feature bypasses the bottleneck. Against the MAE-ViT
+SOTA, the hybrid clears the pre-registered $\geq3\%$ bar in $10/11$ cells across
+three datasets ($3$-seed, $3/3$ seed-paired, $+3.1$ to $+32.0$ AUC points), and
+on three representative low-$N$ cells this win is \emph{statistically significant}
+(Holm $p{=}0.003$, $10/10$ seed-paired, $+22$--$28$ AUC points), with $1/19$ the
+parameters and zero pretraining data---though we attribute this to the CNN
+inductive-bias family, of which the hybrid is the strongest variant. A data-processing argument explains the whole
+pattern: the quantum branch cannot add label information, only reshape geometry,
+which is worth a small variance reduction at low $N$ and redundant at high $N$;
+the $100\times$ collapse of the peak margin from the forced to the residual
+architecture confirms the earlier large margins were bottleneck compensation, not
+a quantum information gain.
 
-Three mechanisms explain the pattern:
-(i)~the Caro bound $\epsilon \leq C\sqrt{T/N}$ is $168\times$ tighter for the
-    96-parameter PQC than for MAE-ViT's 2.72M parameters, providing the
-    strongest generalization guarantee at any fixed $N$;
-(ii)~the unitary PQC preserves amplitude-vector geometry (unit sphere in
-    $\mathbb{R}^{256}$), acting as a form of isometric regularization that
-    prevents distributional collapse at small $N$;
-(iii)~joint end-to-end training aligns the CNN encoder to produce representations
-    that are geometrically structured for the quantum circuit—an alignment
-    that fails when the encoder is frozen (placement ablation confirms this).
+For survey astronomy, the practical takeaway is a design principle rather than a
+hardware recommendation: in the few-hundred-labels-per-class regime relevant to
+early survey phases, a compact from-scratch CNN family sharply outperforms a
+pretrained ViT, and a residual quantum readout can add a small but statistically
+significant low-data prior at no floor risk---while the honest magnitude of that
+quantum contribution remains below the threshold at which quantum hardware
+investment would be justified on this task. We release the full control ladder,
+the negative results, and the pre-registered significance tests so that the
+boundary of the claim is as legible as its interior.
 
-\paragraph{Practical implications for survey astronomy.}
-Next-generation surveys (Rubin LSST, Euclid, Roman Space Telescope)
-will provide large initial \emph{unlabeled} samples but limited \emph{labeled}
-datasets, particularly for rare dark matter morphologies.
-In the $N \in [100, 2000]$/class regime directly relevant to early survey phases,
-QVF-Scratch achieves AUC $0.977$ on Model\_II at $N{=}2000$/class,
-versus MAE-ViT's $0.946$ at the same data size---a $+0.031$ gain
-without any pretraining.
-The placement principle identified here (quantum circuits as readout heads,
-not feature extractors) provides a concrete, testable guideline for future
-quantum-classical hybrid designs in this domain.
-
-\paragraph{Limitations.}
-All experiments use a single random seed; multi-seed averaging is required
-before claiming statistically significant per-cell results in Tables~\ref{tab:sweep}
-and~\ref{tab:qubit}.
-Amplitude encoding requires exponential statevector simulation ($O(2^{N_Q})$
-operations); the angle-encoding variant (Section~\ref{sec:angle}) is the
-appropriate variant for real NISQ hardware deployment.
-The qubit scaling results show non-monotone behaviour at $N_Q{=}10$ in 2 of 6
-conditions, whose cause is not yet fully understood.
-
-\paragraph{Broader Impact.}
-This work identifies conditions under which a near-term quantum circuit
-provides measurable classification advantage over large pretrained classical
-models---an important step toward quantifying when quantum hardware investment
-is scientifically justified for astrophysical imaging tasks.
-No dual-use or harmful applications are anticipated.
+\paragraph{Broader impact.}
+This work quantifies \emph{when} a near-term quantum circuit does and does not
+provide measurable benefit over classical models on astrophysical imaging,
+contributing to a rigorous accounting of where quantum hardware investment is
+scientifically justified. No dual-use or harmful applications are anticipated.
 
 % ─────────────────────────────────────────────────────────────
 
@@ -810,6 +1240,17 @@ No dual-use or harmful applications are anticipated.
 S.~Alexander et al.
 \textit{Deep Learning the Morphology of Dark Matter Substructure}.
 The Astrophysical Journal, 893(1):15, 2020.
+
+\bibitem{andrews2025qmae}
+E.~Andrews and P.~Mishra.
+\textit{Quantum Masked Autoencoders for Vision Learning}.
+arXiv:2511.17372, 2025.
+
+\bibitem{bowles2024}
+J.~Bowles, S.~Ahmed, and M.~Schuld.
+\textit{Better than Classical? The Subtle Art of Benchmarking Quantum Machine
+Learning Models}.
+arXiv:2403.07059, 2024.
 
 \bibitem{brehmer2019mining}
 J.~Brehmer, S.~Mishra-Sharma, J.~Hermans, G.~Louppe, and K.~Cranmer.
@@ -828,6 +1269,11 @@ M.~Cerezo, A.~Sone, T.~Volkoff, L.~Cincio, and P.~J.~Coles.
 Circuits}.
 Nature Communications, 12:1791, 2021.
 
+\bibitem{cherrat2022}
+E.~A.~Cherrat, I.~Kerenidis, N.~Mathur, J.~Landman, M.~Strahm, and Y.~Y.~Li.
+\textit{Quantum Vision Transformers}.
+Quantum, 8:1265, 2024. arXiv:2209.08167.
+
 \bibitem{cong2019quantum}
 I.~Cong, S.~Choi, and M.~D.~Lukin.
 \textit{Quantum Convolutional Neural Networks}.
@@ -837,6 +1283,11 @@ Nature Physics, 15:1273--1278, 2019.
 M.~Comajoan~Cara et al.
 \textit{Quantum Vision Transformers for Quark--Gluon Classification}.
 MDPI Axioms, 13(5):323, 2024.
+
+\bibitem{cover2006}
+T.~M.~Cover and J.~A.~Thomas.
+\textit{Elements of Information Theory}.
+Wiley-Interscience, 2nd edition, 2006.
 
 \bibitem{dalal2002detecting}
 N.~Dalal and C.~S.~Kochanek.
@@ -913,6 +1364,18 @@ A.~A.~Prasha et al.
 \textit{Masked Autoencoder Pretraining on Strong-Lensing Images for Joint
 Dark-Matter Model Classification and Super-Resolution}.
 arXiv:2512.06642, 2025.
+
+\bibitem{qovt_companion}
+Anonymous Authors.
+\textit{A NISQ-Deployable Quantum Orthogonal Attention Circuit for Dark Matter
+Classification: Matching, Not Beating, Classical Attention, and a Cautionary Tale
+About Training Instability}.
+Companion GSoC 2026 submission (ML4SCI / DeepLense QML Track), 2026.
+
+\bibitem{schnabel2025}
+J.~Schnabel and M.~Roth.
+\textit{Quantum Kernel Methods under Scrutiny: A Benchmarking Study}.
+Quantum Machine Intelligence, 2025. arXiv:2409.04406.
 
 \bibitem{schuld2019kernel}
 M.~Schuld and N.~Killoran.
