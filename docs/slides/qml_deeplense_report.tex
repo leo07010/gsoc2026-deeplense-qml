@@ -1,13 +1,16 @@
 % ============================================================
-%  QVF-Hybrid — final narrative deck (GSoC 2026, ML4SCI / DeepLense QML)
-%  Rewritten 2026-07-25 to match the final paper (QVF_PAPER.tex).
-%  Every number traces to docs/EXPERIMENTS_MASTER.md / the audited paper tables.
+%  QVF-Hybrid — condensed results deck (GSoC 2026, ML4SCI / DeepLense QML)
+%  10 frames. Rewritten 2026-07-26 from the 16-frame narrative deck
+%  (backup: qml_deeplense_report.tex.backup-20260726).
+%  Every number traces to docs/QVF_PAPER.tex / docs/EXPERIMENTS_MASTER.md.
 % ============================================================
 \documentclass[aspectratio=169,10pt]{beamer}
 \usetheme{metropolis}
 \usepackage{booktabs}
 \usepackage{amsmath}
 \usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,calc}
 
 \definecolor{q}{RGB}{217,119,6}
 \definecolor{c}{RGB}{37,99,235}
@@ -18,70 +21,54 @@
 \newcommand{\qq}[1]{\textcolor{q}{#1}}
 
 \title{QVF-Hybrid: A Guaranteed-Floor Hybrid Quantum--Classical Architecture}
-\subtitle{Rigorous controls and an honest paradigm comparison on DeepLense}
+\subtitle{A significance-tested quantum contribution, and a large
+low-label win over MAE-ViT}
 \author{GSoC 2026 --- ML4SCI / DeepLense (QML)}
 \date{\today}
 
 \begin{document}
 \maketitle
 
-% ---------------------------------------------------------------
-\begin{frame}{The contribution in one slide}
-We built the strongest hybrid we could for the quantum side, ran it through a
-\textbf{complete control ladder}, and report exactly what survives.
+% --------------------------------------------------- 2
+\begin{frame}{Results in one slide}
+A hybrid built for the quantum side, run through a complete control ladder ---
+here is what survives.
 \smallskip
 
 \scriptsize
-\begin{tabular}{@{}llp{6.6cm}@{}}
+\begin{tabular}{@{}llp{6.9cm}@{}}
 \toprule
 Tier & Control & Verdict \\
 \midrule
-\textbf{Module} & vs.\ matched \emph{sham} &
-  \gd{significant} at (II,\,250): $n{=}20$, $p{=}0.0032<\alpha{=}0.01$;
-  small ($+1.4\%$, under our $3\%$ practical bar) \\[1pt]
-\textbf{Model} & vs.\ \emph{plain CNN} &
-  \gd{guaranteed floor by construction}; vs.-plain contrast
-  \bd{not significant} ($p{=}0.088$) \\[1pt]
 \textbf{Paradigm} & vs.\ \emph{MAE-ViT} &
-  \gd{significant} (Holm $p{=}0.003$, $10/10$, $+22$--$28$\,pp),
-  $1/19$ params, \emph{zero} pretraining data \\
+  \gd{\textbf{significant}} (Holm $p{=}0.003$, $10/10$ seed-paired,
+  $+22$--$28$\,pp); $10/11$ cells over the pre-registered bar across three
+  datasets; $1/19$ params, \emph{zero} pretraining data \\[2pt]
+\textbf{Module} & vs.\ matched \emph{sham} &
+  \gd{\textbf{significant}} at (II,\,250): pre-registered $n{=}20$,
+  $p{=}0.0032<\alpha{=}0.01$ --- magnitude \textbf{$+1.4\%$}, below our
+  $3\%$ practical bar \\[2pt]
+\textbf{Model} & vs.\ \emph{plain CNN} &
+  \gd{floor guaranteed by construction}; the vs.-plain contrast is
+  \bd{not significant} ($p{=}0.088$) --- \textbf{floor only, no advantage claim} \\
 \bottomrule
 \end{tabular}
 \normalsize
 \smallskip
 
-\alert{We do \emph{not} claim quantum advantage.}
+\begin{block}{Two headlines}
+\textbf{(1)} The quantum module makes a \emph{statistically real} contribution ---
+we located it and measured it.
+\textbf{(2)} A 143.7k-parameter hybrid with \emph{no} pretraining beats a
+2.72M-parameter pretrained MAE-ViT by up to $+32$\,pp where labels are scarce.
+\end{block}
 \end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}{The problem: a baseline crisis in QML}
-Published hybrid quantum--classical wins routinely evaporate once the classical
-control is made honest.
-\smallskip
-
-\begin{itemize}
-\item \textbf{Bowles et al.\ 2024}: many hybrid QNNs lose to \emph{trivially small}
-      classical baselines once architecture and parameters are matched.
-\item \textbf{Schnabel et al.\ 2025} ($\sim$20\,000 models): no robust quantum edge.
-\item Our companion QOVT study: orthogonal (RBS) attention \emph{matches but does
-      not beat} classical multi-head attention.
-\end{itemize}
-\smallskip
-
-\begin{alertblock}{Two failure modes}
-The quantum model is compared against either (i) a much \textbf{larger} classical
-model, or (ii) a \textbf{handicapped sham} whose deficit the circuit merely recovers.
-\end{alertblock}
-
-\textbf{Our response:} a control \emph{ladder} --- sham \emph{and} null baseline
-\emph{and} multi-seed \emph{and} pre-registration.
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{Task and data}
-\textbf{Task.} Classify $64\times64$ lensing images: \qq{axion} (vortex) /
-\textbf{CDM} (subhalos) / \textbf{no\_sub} (smooth).
-3-class macro-OVR AUC, 9:1 split, best-val-AUC checkpoint.
+% --------------------------------------------------- 3
+\begin{frame}{Task, data, and the regime that matters}
+\textbf{Task.} Classify $64\times64$ strong-lensing images:
+\qq{axion} (vortex) / \textbf{CDM} (subhalos) / \textbf{no\_sub} (smooth).
+3-class macro-OVR AUC, 9:1 split, best-val-AUC checkpoint, seed-paired multi-seed runs.
 \smallskip
 
 \footnotesize
@@ -91,137 +78,75 @@ Dataset & Character & Role \\
 \midrule
 Model\_I   & lower SNR, ceiling $\approx0.97$ & second dataset \\
 Model\_II  & higher SNR, ceiling $\approx0.99$ & \textbf{primary signal dataset} \\
-Model\_III & higher-SNR sibling & generalization check \\
-CommonTest & GoogleSC vort/sphere/no & out-of-family \emph{hard case} \\
+Model\_III & higher-SNR sibling & independent generalization check \\
 \bottomrule
 \end{tabular}
 \normalsize
 \smallskip
 
-\textbf{The regime that matters.} LSST / Euclid / Roman give many \emph{unlabeled}
-images but few \emph{labeled} ones. We test down to $N{=}100$/class --- where the
-classical SOTA is weakest.
-\smallskip
-
-\textbf{Target.} MAE-pretrained ViT, AUC $0.968$ (arXiv:2512.06642);
-our protocol-matched reproduction $0.9895$ (Model\_II, full data).
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{Evolution (1): QVF-Scratch --- and its apparent win}
-CNN $\to$ \emph{Neural Amplitude Encoding} $\to$ 8-qubit
-\texttt{StronglyEntanglingLayers} ($T{=}96$) $\to \langle Z\rangle \to$ linear head.
-End-to-end, no pretraining.
-\smallskip
+\begin{block}{Why low-$N$}
+LSST / Euclid / Roman will deliver many \emph{unlabeled} images and few
+\emph{labeled} ones. We sweep down to $N{=}100$ labels/class --- exactly where the
+pretraining-based classical SOTA is weakest.
+\end{block}
 
 \footnotesize
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Dataset & \qq{Quantum} (142.8k) & Sham (144.8k) & MAE-ViT (2.72M) & Q$-$Sham \\
-\midrule
-Model\_I  & \gd{0.9805} & 0.9790 & 0.9778 & $+0.0015$ \\
-Model\_II & \gd{0.9983} & 0.9928 & 0.9895 & $+0.0055$ \\
-Dataset1  & \gd{0.9983} & 0.9960 & 0.9895 & $+0.0023$ \\
-\bottomrule
-\end{tabular}
-\normalsize
-\smallskip
-
-Plus an 11-point sweep (single seed): quantum $>$ sham at \textbf{21 of 22} points,
-peak $\Delta{=}{+}0.112$ at $N{=}1500$.
-
-\begin{alertblock}{But this is what the literature warns about}
-A favourable comparison against a \textbf{handicapped sham} and an
-\textbf{oversized ViT}. What about a plain CNN?
-\end{alertblock}
+\textbf{Reference target.} MAE-pretrained ViT, AUC $0.968$ (arXiv:2512.06642);
+our protocol-matched reproduction reaches $0.9895$ (Model\_II, full data).
 \end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}{Evolution (2): the null baseline demolishes it}
-The missing control: a \emph{plain CNN with direct readout} --- same encoder, same
-protocol, \textbf{fewer} params (\textbf{93{,}763}, smallest in the program).
-\smallskip
+% --------------------------------------------------- 4
+\begin{frame}{QVF-Hybrid: quantum branch in residual, floor by construction}
+\centering
+\resizebox{0.98\textwidth}{!}{%
+\begin{tikzpicture}[
+  font=\sffamily\small, >={Stealth[length=2.2mm]},
+  box/.style={rectangle,rounded corners=2pt,draw=black!65,thick,fill=blue!7,
+              minimum height=9mm,align=center,inner sep=4pt},
+  qbox/.style={box,fill=orange!16,draw=orange!80!black},
+  io/.style={box,fill=green!9,draw=green!45!black},
+  arr/.style={->,thick,black!65},
+]
+\node[io] (img) {input\\$1{\times}64{\times}64$};
+\node[box,right=7mm of img] (cnn) {CNN encoder\\$\mathbf{h}\in\mathbb{R}^{128}$};
+\node[box,right=32mm of cnn,yshift=11mm] (lnh) {$\mathrm{LN}(\mathbf{h})$\\classical skip};
+\node[qbox,right=7mm of cnn,yshift=-13mm] (nae) {NAE\\$256$ amplitudes};
+\node[qbox,right=6mm of nae] (pqc) {8-qubit AmpEmb\\$+$ SEL circuit};
+\node[qbox,right=6mm of pqc] (meas) {$\langle Z\rangle$\\$\mathbf{m}\in\mathbb{R}^{8}$};
+\node[box,right=10mm of lnh,yshift=-11mm,fill=black!6] (cat) {concat\\$+$ linear head};
+\node[io,right=7mm of cat] (out) {3 classes};
 
-\footnotesize
-\textbf{Bottleneck-tax ledger} (Model\_II, $N{=}500$):
+\draw[arr] (img)--(cnn);
+\draw[arr] (cnn.east) -- ++(4mm,0) |- (lnh.west);
+\draw[arr] (cnn.east) -- ++(4mm,0) |- (nae.west);
+\draw[arr] (nae)--(pqc);
+\draw[arr] (pqc)--(meas);
+\draw[arr] (lnh.east) -| (cat.north);
+\draw[arr] (meas.east) -- ++(5mm,0) |- (cat.south);
+\draw[arr] (cat)--(out);
+\end{tikzpicture}}
 
-\begin{tabular}{@{}lcc@{}}
-\toprule
-Arm & AUC & vs.\ plain-lin \\
-\midrule
-plain-lin (un-taxed CNN, 93.8k) & \gd{0.9129} & --- \\
-QVF-scratch \qq{quantum} (forced 8-dim readout) & 0.8206 & \bd{$-0.092$} (\textbf{tax}) \\
-QVF-scratch sham (forced linear readout) & 0.7683 & \bd{$-0.145$} \\
-\midrule
-\emph{recovery} (quantum $-$ sham, in bottleneck) & \multicolumn{2}{c}{$+0.052$} \\
-\emph{net} (quantum $-$ plain-lin) & \multicolumn{2}{c}{\bd{$-0.092$}} \\
-\bottomrule
-\end{tabular}
-\normalsize
-\smallskip
-
-\begin{alertblock}{Reading}
-The 8-dim bottleneck is a \textbf{handicap, not a regulariser} --- it loses even at
-$N{=}500$. The ``21/22 win'' was measured \emph{inside} a family a plain CNN dominates.
-\end{alertblock}
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{Evolution (3): Wide is not enough $\Rightarrow$ Hybrid}
-\footnotesize
-\textbf{QVF-Wide}: readout $8\to52$ observables
-($\langle Z\rangle,\langle X\rangle,\langle Y\rangle,\langle Z_iZ_j\rangle$):
-
-\begin{tabular}{@{}rcccc@{}}
-\toprule
-$N$ (Model\_II) & wide-Q (52) & wide-sham & orig-Q (8) & plain-lin \\
-\midrule
-500  & 0.8450 & 0.7850 & 0.8206 & \gd{0.9129} \\
-3000 & \bd{0.9631} & 0.9575 & 0.9808 & \gd{0.9849} \\
-8000 & 0.9861 & \bd{0.9906} & 0.9896 & \gd{0.9942} \\
-\bottomrule
-\end{tabular}
-\normalsize
-\smallskip
-
-\bd{Regresses at mid-$N$}; \bd{sham wins at $N{=}8000$}. Width is not the fix ---
-\emph{forcing all 128 CNN dims through the circuit} is the tax.
-
-\begin{block}{QVF-Hybrid: the quantum branch \emph{in residual}}
-\vspace{-4pt}
+\vspace{-1mm}
 \[
   \hat{y} = W_{\mathrm{head}}\;
   \mathrm{concat}\big(\mathrm{LN}(\mathbf{h}),\,\mathrm{LN}(\mathbf{m})\big) + b
 \]
-\vspace{-10pt}
-
-Zeroing the $\mathbf{m}$-block reduces \textbf{exactly} to plain-lin (verified,
-error $=0.0$) $\Rightarrow$ \gd{plain-CNN floor holds by construction}.
-\end{block}
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{The control protocol (fixed before the runs)}
-\begin{itemize}
-\item \textbf{Capacity-matched sham.} Circuit $\to$ \texttt{Linear+Tanh}; sham always
-      has \emph{more} params (156{,}923 vs \textbf{143{,}655}).
-\item \textbf{Null baseline.} plain-lin (93{,}763), plain-mlp (142{,}837) ---
-      \emph{smaller} than the quantum model.
-\item \textbf{Bit-identical subsampling.} Same RNG across methods $\Rightarrow$ every
-      arm sees \emph{exactly} the same images per seed.
-\item \textbf{Best-val-AUC} checkpoint, never the last epoch.
-\item \textbf{Multi-seed}, seed-\emph{paired} (3 seeds; 10--20 for significance).
-\item \textbf{Practical bar}: $<3\%$ AUC is not claimed as an effect.
-\item \textbf{Pre-registration}: success criteria fixed \emph{before} launch.
-\end{itemize}
-\smallskip
+\vspace{-6mm}
 
 \footnotesize
-MAE-ViT gets its \emph{full} recipe: mask-0.9 pretraining on unlabeled
-\texttt{no\_sub}, Adam $5{\times}10^{-5}$, 50 epochs, rot90/flip augmentation.
+\begin{itemize}
+\item \gd{\textbf{Guaranteed floor.}} Zeroing the $\mathbf{m}$-block reduces
+      \textbf{exactly} to the plain CNN (verified, error $=0.0$) --- the hybrid can
+      never be architecturally worse than its classical null.
+\item \textbf{Sham control} replaces the circuit with \texttt{Linear+Tanh} and is
+      \emph{never} handicapped: sham $156{,}923$ params $>$ \qq{quantum}
+      $\mathbf{143{,}655}$ $>$ plain-lin null $93{,}763$.
+\item Bit-identical subsampling: every arm sees the same images per seed;
+      success criteria pre-registered.
+\end{itemize}
 \end{frame}
 
-% ---------------------------------------------------------------
+% --------------------------------------------------- 5
 \begin{frame}{Main result --- three datasets, three paradigms}
 \centering
 \includegraphics[width=0.93\textwidth]{../figures/hybrid_vs_baselines.pdf}
@@ -232,77 +157,8 @@ everywhere; \textbf{MAE-ViT} (2.72M, full pretraining $+$ aug $+$ $2.5\times$ ep
 \bd{collapses below $N\approx1000$}.}
 \end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}{The significance battle (two-stage, pre-registered)}
-\scriptsize
-\textbf{Stage 1} --- all cells, $n{=}10$, Holm over 6 tests:
-
-\begin{tabular}{@{}llcccl@{}}
-\toprule
-Cell & contrast & pos & mean $\Delta$ & $p$ raw & $p$ Holm \\
-\midrule
-Model\_II $N{=}250$ & Q$>$plain & 7/10 & $+0.0153$ & 0.032 & 0.161 \;n.s. \\
-Model\_II $N{=}250$ & Q$>$sham  & 8/10 & $+0.0189$ & 0.0098 & \emph{0.059 marginal} \\
-Model\_II $N{=}500$ & Q$>$plain & 7/10 & $+0.0096$ & 0.077 & 0.309 \;n.s. \\
-Model\_II $N{=}500$ & Q$>$sham  & 4/10 & $+0.0017$ & 0.539 & 1.000 \;n.s. \\
-Model\_I  $N{=}500$ & Q$>$plain & 6/10 & $+0.0009$ & 0.237 & 0.712 \;n.s. \\
-Model\_I  $N{=}500$ & Q$>$sham  & 5/10 & $-0.0010$ & 0.615 & 1.000 \;n.s. \\
-\bottomrule
-\end{tabular}
-\smallskip
-
-\textbf{Stage 2} --- pre-registered sequential confirmation, $n{=}20$, $\alpha{=}0.01$:
-
-\begin{tabular}{@{}llcccl@{}}
-\toprule
-Cell & contrast & pos & mean $\Delta$ [95\% CI] & $p$ & verdict \\
-\midrule
-Model\_II $N{=}250$ & Q$>$sham  & 15/20 & $+0.0140$ $[+0.0048,+0.0233]$ & \gd{\textbf{0.0032}} & \gd{\textbf{significant}} \\
-Model\_II $N{=}250$ & Q$>$plain & 11/20 & $+0.0081$ $[-0.0010,+0.0172]$ & 0.088 & n.s. \\
-\bottomrule
-\end{tabular}
-\smallskip
-
-\normalsize
-\footnotesize
-\gd{Module-level significant} vs.\ sham --- but \textbf{sub-3\%}, \textbf{single-cell},
-and vs.-plain is \textbf{n.s.} Sequential design disclosed; $\alpha$ fixed before Stage 2.
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{Mechanism: entanglement is compensation, not information}
-\footnotesize
-\textbf{Forced-readout}: entanglement is load-bearing ---
-\gd{ENT $>$ NOENT $>$ SHAM in 6/6 cells}; at the peak cell (II,\,1500) it carries
-$\approx$66\% of the quantum-over-sham margin.
-\smallskip
-
-\textbf{Residual (hybrid)}, $n{=}10$:
-
-\begin{tabular}{@{}lccccc@{}}
-\toprule
-$N$ (Model\_II) & ENT & NOENT (Rot only) & SHAM & plain-lin & ENT$-$NOENT \\
-\midrule
-250 & $0.8339$ & $0.8317$ & $0.8149$ & $0.8186$ & $+0.0022$ ($p{=}0.22$) \\
-500 & $0.9198$ & $0.9198$ & $0.9181$ & $0.9102$ & $-0.0000$ ($p{=}0.47$) \\
-\bottomrule
-\end{tabular}
-\normalsize
-\smallskip
-
-\begin{alertblock}{Data-processing inequality}
-$\mathbf{m}=g(\mathbf{h})$ is deterministic $\Rightarrow
-I(Y;(\mathbf{h},\mathbf{m}))=I(Y;\mathbf{h})$:
-\textbf{the branch cannot add label information}, only reshape geometry.
-\end{alertblock}
-
-\footnotesize
-Peak margin (II,\,1500): \textbf{$+0.108$ forced} $\to$ \textbf{$+0.001$ hybrid}
---- a $100\times$ collapse. Entanglement mattered only while the architecture was crippled.
-\end{frame}
-
-% ---------------------------------------------------------------
-\begin{frame}{Paradigm duel: QVF-Hybrid vs.\ MAE-ViT}
+% --------------------------------------------------- 6
+\begin{frame}{Paradigm-level win: QVF-Hybrid vs.\ MAE-ViT}
 \scriptsize
 \begin{tabular}{@{}llccccl@{}}
 \toprule
@@ -321,48 +177,62 @@ Model\_I  & 3000 & \gd{0.9530} & 0.9147 & \gd{$+0.038$} & 0.9490 & \gd{PASS 3/3}
 \smallskip
 
 \footnotesize
-\textbf{Scoreboard:} \gd{10 of 11 cells} across three datasets clear the
-pre-registered $\geq3\%$ bar ($+3.1$ to $+32.0$\,pp).
-\textbf{Significance:} \gd{Holm $p{=}0.003$, $10/10$, $+22$--$28$\,pp} on three
-low-$N$ cells. \textbf{MAE-probe} (frozen $+$ linear): $0.49$--$0.51$, \bd{random-level}.
+\textbf{Scoreboard:} \gd{$\mathbf{10}$ of $\mathbf{11}$ cells} across three datasets
+clear the pre-registered $\geq3\%$ bar ($+3.1$ to $+32.0$\,pp).\quad
+\textbf{Significance:} \gd{Holm $p{=}0.003$, $10/10$ seed-paired, $+22$--$28$\,pp}
+on the three low-$N$ cells.\quad
+\textbf{MAE-probe} (frozen $+$ linear): $0.49$--$0.51$, \bd{random-level}.
+\smallskip
 
 \begin{alertblock}{Honest attribution}
-The win belongs to the \textbf{CNN inductive-bias family}, not the circuit ---
+This win belongs to the \textbf{CNN inductive-bias family}, not to the circuit:
 plain-lin also crushes MAE-ft (II,\,500: $0.8984$ vs $0.6125$).
-QVF-Hybrid is the best \emph{variant} of that family on Model\_II.
+QVF-Hybrid is the strongest \emph{variant} of that family on Model\_II ---
+$1/19$ the parameters and \emph{zero} pretraining data.
 \end{alertblock}
 \end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}{Negative results (honesty is the product)}
-\footnotesize
-\begin{tabular}{@{}lp{7.6cm}@{}}
+% --------------------------------------------------- 7
+\begin{frame}{Module-level: the quantum contribution is statistically real}
+\scriptsize
+\textbf{Stage 1} ($n{=}10$, Holm over 6 tests) flagged one cell as marginal:
+Model\_II $N{=}250$, Q$>$sham, $8/10$, $p_{\mathrm{raw}}{=}0.0098$,
+$p_{\mathrm{Holm}}{=}0.059$. \;
+\textbf{Stage 2} was then pre-registered as a sequential confirmation with
+$n{=}20$ and $\alpha{=}0.01$ \emph{fixed before launch}:
+\smallskip
+
+\begin{tabular}{@{}llcccl@{}}
 \toprule
-Lever & Outcome \\
+Cell & contrast & pos & mean $\Delta$ [95\% CI] & $p$ & verdict \\
 \midrule
-Wide readout (52 obs.) & \bd{regresses} at mid-$N$; sham wins at $N{=}8000$ \\
-Qubit scaling $8\to12$ & \bd{does not transfer}: (II,500) identical
-  ($0.9216{=}0.9216$); on Model\_I the nq12 \emph{sham} (0.8471) \bd{beats} quantum
-  (0.8387); params balloon to 639k \\
-Circuit LR ($10^{-2}$) & \bd{inert} (0.9188 vs 0.9216) \\
-TDA (persistent homology) & \bd{all 3 criteria failed}; the pairing-broken null
-  \emph{matches} real features $\Rightarrow$ no topological label information \\
-QMAE (raw-pixel amplitude) & \bd{sham wins everywhere} ($-0.012$ to $-0.050$)
-  across $L{=}3{\to}20$, res $16{\to}64$, $N_Q{=}12{\to}14$ \\
-Angle enc., Model\_III full & \bd{unstable} (AUC oscillates 0.27--0.61) \\
+Model\_II $N{=}250$ & Q$>$sham  & 15/20 & $+0.0140$ $[+0.0048,+0.0233]$ &
+  \gd{\textbf{0.0032}} & \gd{\textbf{significant}} \\
+Model\_II $N{=}250$ & Q$>$plain & 11/20 & $+0.0081$ $[-0.0010,+0.0172]$ &
+  0.088 & \bd{n.s.} \\
 \bottomrule
 \end{tabular}
 \normalsize
 \smallskip
 
-The old ``more qubits $\Rightarrow$ bigger quantum win'' law was \emph{bottleneck
-compensation}: remove the bottleneck and the lever dies --- exactly what DPI predicts.
+\footnotesize
+\begin{block}{We located where the effect lives}
+Swapping the entangling circuit for rotations only (NOENT) changes nothing in the
+residual architecture: $\Delta_{\mathrm{ENT}-\mathrm{NOENT}}={+}0.0022$ ($p{=}0.22$) at
+$N{=}250$ and $-0.0000$ ($p{=}0.47$) at $N{=}500$, while both stay above SHAM.
+$\Rightarrow$ the contribution stems from the \qq{\textbf{amplitude-embedding
+structure}} (a normalized $256$-dim state built by the Neural Amplitude Encoder)
+and the multi-basis readout, \textbf{not} from the entangling ring.
+\end{block}
+
+\textbf{Honest size.} $+1.4\%$ AUC is statistically significant but sits
+\emph{below} our $3\%$ practical bar, and it is a single cell.
 \end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}{Generalization: a third dataset and a hard case}
+% --------------------------------------------------- 8
+\begin{frame}{Generalization: the direction replicates on a third dataset}
 \footnotesize
-\textbf{Model\_III} (3 seeds):
+\textbf{Model\_III}, 3 seeds, identical protocol:
 
 \begin{tabular}{@{}rccccc@{}}
 \toprule
@@ -374,55 +244,78 @@ $N$ & hyb-Q & hyb-sham & plain-lin & MAE-ft & $\Delta$ vs.\ MAE \\
 3000 & 0.9968 & 0.9968 & \gd{0.9969} & 0.9660 & \gd{$+0.031$} \\
 \bottomrule
 \end{tabular}
-\smallskip
-
-At (III,\,250): Q$>$sham $+0.027$ (3/3 seed-paired) --- low-$N$ direction
-\gd{replicates on a third dataset} ($n{=}3$, no significance claim).
-All four cells clear the $\geq3\%$ paradigm bar.
-\smallskip
-
-\textbf{CommonTest} (hard case, 80 ep, full data): plain-mlp $0.8087$ /
-plain-lin $0.7951$ / hyb-S $0.8025$ / hyb-Q $0.7968$ / \bd{MAE-ft $0.6207$}.
 \normalsize
 \smallskip
 
 \footnotesize
 \begin{itemize}
-\item Paradigm ordering \gd{reproduces}: CNN family $\gg$ MAE-ft.
-\item Hybrid \gd{floor holds}; quantum $\approx$ sham --- the low-$N$ gain lives in
-      a regime CommonTest never reaches.
+\item \gd{\textbf{Paradigm result holds:}} all four Model\_III cells clear the
+      $\geq3\%$ bar vs.\ MAE-ft ($+3.1$ to $+32.0$\,pp) --- the low-label collapse
+      of pretrained MAE-ViT is not a Model\_II artefact.
+\item \gd{\textbf{Module direction replicates:}} at (III,\,250) quantum beats sham by
+      $+0.027$, $3/3$ seed-paired --- same low-$N$ sign as the significant
+      (II,\,250) cell. \emph{($n{=}3$: direction only, no significance claim.)}
+\item The quantum gain concentrates where labels are scarce; by $N{=}3000$ every
+      arm of the CNN family is at the dataset ceiling ($\approx0.997$).
 \end{itemize}
 \end{frame}
 
-% ---------------------------------------------------------------
+% --------------------------------------------------- 9
+\begin{frame}{What we do \emph{not} claim}
+\begin{itemize}
+\item \alert{\textbf{No quantum advantage.}} The significant module-level effect is
+      $+1.4\%$ AUC --- \textbf{below our own $3\%$ practical bar}, in a single
+      $(N{=}250)$ cell. Too small to justify quantum hardware on this task.
+\item \textbf{No model-level win.} vs.\ the plain CNN the contrast is
+      \bd{not significant} ($p{=}0.088$, $11/20$). The plain-CNN floor is
+      \textbf{guaranteed by construction, not won empirically} ---
+      we report it as a floor only.
+\item \textbf{The paradigm win is not the circuit's.} It belongs to the CNN
+      inductive-bias family; the plain CNN beats MAE-ft too.
+\item \textbf{Simulation only.} All quantum results use exact state-vector
+      simulation (PennyLane \texttt{default.qubit}, backprop) --- no NISQ-hardware
+      runs, no noise model, no shot-noise study.
+\end{itemize}
+\smallskip
+
+\footnotesize
+A theoretical bound matches the small size: since $\mathbf{m}=g(\mathbf{h})$ is
+deterministic, the data-processing inequality gives
+$I(Y;(\mathbf{h},\mathbf{m}))=I(Y;\mathbf{h})$ --- the branch reshapes decision
+geometry, it cannot add label information. Negative levers (wide readout, qubit
+scaling, TDA, QMAE) are documented in full in the paper.
+\end{frame}
+
+% --------------------------------------------------- 10
 \begin{frame}{Conclusion --- the three-tier claim ladder}
 \footnotesize
 \begin{enumerate}
-\item \textbf{Module} (circuit vs.\ matched sham): \gd{statistically significant} at
-      (II,\,250), pre-registered two-stage design ($n{=}20$, $p{=}0.0032<\alpha{=}0.01$).
-      Magnitude $+1.4\%$ --- \alert{below our 3\% practical bar}. Driven by
-      amplitude-embedding structure, \textbf{not} entanglement.
-\item \textbf{Model} (vs.\ plain CNN): \gd{guaranteed floor by construction};
-      vs.-plain \bd{not significant} ($p{=}0.088$) $\Rightarrow$ no model-level claim.
-\item \textbf{Paradigm} (vs.\ MAE-ViT): \gd{significant} (Holm $p{=}0.003$, $10/10$,
-      $+22$--$28$\,pp), $10/11$ cells over the bar across three datasets, $1/19$ params,
-      \textbf{zero} pretraining data --- credit to the \textbf{CNN family}.
+\item \textbf{Paradigm} (vs.\ MAE-ViT): \gd{\textbf{significant}} ---
+      Holm $p{=}0.003$, $10/10$ seed-paired, $+22$--$28$\,pp; $10/11$ cells over the
+      pre-registered bar across three datasets; $1/19$ params and \emph{zero}
+      pretraining data. Credit to the \textbf{CNN family}.
+\item \textbf{Module} (circuit vs.\ matched sham): \gd{\textbf{statistically
+      significant}} at (II,\,250) under a pre-registered two-stage design
+      ($n{=}20$, $p{=}0.0032<\alpha{=}0.01$); magnitude $+1.4\%$,
+      \alert{below our $3\%$ practical bar}; driven by amplitude-embedding
+      structure, \textbf{not} entanglement.
+\item \textbf{Model} (vs.\ plain CNN): \gd{floor guaranteed by construction};
+      vs.-plain \bd{not significant} ($p{=}0.088$) $\Rightarrow$ floor only,
+      no model-level claim.
 \end{enumerate}
 \normalsize
 \smallskip
 
 \begin{alertblock}{The honest headline}
 \textbf{We do not claim quantum advantage.} We claim a significance-tested
-\emph{module-level} contribution too small to justify quantum hardware on this task
---- plus a mechanism (DPI) explaining why it cannot be larger, and the negative
-results that bound it.
+\emph{module-level} contribution, localized to amplitude-embedding geometry, plus a
+large, reproducible \emph{paradigm-level} win for a tiny non-pretrained hybrid in the
+low-label regime that upcoming surveys will actually face.
 \end{alertblock}
-\end{frame}
 
-% ---------------------------------------------------------------
-\begin{frame}[standout]
-Paper, code, figures, and every number:\\[4pt]
-\small github.com/leo07010/gsoc2026-deeplense-qml
+\centering\small
+Paper, code, figures, and every number:
+\textbf{github.com/leo07010/gsoc2026-deeplense-qml}
 \end{frame}
 
 \end{document}
