@@ -4,8 +4,20 @@
 
 > **Author:** [@leo07010](https://github.com/leo07010) · leo07010@gmail.com
 > **Target program:** GSoC 2026 — ML4SCI / DeepLense (QML track)
-> **Status:** experiments in progress — see [docs/RESULTS.md](docs/RESULTS.md) for all measured numbers
+> **Status:** historical — see note below
 > **Date:** 2026-06-10
+
+---
+
+> **2026-07-31 status note.** This proposal (dated 2026-06-10) describes the project's
+> class-conditional QAE ensemble stage and predates the QVF-Hybrid campaign that followed it —
+> the class-conditional QAE ensemble idea outlined below was superseded, and the "leakage
+> quantification" pivot in §6 Phase 4 was itself later superseded by the QVF-Hybrid work. For
+> the current, corrected, and complete picture of every method tried in this project (32 rows,
+> matched-control deltas, explicit verdicts, including the 2026-07-31 self-correction of this
+> project's own strongest later claim), see **[docs/BENCHMARK.md](docs/BENCHMARK.md)** and
+> **[docs/BENCHMARK_DATABASE.csv](docs/BENCHMARK_DATABASE.csv)**. This document is kept
+> unmodified below as the project's narrative record of how the proposal evolved.
 
 ---
 
