@@ -52,7 +52,16 @@ it is never read as an image-classification win).
 Among the 31 image-classification methods: **6 won outright** against their
 matched sham (rows 6, 7, 19, 23, 26, 30 — QVF-scratch amplitude/angle
 encoding, LensPINN+QVF head, QOVT, the entanglement ablation, and the
-CNN-family-vs-MAE-paradigm result), **10 tied** (no consistent edge either
+CNN-family-vs-MAE-paradigm result). **"Won outright" means beat its own
+matched sham/control — it does not mean beat the best available classical
+model.** Row 1 (a 93,763-param plain CNN with no quantum component at all)
+Pareto-dominates the whole NAE-bottleneck family (rows 6, 7, 26, and row 29's
+retracted claim) and the QOVT family (row 23) at nearly every (dataset, N) —
+each of those rows' caveats now cross-references row 1 explicitly. Only row
+30's win is a "wins vs a different paradigm" claim already honestly
+attributed to CNN inductive bias rather than the quantum component (see its
+own caveats); row 19's "win" ties an internal unconstrained classical-head
+control at its reported N. **10 tied** (no consistent edge either
 direction), **7 lost to their classical control**, **2 were proven
 certificate-impossible** (quantum kernels — no advantage can exist on this
 data for any labeling), **4 are inconclusive** (both arms near chance, or a
