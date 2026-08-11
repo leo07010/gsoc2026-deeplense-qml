@@ -64,7 +64,7 @@ MLP_MULT   = int(os.environ.get("QOVT_MLP",    "4"))
 
 
 # ── RY+CNOT ring layer (byte-for-byte copy of train_qovt_rycnot.RBSLayer) ──
-class RBSLayer(nn.Module):
+class RYCNOTLayer(nn.Module):
     """6-qubit RY+CNOT ring circuit expressed as a 64x64 PyTorch matrix.
     48 trainable angles (8 layers x 6 qubits)."""
     N_Q = 6
@@ -113,6 +113,58 @@ class RBSLayer(nn.Module):
         return x @ self.get_matrix().T
 
 
+# ── RBS/Givens butterfly layer (byte-for-byte copy of
+# /home/leo07010/mae-lensing/train_qovt.py's RBSLayer -- the circuit that
+# produced id=23's headline single-seed numbers. Reused verbatim, not
+# reinvented, so this ablation tests the SAME circuit id=23 already reports
+# on, not a new guess at what "butterfly" means. Renamed for clarity since
+# this script already has an RYCNOTLayer.) ──
+class ButterflyLayer(nn.Module):
+    """Butterfly Givens-rotation layer -- RBS/Givens butterfly from Cherrat
+    et al., as already implemented in this project's train_qovt.py.
+    For D-dim input: (D/2)*log2(D) trainable angles. Produces a D x D
+    orthogonal matrix; applied as x @ W. D must be a power of 2."""
+
+    def __init__(self, D: int):
+        super().__init__()
+        assert D > 0 and (D & (D - 1)) == 0, f"D={D} must be a power of 2"
+        self.D     = D
+        self.log2D = int(math.log2(D))
+        n_gates    = (D // 2) * self.log2D
+        self.angles = nn.Parameter(torch.zeros(n_gates))
+        for stage in range(self.log2D):
+            step = 2 ** (stage + 1)
+            half = step // 2
+            i_list, j_list = [], []
+            for start in range(0, D, step):
+                for k in range(half):
+                    i_list.append(start + k)
+                    j_list.append(start + k + half)
+            self.register_buffer(f'_si_{stage}', torch.tensor(i_list, dtype=torch.long))
+            self.register_buffer(f'_sj_{stage}', torch.tensor(j_list, dtype=torch.long))
+
+    def get_matrix(self) -> torch.Tensor:
+        W   = torch.eye(self.D, dtype=self.angles.dtype, device=self.angles.device)
+        idx = 0
+        for stage in range(self.log2D):
+            i_t = getattr(self, f'_si_{stage}')
+            j_t = getattr(self, f'_sj_{stage}')
+            n   = i_t.shape[0]
+            thetas = self.angles[idx: idx + n]
+            c = torch.cos(thetas)
+            s = torch.sin(thetas)
+            Wi = W[:, i_t].clone()
+            Wj = W[:, j_t].clone()
+            W  = W.clone()
+            W[:, i_t] = Wi * c.unsqueeze(0) - Wj * s.unsqueeze(0)
+            W[:, j_t] = Wi * s.unsqueeze(0) + Wj * c.unsqueeze(0)
+            idx += n
+        return W
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x @ self.get_matrix()
+
+
 class LowRankLayer(nn.Module):
     """Rank-r factorization of a D x D map: x -> x @ A @ B. 2*D*r params.
     The leanest classical linear-algebra control we could construct; see
@@ -136,14 +188,20 @@ class QOAttention(nn.Module):
     mode='classical':  standard multi-head attention, ~16384 params/layer."""
 
     def __init__(self, D: int, mode: str = "quantum", n_heads: int = 8,
-                 n_layers: int = 8, lr_rank: int = 1):
+                 n_layers: int = 8, lr_rank: int = 1, circuit: str = "rycnot"):
         super().__init__()
         self.mode  = mode
         self.scale = math.sqrt(D)
         self.norm  = nn.LayerNorm(D)
         if mode == "quantum":
-            self.U = RBSLayer(D, n_layers)
-            self.V = RBSLayer(D, n_layers)
+            if circuit == "rycnot":
+                self.U = RYCNOTLayer(D, n_layers)
+                self.V = RYCNOTLayer(D, n_layers)
+            elif circuit == "butterfly":
+                self.U = ButterflyLayer(D)
+                self.V = ButterflyLayer(D)
+            else:
+                raise ValueError(f"Unknown circuit: {circuit}")
         elif mode == "matched":
             self.U = LowRankLayer(D, rank=lr_rank)
             self.V = LowRankLayer(D, rank=lr_rank)
@@ -188,7 +246,7 @@ class MLP(nn.Module):
 
 class QOVT(nn.Module):
     def __init__(self, n_classes: int = 3, mode: str = "quantum", n_layers: int = 8,
-                 lr_rank: int = 1):
+                 lr_rank: int = 1, circuit: str = "rycnot"):
         super().__init__()
         self.mode  = mode
         N_patches  = (IMG // PATCH_SIZE) ** 2
@@ -196,7 +254,8 @@ class QOVT(nn.Module):
         self.cls   = nn.Parameter(torch.zeros(1, 1, D))
         self.pos   = nn.Parameter(torch.randn(1, N_patches + 1, D) * 0.02)
         self.attn_layers = nn.ModuleList(
-            [QOAttention(D, mode, n_layers=n_layers, lr_rank=lr_rank) for _ in range(DEPTH)])
+            [QOAttention(D, mode, n_layers=n_layers, lr_rank=lr_rank, circuit=circuit)
+             for _ in range(DEPTH)])
         self.mlp_layers  = nn.ModuleList([MLP(D, MLP_MULT) for _ in range(DEPTH)])
         self.norm = nn.LayerNorm(D)
         self.head = nn.Linear(D, n_classes)
@@ -274,6 +333,8 @@ def main():
                     help="FIXED val->(val_sel,test) split seed, independent of --seed")
     ap.add_argument("--mode", choices=["quantum", "matched", "sham", "classical"],
                     required=True)
+    ap.add_argument("--circuit", choices=["rycnot", "butterfly"], default="rycnot",
+                    help="quantum-mode circuit only; ignored for matched/sham/classical")
     ap.add_argument("--n_layers",    type=int,   default=8)
     ap.add_argument("--lr_rank",     type=int,   default=1,
                     help="rank for the 'matched' low-rank control")
@@ -308,7 +369,8 @@ def main():
         tx, ty = tx[:128], ty[:128]; vx, vy = vx[:256], vy[:256]
         tex, tey = tex[:256], tey[:256]; args.epochs = 2
 
-    model = QOVT(C, mode=args.mode, n_layers=args.n_layers, lr_rank=args.lr_rank).to(device)
+    model = QOVT(C, mode=args.mode, n_layers=args.n_layers, lr_rank=args.lr_rank,
+                 circuit=args.circuit).to(device)
     n_total = sum(p.numel() for p in model.parameters() if p.requires_grad)
     n_attn  = sum(p.numel() for p in model.attn_parameters())
 
@@ -332,7 +394,8 @@ def main():
                         batch_size=min(args.batch_size, len(tx)), shuffle=True)
 
     base = os.path.splitext(os.path.basename(args.data))[0]
-    print(f"[INFO] QOVT-ABLATION D={D} P={PATCH_SIZE} depth={DEPTH} | mode={args.mode} | "
+    print(f"[INFO] QOVT-ABLATION D={D} P={PATCH_SIZE} depth={DEPTH} | mode={args.mode} "
+          f"circuit={args.circuit if args.mode == 'quantum' else 'n/a'} | "
           f"data={base} N/class={args.n_per_class or 'full'} seed={args.seed} "
           f"split_seed={args.split_seed} | params={n_total} attn_params={n_attn} "
           f"qlr={args.qlr} lr={args.lr} | train{tuple(tx.shape)} "
@@ -370,7 +433,8 @@ def main():
     if args.out_json:
         with open(args.out_json, "a") as f:
             f.write(json.dumps(dict(
-                mode=args.mode, data=base, n_per_class=args.n_per_class or "full",
+                mode=args.mode, circuit=(args.circuit if args.mode == "quantum" else "n/a"),
+                data=base, n_per_class=args.n_per_class or "full",
                 seed=args.seed, split_seed=args.split_seed,
                 test_auc=test_m["auc"], val_sel_auc=best_sel_auc,
                 test_auc_per=test_m["auc_per"].tolist(), params=n_total,

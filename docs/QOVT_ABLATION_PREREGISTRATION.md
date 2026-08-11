@@ -208,3 +208,75 @@ Recorded in `docs/BENCHMARK_DATABASE.csv` as a new row (id 33), verdict
 `quantum_wins (directional, single pre-registered round, not yet
 replicated)` rather than a plain `quantum_wins`, to keep this result's
 actual evidentiary weight visible at a glance.
+
+---
+
+## Round 2 pre-registration: Butterfly circuit (closing the reference-paper
+## Table 1 gap) — written and committed BEFORE any butterfly run happens
+
+Leo asked to "close the reference-paper structure gap" (Cherrat et al.'s
+Table 1: Pyramid / X / Butterfly circuit topologies). Investigation found
+this project cannot faithfully reproduce Pyramid or X from the paper alone
+— their exact qubit-connectivity pattern is shown only in a circuit diagram
+figure, which plain-text PDF extraction cannot recover; only the parameter-
+count formulas (Table 1) are available in text. Leo chose (2026-08-11,
+AskUserQuestion) to scope this round to **Butterfly only** — the one
+topology this project already has a verified-correct implementation of
+(`train_qovt.py`'s `RBSLayer`, reused verbatim below, not reinvented) — and
+defer Pyramid/X to a future round that either finds the paper's actual
+circuit figure or clearly labels a from-scratch design as this project's own
+construction, not a reproduction.
+
+**Implementation, verified before any training run:**
+`ButterflyLayer` in `train_qovt_ablation.py` is a byte-for-byte copy of
+`/home/leo07010/mae-lensing/train_qovt.py`'s `RBSLayer` (the circuit that
+produced id=23's existing single-seed numbers) — so this round tests the
+SAME circuit id=23 already reports on, not a new guess. Verified by direct
+computation before running anything:
+- Orthogonality: `max|W W^T - I| = 4.17e-07` for a random-angle instance —
+  confirms the circuit genuinely produces an orthogonal matrix.
+- Parameter count: 192 angles per instance, exactly matching the paper's
+  `(D/2)*log2(D)` formula at D=64 (`(64/2)*log2(64) = 32*6 = 192`).
+- Full-model count when wired into this ablation's QOVT class: attn_params
+  1,536, total 143,619 — **exact match to id=23's already-published
+  numbers** (143,619 total, 1,536 angles), confirming this is the same
+  circuit under the same overall architecture, not a different model that
+  happens to have a similar name.
+- Smoke test (2 epochs, N=50, Model_II): ran to completion with no errors
+  (`test_AUC=0.4905`, chance-level as expected for a 2-epoch smoke run).
+
+**Design.** Since `matched`/`sham`/`classical` controls do not depend on
+which quantum circuit is being tested (each arm is trained as a fully
+independent model — verified by inspecting `QOAttention.__init__`, which
+only branches on `mode`, never referencing the quantum arm's circuit
+choice), this round **reuses the existing matched/sham/classical rows from
+`results_ablation.jsonl`** (job 251067, same seeds, same data splits, same
+protocol) rather than re-running them. Only the quantum arm is newly run,
+with `--circuit butterfly`, same N=500, same 2 datasets, same seeds 42-51,
+same split_seed=0 — **20 new runs** (vs. 80 for the RY+CNOT round).
+
+**Pre-registered primary tests (4, Holm-corrected, same α=0.01, same
+practical bar as round 1 — Holm p<0.01 AND |Δ|≥2% AND ≥8/10 seeds):**
+
+| # | Comparison | Dataset |
+|---|---|---|
+| 1 | butterfly > matched | Model_II |
+| 2 | butterfly > matched | Model_III |
+| 3 | butterfly > sham | Model_II |
+| 4 | butterfly > sham | Model_III |
+
+**Secondary (reported, not part of the primary claim):**
+- butterfly > classical, both datasets (same rationale as round 1: not the
+  right floor to chase a parameter-efficiency claim against).
+- **butterfly vs. RY+CNOT, both datasets, two-sided** (paired by seed —
+  both circuits were trained under the identical protocol/split/seed) — this
+  is the actual "which topology wins" question Table 1 raises, and is
+  explicitly two-sided since neither circuit has a prior directional claim
+  over the other in this project's own results.
+
+No cell will be dropped or re-run after seeing a partial result. All 4
+primary + all secondary tests will be reported regardless of outcome.
+
+### Round 2 — Results
+
+*(to be filled in after the job completes)*
