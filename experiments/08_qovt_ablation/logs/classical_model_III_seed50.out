@@ -1,0 +1,36 @@
+[INFO] QOVT-ABLATION D=64 P=8 depth=4 | mode=classical | data=model_III N/class=500 seed=50 split_seed=0 | params=207619 attn_params=65536 qlr=None lr=0.001 | train(1500, 64, 64) val_sel(4469, 64, 64) test(4470, 64, 64) device=cuda
+[ep 001] val_sel AUC=0.5473 acc=0.3433
+[ep 002] val_sel AUC=0.5515 acc=0.3285
+[ep 003] val_sel AUC=0.5592 acc=0.3285
+[ep 004] val_sel AUC=0.5650 acc=0.3285
+[ep 005] val_sel AUC=0.5890 acc=0.3283
+[ep 006] val_sel AUC=0.5876 acc=0.3285
+[ep 007] val_sel AUC=0.5935 acc=0.3285
+[ep 008] val_sel AUC=0.5989 acc=0.3287
+[ep 009] val_sel AUC=0.6013 acc=0.3433
+[ep 010] val_sel AUC=0.6003 acc=0.3433
+[ep 011] val_sel AUC=0.5988 acc=0.3285
+[ep 012] val_sel AUC=0.5873 acc=0.3285
+[ep 013] val_sel AUC=0.5860 acc=0.3433
+[ep 014] val_sel AUC=0.5857 acc=0.3433
+[ep 015] val_sel AUC=0.5837 acc=0.3283
+[ep 016] val_sel AUC=0.5801 acc=0.3283
+[ep 017] val_sel AUC=0.5729 acc=0.3283
+[ep 018] val_sel AUC=0.5849 acc=0.3654
+[ep 019] val_sel AUC=0.5759 acc=0.3824
+[ep 020] val_sel AUC=0.5961 acc=0.3748
+[ep 021] val_sel AUC=0.6516 acc=0.4216
+[ep 022] val_sel AUC=0.7082 acc=0.4849
+[ep 023] val_sel AUC=0.7325 acc=0.5310
+[ep 024] val_sel AUC=0.7734 acc=0.5460
+[ep 025] val_sel AUC=0.7890 acc=0.5834
+[ep 026] val_sel AUC=0.8126 acc=0.6384
+[ep 027] val_sel AUC=0.8197 acc=0.6458
+[ep 028] val_sel AUC=0.8220 acc=0.6552
+[ep 029] val_sel AUC=0.8263 acc=0.6435
+[ep 030] val_sel AUC=0.8262 acc=0.6485
+============================================================
+TEST (best val_sel epoch, held-out, evaluated once)
+============================================================
+TEST AUC : 0.8199  acc 0.6481  f1 0.6260  axion_recall 0.7151
+[DONE-QOVT-ABLATION] mode=classical model_III N=500 seed=50 test_AUC=0.8199 val_sel_AUC=0.8263 per_class=(axion=0.9265 cdm=0.6967 no_sub=0.8365) params=207619 attn_params=65536

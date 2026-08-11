@@ -11,7 +11,7 @@
 This project ran a systematic, sham-controlled search for a genuine quantum
 advantage on the DeepLense dark-matter-substructure classification benchmark
 (64×64 simulated strong-lensing images, 3-class: `axion` vortex / `cdm`
-subhalo / `no_sub`). Across **32 distinct methods** spanning eight
+subhalo / `no_sub`). Across **33 distinct methods** spanning eight
 architectural categories — discriminative heads, feature extractors,
 kernels, generative models, anomaly detectors, equivariant layers, attention
 mechanisms, and one quantum-sensing track — every quantum component was
@@ -19,27 +19,37 @@ paired with a capacity-matched classical control ("sham"), and every claim
 was subjected to the same question: *does this survive scrutiny, not just a
 single favorable run?*
 
-The honest answer, after the full sweep: **no image-classification method in
-this project has yet produced a quantum-vs-classical gap that is both
-statistically robust and practically significant.** Of 31 image-
-classification methods, six point-estimate "won" against some matched
-control — though two of those six are qualified wins, not clean ones: one
-beat a different classical paradigm (MAE-ViT) rather than its own sham
-(§3.7), and one only tied an internal unconstrained-classical control at its
-reported N (§3.2); ten tied outright; seven lost; four were inconclusive
-(near-chance in every arm, or a non-replicating pattern); two were proven
-*impossible* by a closed-form certificate; and two were retracted after
-closer scrutiny caught real flaws — a label-leakage bug, and, the project's
-own former headline claim, a broken control plus an uncorrected
-multiple-comparisons problem. One theorem-backed advantage survives outside
-image classification entirely (quantum-sensor metrology, §3.9).
+The honest answer, after the full sweep: **exactly one image-classification
+method in this project has produced a quantum-vs-own-sham gap that survived
+a pre-registered, multi-seed significance test — and even that one is a
+single, unreplicated round, reported as a candidate, not a settled result**
+(§6, row 33). Of the other 30 image-classification methods, six
+point-estimate "won" against some matched control — five of those (rows 6,
+7, 19, 23, 26) at single-seed, never formally tested, and one of the five
+(row 19, §3.2) only ties an internal unconstrained-classical control at its
+reported N; the sixth (row 30) *was* pre-registered and multi-seed (3
+seeds), but against a fixed Δ≥3%-and-3/3-positive threshold rather than a
+significance test, and its own caveats attribute the win to CNN inductive
+bias rather than the quantum component (§3.7); ten tied outright; six lost;
+four were inconclusive (near-chance in every
+arm, or a non-replicating pattern); two were proven *impossible* by a
+closed-form certificate; and two were retracted after closer scrutiny
+caught real flaws — a label-leakage bug, and, the project's own former
+headline claim, a broken control plus an uncorrected multiple-comparisons
+problem. Two results sit outside image classification entirely: a
+generative model tested on a synthetic bitstring benchmark (§3.4, `loses`)
+and one theorem-backed quantum-sensor-metrology advantage that stands
+(§3.9).
 
 Given that record, this project's forward-looking method is **QOVT
-(Quantum Orthogonal Vision Transformer)** — not because it has already won,
-but because it is the one line of work whose comparison is architecturally
-the cleanest (same ViT backbone, attention mechanism swapped, not a
-bolt-on module) and whose existing evidence, while thin, has not yet been
-properly stress-tested the way QVF-Hybrid eventually was. §5 below explains
+(Quantum Orthogonal Vision Transformer)** — chosen not because it had
+already won, but because it was the one line of work whose comparison is
+architecturally the cleanest (same ViT backbone, attention mechanism
+swapped, not a bolt-on module). §6 reports the first payoff of that choice:
+a pre-registered ablation that found a real, Holm-corrected signal (not yet
+independently replicated) on the RY+CNOT variant of QOVT's attention
+mechanism — the first result in this project's history to clear that bar.
+§5 below explains
 that choice in full; §6 reports the first round of that stress-testing,
 including a methodological bug this project found and fixed in its own new
 ablation code before trusting any number from it.
@@ -82,7 +92,7 @@ and is the effect real or an artifact of an unfair comparison?
 
 ## 3. Complete method inventory
 
-All 32 methods are cataloged with full detail — parameter counts, exact
+All 33 methods are cataloged with full detail — parameter counts, exact
 metrics, seed counts, and caveats — in
 [`docs/BENCHMARK_DATABASE.csv`](BENCHMARK_DATABASE.csv) and summarized in
 [`docs/BENCHMARK.md`](BENCHMARK.md). The table below groups them by
@@ -408,7 +418,7 @@ QVF-Hybrid retraction was held to.
 
 ---
 
-## 6. Current work: pre-registered QOVT ablation (in progress)
+## 6. Pre-registered QOVT ablation — first results
 
 Before running any new ablations, the existing 8-script QOVT family was
 audited the same way QVF-Hybrid's code was. Findings (full detail in the
@@ -445,12 +455,56 @@ invalidated run is preserved, not deleted, at
 `experiments/08_qovt_ablation/results_ablation_RUN1_INVALIDATED_qlr_bug.jsonl`)
 before the corrected rerun (job 251067) was submitted.
 
-**Status as of this report:** the corrected 80-run sweep is running. Results
-will be added to `docs/QOVT_ABLATION_PREREGISTRATION.md`'s Results section
-exactly as pre-registered — all 4 primary tests reported regardless of
-outcome, no cell dropped or re-run after seeing a partial result — and
-summarized in a future update to this report and to
-`docs/BENCHMARK_DATABASE.csv`.
+**Results (job 251067, 80/80 runs, all 4 primary tests reported regardless
+of outcome, exactly as pre-registered):**
+
+| # | Test | Δ (AUC) | pos/10 | Holm p | Verdict |
+|---|---|---|---|---|---|
+| 1 | Q > matched, Model_II | +0.3366 | 10/10 | 0.0039 | **CANDIDATE FINDING** |
+| 2 | Q > matched, Model_III | +0.3227 | 10/10 | 0.0039 | **CANDIDATE FINDING** |
+| 3 | Q > sham, Model_II | +0.1566 | 10/10 | 0.0039 | **CANDIDATE FINDING** |
+| 4 | Q > sham, Model_III | +0.0739 | 7/10 | 0.0137 | directional only, n.s. |
+
+Three of four primary tests clear the pre-registered bar (Holm p<0.01 AND
+|Δ|≥2% AND ≥8/10 seeds) — **this is the first QOVT result in this project's
+history to survive a multi-seed, pre-registered statistical test.** The two
+"matched" wins (rank-1 low-rank control, tests 1–2) are the least surprising
+— a rank-1 linear map is a weak function class, and this control was
+explicitly disclosed as not an exact parameter match. The **"sham"
+comparison is the more informative test** (32,768-param unconstrained
+Linear, a materially stronger control) and is genuinely mixed: significant
+on Model_II, not on Model_III (test 4 fails both the corrected p-value and
+the seed-consistency bar). This is reported as a real negative result for
+that cell, not rounded up.
+
+**Held to this project's own standard, this is a strong candidate, not yet
+a confirmed finding.** The three tests that cleared the pre-registered bar
+(15.7–33.7pp) are an order of magnitude larger than the QVF-Hybrid effect
+that shrank 6–11× under replication and ultimately failed — reassuring, but
+not a substitute for actually replicating it, and it does not rescue test 4
+(+7.4pp, did not clear the bar). The recommended next step, before treating
+this as
+settled, is an independent confirmatory round at a second N with a fresh
+seed range (e.g. seeds 60–69) — the discipline the QVF-Hybrid campaign got
+right in its pre-registration design and wrong in its execution (its
+"confirmatory" seeds partly overlapped the discovery sample). Full numbers,
+per-arm means, and the complete reasoning are in
+[`docs/QOVT_ABLATION_PREREGISTRATION.md`](QOVT_ABLATION_PREREGISTRATION.md)'s
+Run 2 section; the result is also recorded as
+[`docs/BENCHMARK_DATABASE.csv`](BENCHMARK_DATABASE.csv) row 33, with a
+verdict deliberately labeled `quantum_wins (directional, single
+pre-registered round, not yet independently replicated)` rather than a bare
+`quantum_wins`, so its actual evidentiary weight stays visible at a glance
+rather than reading as more settled than it is.
+
+**Important scope note:** this ablation tests only the **RY+CNOT ring**
+circuit (384 attention-layer params) — a different circuit from the
+**RBS/Givens butterfly** variant reported in row 23 (1,536 attention-layer
+params, **4×** RY+CNOT's, despite both landing at nearly the same *total*
+model size since the CNN backbone dominates the count). The two are not
+interchangeable; a result on one says nothing directly about the other, and
+both would need the same pre-registered treatment before either could be
+called established (see §3.6).
 
 **Planned next steps**, to complete the reference-paper-equivalent analysis
 this project set out to do:

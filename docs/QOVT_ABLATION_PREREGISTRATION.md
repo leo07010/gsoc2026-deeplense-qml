@@ -122,6 +122,89 @@ seeds 42-51, Holm-corrected paired one-sided Wilcoxon, alpha=0.01,
 practical-significance bar) reruns unchanged in Run 2 below — only the
 script's LR bug is fixed, nothing about the test itself.
 
-## Run 2 (corrected script) — Results
+## Run 2 (corrected script, job 251067, 2026-08-11) — Results
 
-*(to be filled in after the corrected job completes)*
+80/80 runs completed (4 arms × 2 datasets × 10 seeds × N=500). Full raw
+results: `results_ablation.jsonl`. Analysis exactly as pre-registered:
+`analyze_results.py`, paired one-sided Wilcoxon signed-rank per cell,
+Holm-Bonferroni step-down over the 4 primary tests, α=0.01, practical bar =
+Holm p<0.01 **and** |Δ|≥2% **and** consistent sign in ≥8/10 seeds.
+
+**Primary tests (Holm-corrected):**
+
+| # | Test | mean(quantum) | mean(control) | Δ | pos/10 | raw p | Holm p | Verdict |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Q > matched, Model_II | 0.8855 | 0.5490 | **+0.3366** | 10/10 | 0.0010 | 0.0039 | **CANDIDATE FINDING** |
+| 2 | Q > matched, Model_III | 0.8927 | 0.5700 | **+0.3227** | 10/10 | 0.0010 | 0.0039 | **CANDIDATE FINDING** |
+| 3 | Q > sham, Model_II | 0.8855 | 0.7290 | **+0.1566** | 10/10 | 0.0010 | 0.0039 | **CANDIDATE FINDING** |
+| 4 | Q > sham, Model_III | 0.8927 | 0.8188 | +0.0739 | 7/10 | 0.0137 | 0.0137 | directional only (fails Holm α=0.01 and the 8/10 bar) |
+
+**Secondary (reported, not part of the primary claim, no correction):**
+
+| # | Test | mean(quantum) | mean(control) | Δ | pos/10 | raw p |
+|---|---|---|---|---|---|---|
+| 5 | Q > classical (MHA), Model_II | 0.8855 | 0.7492 | +0.1363 | 9/10 | 0.0049 |
+| 6 | Q > classical (MHA), Model_III | 0.8927 | 0.6991 | +0.1937 | 10/10 | 0.0010 |
+
+**All four arms' means (both datasets):**
+
+| Arm | Model_II mean±std | Model_III mean±std | Params (attn / total) |
+|---|---|---|---|
+| quantum (RY+CNOT) | 0.8855±0.0703 | 0.8927±0.0545 | 384 / 142,467 |
+| matched (rank-1 low-rank) | 0.5490±0.0209 | 0.5700±0.0243 | 1,024 / 143,107 |
+| sham (unconstrained Linear) | 0.7290±0.1526 | 0.8188±0.1072 | 32,768 / 174,851 |
+| classical (full MHA) | 0.7492±0.0746 | 0.6991±0.1191 | 65,536 / 207,619 |
+
+**Reading these results:**
+
+- **3 of 4 primary tests clear the pre-registered bar.** Quantum beats the
+  rank-1 "matched" control decisively and beats the unconstrained-Linear
+  "sham" decisively on Model_II. This is the first QOVT result in this
+  project's history to survive a 10-seed, Holm-corrected, pre-registered
+  test — none of the prior single-seed QOVT numbers (including the original
+  id-23 butterfly-variant numbers) has been tested this way.
+- **Test 4 (Q > sham, Model_III) does not clear the bar.** Its point-estimate
+  margin (+7.39pp) does clear the pre-registered ≥2% threshold on its own —
+  it fails on the *other two* criteria: Holm p=0.0137 (>0.01) and only 7/10
+  seeds positive (<8/10 required). Sham on Model_III is genuinely noisy
+  (std=0.1072, the 3rd-highest of the 8 arm/dataset cells in this sweep —
+  sham/Model_II is noisier still, at std=0.1526), which is consistent with
+  the inconsistent sign across seeds. This is reported as a negative result
+  for this cell, not rounded up.
+- **The "matched" wins (tests 1–2) are the least surprising of the four.**
+  A rank-1 linear factorization is a genuinely weak function class (it can
+  only represent rank-1 bilinear maps) — losing to it is a low bar to clear,
+  and the pre-registration document disclosed this control was not an exact
+  parameter match (1,024 vs quantum's 384) precisely so this result isn't
+  overread as evidence against a stronger control. **The sham comparison
+  (tests 3–4) is the more informative test**, since sham's 32,768-param
+  unconstrained Linear is a materially more expressive function class,
+  despite still being linear — and there, the result is genuinely mixed:
+  significant on Model_II, not on Model_III.
+- **Not yet a "confirmed" finding by this project's own standard.** This is
+  a single pre-registered round at one N (500) on two datasets. Per this
+  project's own seed-shrinkage precedent (§ this doc's "Background," item
+  5; see `qvf-audit-findings-20260731`), a first significant result — even
+  a large, Holm-corrected one — should be treated as a strong candidate for
+  replication, not a closed case. The three tests that cleared the bar
+  (15.7–33.7pp) are an order of magnitude larger than the QVF-Hybrid effect
+  that shrank 6–11× and ultimately failed replication — reassuring, but not
+  a substitute for actually replicating it, and it does not rescue test 4
+  (+7.4pp, did not clear the bar). **Recommended before calling this
+  "confirmed":** rerun at a second N (e.g. N=1000 or N=250) with a fresh
+  seed range (e.g. 60–69) as a genuinely independent confirmatory sample,
+  the same discipline that the QVF-Hybrid campaign got right in its design
+  and wrong in its execution (discovery/confirmatory seed overlap).
+- **What this result does NOT yet establish:** whether the effect is
+  specific to the RY+CNOT circuit or would also appear with the RBS/Givens
+  butterfly variant (id 23 in the benchmark database) — those are different
+  circuits, with the butterfly's quantum-arm attention parameters (1,536
+  trainable angles) outnumbering RY+CNOT's (384) by **4×**, despite both
+  landing at nearly the same *total* model size (~143k either way, since
+  the CNN backbone dominates the count). This ablation has only tested
+  RY+CNOT. See the project report §3.6 for why these are kept distinct.
+
+Recorded in `docs/BENCHMARK_DATABASE.csv` as a new row (id 33), verdict
+`quantum_wins (directional, single pre-registered round, not yet
+replicated)` rather than a plain `quantum_wins`, to keep this result's
+actual evidentiary weight visible at a glance.
