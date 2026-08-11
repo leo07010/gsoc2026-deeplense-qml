@@ -256,8 +256,17 @@ def main():
     ap.add_argument("--epochs",      type=int,   default=30)
     ap.add_argument("--batch_size",  type=int,   default=64)
     ap.add_argument("--lr",          type=float, default=1e-3)
-    ap.add_argument("--qlr",         type=float, default=1e-2,
-                    help="LR for attention-layer params, all modes (fix #3)")
+    ap.add_argument("--qlr",         type=float, default=None,
+                    help="If set, attention-layer params get this LR instead "
+                         "of --lr (uniformly across all modes). Default (None) "
+                         "means every parameter, every mode, uses a SINGLE lr "
+                         "-- see 2026-08-06 correction note in module docstring: "
+                         "an earlier version of this script applied qlr=1e-2 "
+                         "uniformly and it destabilized sham/matched/classical's "
+                         "larger linear layers (matched: flat at chance for all "
+                         "30 epochs; sham: rose then collapsed) while quantum's "
+                         "48-param circuit tolerated it -- a real LR confound, "
+                         "not a quantum effect. Single-LR is now the default.")
     ap.add_argument("--n_per_class", type=int,   default=0, help="0=full")
     ap.add_argument("--seed",        type=int,   default=42,
                     help="training seed (init + data shuffling + subsample draw)")
@@ -303,11 +312,17 @@ def main():
     n_total = sum(p.numel() for p in model.parameters() if p.requires_grad)
     n_attn  = sum(p.numel() for p in model.attn_parameters())
 
-    # fix #3: same two-tier LR split applied to every mode
-    attn_ids = {id(p) for p in model.attn_parameters()}
-    qp = [p for p in model.parameters() if id(p) in attn_ids]
-    cp = [p for p in model.parameters() if id(p) not in attn_ids]
-    groups = [{"params": cp, "lr": args.lr}, {"params": qp, "lr": args.qlr}]
+    # fix #3 (corrected 2026-08-06): default is a SINGLE lr for every
+    # parameter, every mode -- no special-casing. Only build a two-tier
+    # group if --qlr is explicitly passed (kept for follow-up LR-sensitivity
+    # ablations, not used in the primary comparison).
+    if args.qlr is not None:
+        attn_ids = {id(p) for p in model.attn_parameters()}
+        qp = [p for p in model.parameters() if id(p) in attn_ids]
+        cp = [p for p in model.parameters() if id(p) not in attn_ids]
+        groups = [{"params": cp, "lr": args.lr}, {"params": qp, "lr": args.qlr}]
+    else:
+        groups = [{"params": list(model.parameters()), "lr": args.lr}]
 
     opt   = torch.optim.AdamW(groups, weight_decay=1e-4)
     sched = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(

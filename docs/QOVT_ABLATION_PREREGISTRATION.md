@@ -86,7 +86,42 @@ the point-estimate margin is >= 2% AUC **and** the sign is consistent in
 >= 8/10 seeds. Anything short of that is reported as directional-only, same
 standard applied to the (ultimately retracted) QVF-Hybrid claim.
 
-## Results
+## Run 1 (job 237915, 2026-08-06) — INVALIDATED, script bug found
 
-*(to be filled in after the job completes — nothing above this line will be
-edited once seeds start running)*
+The first sweep (80/80 runs completed) produced an implausibly large effect
+(+23pp to +35pp AUC, quantum beating every control, Holm p=0.0039 on all 4
+primary tests) — an order of magnitude larger than any real effect this
+project has ever measured, which is itself the reason it was not accepted
+at face value. Training-curve inspection
+(`logs_run1_invalidated/{sham,matched}_model_II_seed42.out`) found the
+cause: the script's own two-tier LR split (module docstring item #3)
+applied `qlr=1e-2` to sham's `Linear(64,64)` and matched's low-rank U/V —
+layers an order of magnitude larger than quantum's 48-param circuit that
+`qlr` was calibrated for. `matched` never moved off chance (flat ~0.50 for
+all 30 epochs); `sham` rose slightly then plateaued ~0.51-0.57. This was a
+bug in the ablation script's attempted fix for the *original* QOVT family's
+LR asymmetry (raw materials in `qovt_inventory.md` item 3) — my fix
+generalized the wrong direction, applying a rate calibrated for a
+tiny circuit onto much larger classical layers instead of removing the
+asymmetry.
+
+**Fix**: `train_qovt_ablation.py --qlr` now defaults to `None`, meaning
+every parameter in every arm uses a single uniform `--lr` (default 1e-3,
+unchanged). The two-tier split is now opt-in only (`--qlr <value>`), kept
+for a possible future LR-sensitivity ablation, not used in the primary
+comparison. Quick verification (15-epoch smoke test, Model_II N=500,
+seed=42, uniform lr=1e-3): all four arms now show gradual, non-degenerate
+learning curves (quantum 0.67, sham 0.55, classical 0.53, matched 0.55 by
+epoch 15) — none flat, none diverging.
+
+Raw invalidated results preserved at
+`results_ablation_RUN1_INVALIDATED_qlr_bug.jsonl` and
+`logs_run1_invalidated/` for audit purposes. **Run 1's numbers must never be
+cited as a QOVT result.** Same pre-registered design (4 primary tests, 10
+seeds 42-51, Holm-corrected paired one-sided Wilcoxon, alpha=0.01,
+practical-significance bar) reruns unchanged in Run 2 below — only the
+script's LR bug is fixed, nothing about the test itself.
+
+## Run 2 (corrected script) — Results
+
+*(to be filled in after the corrected job completes)*
