@@ -63,11 +63,16 @@ and a Cautionary Tale About Training Instability}}
 % ─────────────────────────────────────────────────────────────
 \begin{abstract}
 We apply Quantum Orthogonal Vision Transformers (QOVT) to the DeepLense
-simulated gravitational lensing benchmark, evaluating two circuit variants
-that parameterize an attention key/value projection as an orthogonal
-operator: a Givens butterfly decomposition ($T{=}1{,}536$ trainable angles,
-classically simulated) and an RY+CNOT ring circuit ($T{=}384$ angles, 6
-qubits, NISQ-deployable).
+simulated gravitational lensing benchmark. Our primary contribution is a
+genuine gate-model quantum circuit: an RY+CNOT ring ($T{=}384$ angles, 6
+qubits, NISQ-deployable, directly executable on real quantum hardware). We
+evaluate it against a Givens butterfly decomposition ($T{=}1{,}536$
+trainable angles) as a same-architecture control -- despite also
+parameterizing an orthogonal attention operator, the Givens butterfly is
+\textbf{not a quantum circuit}: it is trained purely classically via
+PyTorch autograd and cannot be deployed on quantum hardware
+(Section~\ref{sec:givens}), so it is best read as an ablation on the
+orthogonality constraint itself, not as a second quantum method.
 At $N{=}500$ samples/class, RY+CNOT achieves AUC $=0.9144$ versus Givens'
 AUC $=0.526$ (mean of 2 runs, near chance)---but classical multi-head
 attention (unconstrained, more parameters) scores AUC $=0.910$ at the same
@@ -91,6 +96,14 @@ via a pure-PyTorch matrix implementation, and is---to our knowledge---a
 working, hardware-ready quantum attention architecture for astrophysical
 image classification, though we no longer claim it demonstrates a quantum
 advantage over classical attention on this benchmark.
+We additionally report a pre-registered, $n{=}10$-seed confirmatory round
+at $N{=}500$ with a genuinely held-out test set and a new parameter-matched
+low-rank control: it confirms Givens' instability at $5\times$ the prior
+sample size, and finds RY+CNOT significantly beats an unconstrained-linear
+sham on Model\_II ($\Delta{=}{+}15.7$pp, Holm $p{=}0.0039$) but not
+Model\_III ($\Delta{=}{+}7.4$pp, Holm $p{=}0.0137$, n.s.) --- a real but
+not-yet-replicated, dataset-dependent signal, reported as a candidate
+finding rather than a settled quantum advantage.
 \end{abstract}
 
 % ─────────────────────────────────────────────────────────────
@@ -131,11 +144,13 @@ suggesting a design principle: prefer circuits with small $T$ when $N$ is small.
 In this work, we adapt the Quantum Orthogonal Vision Transformer of
 Cherrat et al.~\cite{cherrat2022} to the DeepLense setting.
 QOVT replaces the learned Q/K/V projection matrices in self-attention
-with \emph{orthogonal} matrices produced by quantum circuits,
-combining the geometric inductive bias of isometric attention with
-the generalization guarantees of quantum parameterization.
-We evaluate two circuit families that instantiate this principle at
-different positions in the $T$--expressivity tradeoff.
+with an \emph{orthogonal} matrix produced by a genuine gate-model quantum
+circuit (RY+CNOT ring), combining the geometric inductive bias of isometric
+attention with the generalization guarantees of quantum parameterization.
+To isolate what the orthogonality constraint itself contributes, independent
+of the circuit's quantum-ness, we also evaluate a classical, non-quantum
+same-architecture control (Givens butterfly) that realizes the identical
+constraint with more parameters and no quantum hardware path.
 
 Our main contributions are:
 \begin{enumerate}
@@ -329,20 +344,34 @@ $\phi_{\ell,k}$ & Givens rotation angle for level $\ell$, pair $k$ \\
 
 We apply QOVT to $64\times64$ grayscale lensing images:
 \begin{enumerate}
-  \item \textbf{Patch embedding}: divide $64\times64$ image into $8\times8$ patches,
-        linearly project each patch to $D{=}64$ dimensions; yields 64 tokens.
-  \item \textbf{CLS token}: prepend a learnable \texttt{[CLS]} token; add sinusoidal
-        positional embeddings. Total sequence length: 65.
+  \item \textbf{Patch embedding}: a strided $8{\times}8$ convolution divides the
+        $64\times64$ image into 64 patches, linearly projecting each to $D{=}64$
+        dimensions.
+  \item \textbf{CLS token}: prepend a learnable \texttt{[CLS]} token; add a
+        \emph{learned} (not sinusoidal) positional embedding, one vector per
+        of the 65 sequence positions. Total sequence length: 65.
   \item \textbf{$L{=}4$ QO-attention layers}: each with quantum orthogonal attention
         (Section~\ref{sec:qoattn}), residual connection, LayerNorm, and 2-layer MLP block.
-  \item \textbf{Classification head}: $\texttt{[CLS]}$ output $\to \mathrm{Linear} \to \mathbb{R}^3$.
+  \item \textbf{Classification head}: $\texttt{[CLS]}$ output $\to$ LayerNorm
+        $\to \mathrm{Linear} \to \mathbb{R}^3$.
 \end{enumerate}
 
 The token dimension $D{=}64{=}2^6$ is chosen to match the 6-qubit RY+CNOT circuit:
 the $64$-dimensional orthogonal matrix $U \in O(64)$ maps directly onto
 the $2^6$-dimensional Hilbert space.
 
-\subsection{Variant 1: RY+CNOT Ring Circuit (Main Contribution)}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/qovt_architecture.pdf}
+\caption{QOVT pipeline. All four attention arms (RY+CNOT: quantum; Givens
+butterfly, sham, classical MHA: all classical) share an identical backbone
+and differ only in how $U,V$ (or, for the classical arm, $Q,K,V$) are
+computed inside each of the $L{=}4$ attention layers -- one arm is trained
+per run.}
+\label{fig:architecture}
+\end{figure}
+
+\subsection{The RY+CNOT Ring Circuit (The Quantum Method)}
 \label{sec:rycnot}
 
 The RY+CNOT ring circuit parameterizes $U \in O(64)$ via a 6-qubit gate sequence:
@@ -358,9 +387,11 @@ For $L_\mathrm{circ} = 8$ layers, circuit layer $\ell$ consists of:
 
 The $2^6 \times 2^6$ unitary $U$ is obtained by acting the circuit on all $2^6$
 standard basis states.
-The real part $\mathrm{Re}(U)$ is used as the orthogonal matrix
-(a valid approximation since the imaginary part is negligible for shallow circuits
-with RY gates, which produce real matrix entries).
+$U$ is \emph{exactly} real, not approximately: RY$(\theta) = \left(\begin{smallmatrix}
+\cos(\theta/2) & -\sin(\theta/2) \\ \sin(\theta/2) & \cos(\theta/2) \end{smallmatrix}\right)$
+and CNOT are both real-valued gates, so no complex phase is ever introduced by
+this circuit family and $U \in O(64)$ holds exactly, not as an approximation
+that discards a residual imaginary part.
 
 \textbf{Implementation.}
 Rather than PennyLane simulation, we implement the circuit as a sequence of
@@ -382,33 +413,35 @@ Circuit depth $O(L_\mathrm{circ} \cdot N_Q) = O(48)$ is well within
 current coherence times.
 Trained parameters transfer directly from simulation to real hardware.
 
-\subsection{Variant 2: Givens Butterfly Decomposition}
+\subsection{Givens Butterfly: A Classical Orthogonal-Attention Control}
 \label{sec:givens}
 
-The Givens butterfly parameterizes $U \in O(64)$ via a classical butterfly
-pattern of $2\times2$ Givens rotations:
+\textbf{This is not a quantum circuit.} The Givens butterfly parameterizes
+$U \in O(64)$ via a classical butterfly pattern of $2\times2$ Givens
+rotations, trained purely classically via PyTorch autograd:
 \begin{equation}
   U = G_{\log_2 D} \cdots G_2 G_1,
   \quad
   \text{angles per matrix} = \frac{D}{2}\log_2 D = 32 \times 6 = 192.
 \end{equation}
-This is trained classically via PyTorch autograd and provides a structured
-approximation to the full $O(64)$ group (analogous to an FFT butterfly).
+There is no gate-model circuit, no qubits, and no path to quantum hardware
+execution -- it is a structured, differentiable approximation to the full
+$O(64)$ group (analogous to an FFT butterfly), included solely as a
+same-architecture control that isolates the effect of \emph{how many}
+parameters realize the orthogonal constraint, separate from the RY+CNOT
+ring's status as an actual gate-model circuit (Section~\ref{sec:rycnot}).
 \textbf{Trainable parameters.}
 $T_{\mathrm{Givens}} = 192 \times 2 \times 4 = 1{,}536$.
-
-The Givens butterfly cannot be directly deployed on quantum hardware
-(it is a classical differentiable parameterization of an orthogonal matrix,
-not a gate-model circuit), but provides a strong within-architecture baseline
-for comparing the effect of $T$ on generalization.
 
 \subsection{Sham Control}
 \label{sec:sham}
 
 The sham replaces both $U$ and $V$ in each attention layer with
 unconstrained $\mathrm{Linear}(64, 64, \mathrm{bias=False})$
-layers, initialized with random orthogonal matrices but unconstrained
-during training.
+layers, using PyTorch's default (Kaiming-uniform) initialization -- not
+constrained to be orthogonal at initialization or during training, since
+the point of the sham is to isolate the effect of the orthogonality
+constraint itself, not to match the quantum arm's starting point.
 The sham has \emph{strictly more} parameters than the quantum model
 in all configurations (Table~\ref{tab:params}),
 so any observed quantum advantage cannot be attributed to capacity.
@@ -422,9 +455,9 @@ so any observed quantum advantage cannot be attributed to capacity.
 Variant & Circuit/Attention Params & Total Params \\
 \midrule
 RY+CNOT quantum & 384 angles & 142,467 \\
-Givens butterfly quantum & 1,536 angles & 143,619 \\
+Givens butterfly (classical, not quantum) & 1,536 angles & 143,619 \\
 Sham (unconstrained Linear) & $4 \times 2 \times 64^2 = 32{,}768$ & 174,851 \\
-Classical MHA (independent Q,K,V) & $12 \times 64^2 = 49{,}152$ & 207,619 \\
+Classical MHA (independent Q,K,V + output proj.) & $16 \times 64^2 = 65{,}536$ & 207,619 \\
 \midrule
 \textit{MAE-ViT baseline (pretrained)} & \textit{---} & \textit{2,722,947} \\
 \bottomrule
@@ -442,6 +475,7 @@ This controls for the effect of the orthogonal constraint at fixed architecture.
 \label{sec:experiments}
 
 \subsection{Experimental Setup}
+\label{sec:setup}
 
 \paragraph{Datasets.}
 We evaluate on three DeepLense simulation datasets~\cite{alexander2020deep},
@@ -495,7 +529,7 @@ Method & Params & Model\_I & Model\_II & Model\_III \\
 \midrule
 RY+CNOT quantum   & 142,467 & 0.979$^\dagger$ & 0.985$^\dagger$ (0.976--0.997) & 0.995$^\dagger$ \\
 RY+CNOT sham      & 174,851 & 0.9801 & 0.991$^\dagger$ & 0.9903 \\
-Givens quantum    & 143,619 & \win{0.9813} & \win{0.9940} & \win{0.9962} \\
+Givens (classical) & 143,619 & \win{0.9813} & \win{0.9940} & \win{0.9962} \\
 Givens sham       & 174,851 & 0.9803 & 0.9910 & 0.9887 \\
 Classical MHA     & 207,619 & 0.9807 & 0.9921 & 0.9957 \\
 MAE-ViT (ours)~\cite{prasha2025masked} & 2,722,947 & 0.9778 & 0.9895 & 0.9895 \\
@@ -529,7 +563,7 @@ Highlighted row: the pivotal $N{=}500$ comparison.}
 \label{tab:sweep}
 \begin{tabular}{@{}rcccc@{}}
 \toprule
-$N$/class & RY+CNOT quantum & RY+CNOT sham & Givens quantum & Classical MHA \\
+$N$/class & RY+CNOT quantum & RY+CNOT sham & Givens (classical) & Classical MHA \\
 \midrule
 \rowcolor{rowhi}
 500  & 0.9144 & 0.8812 & 0.526$^\dagger$ (0.513, 0.539) & 0.910$^\dagger$ (0.908, 0.912) \\
@@ -603,7 +637,7 @@ The correct description is not a smooth crossover governed by a
 generalization-expressivity trade-off, but \emph{intermittent training
 instability that can occur at any $N$}, whose probability appears to
 decrease (not vanish) as $N$ grows.
-Of the 6 Givens quantum runs we logged across $N \in \{500, 3000, 5000,
+Of the 6 Givens (classical) runs we logged across $N \in \{500, 3000, 5000,
 8000, \text{full}\}$ (with 2 seeds at $N{=}500$), 3 failed
 (both $N{=}500$ seeds, and $N{=}8000$)---a $50\%$ failure rate in this
 sample.
@@ -700,7 +734,7 @@ Method & $T$ & Total Params & Full-data AUC & $N{=}500$ AUC & NISQ \\
 \midrule
 QVF-Scratch quantum~\cite{wang2025qvf} & 96 & 142,795 & \win{0.9983} & ${\approx}0.97$ & No \\
 QOVT RY+CNOT quantum & 384 & 142,467 & 0.985$^\dagger$ & 0.9144 & \textbf{Yes} \\
-QOVT Givens quantum & 1,536 & 143,619 & 0.9940 & 0.526$^\dagger$ (unstable) & No \\
+QOVT Givens (classical) & 1,536 & 143,619 & 0.9940 & 0.526$^\dagger$ (unstable) & No \\
 Classical MHA & --- & 207,619 & 0.9921 & 0.910$^\dagger$ & No \\
 MAE-ViT (ours)~\cite{prasha2025masked} & --- & 2,722,947 & 0.9895 & --- & No \\
 \bottomrule
@@ -721,6 +755,138 @@ for a consistent quantum-over-sham advantage, QOVT's own sweep
 at every tested $N$; QOVT's primary contribution is therefore
 \textbf{hardware deployability at competitive accuracy}, not a demonstrated
 quantum advantage over classical attention.
+
+\subsection{Pre-Registered Multi-Seed Confirmation}
+\label{sec:preregistered}
+
+Section~\ref{sec:limitations} flagged that every result above is single-seed
+except a handful of 2--3-seed cells, and Future Work item~1 called for
+``multi-seed (5+) reruns of the Givens $N{=}500$ \dots\ condition[s]\dots
+to directly test the memorization vs.\ optimization-failure hypotheses.''
+We report here a $n{=}10$-seed (seeds 42--51), pre-registered
+confirmatory round targeting exactly that gap, with several protocol
+changes disclosed up front so the numbers below are not read as a literal
+rerun of Table~\ref{tab:sweep}:
+
+\begin{enumerate}
+  \item \textbf{A genuinely held-out test set.} Every result above selects
+    the best checkpoint by validation AUC and \emph{also} reports that same
+    validation AUC as the result. We now split validation into a
+    selection half and a disjoint test half (fixed split, independent of
+    training seed); the test half is touched exactly once, at the
+    selection-chosen epoch.
+  \item \textbf{A new parameter-matched ``matched'' control}: rank-1
+    low-rank $U,V$ ($T{=}1{,}024$ -- the leanest linear factorization of a
+    $64{\times}64$ map we could construct; still not an exact 1:1 match to
+    RY+CNOT's $T{=}384$, disclosed rather than hidden), alongside the
+    existing sham and classical MHA arms.
+  \item \textbf{A single, uniform learning rate for every arm.} The
+    original RY+CNOT/Givens runs used a $10\times$ higher learning rate for
+    quantum circuit angles than every other arm received. A single shared
+    rate removes this asymmetry; RY+CNOT still trains to a comparable
+    accuracy under it (Table~\ref{tab:prereg}), confirming the boost was
+    not load-bearing for this circuit.
+  \item \textbf{A different, independently-chosen optimization recipe.}
+    Rather than reuse Section~\ref{sec:setup}'s exact hyperparameters, this
+    round uses AdamW at $\mathrm{lr}{=}10^{-3}$, weight decay $10^{-4}$, a
+    cosine-annealing-with-warm-restarts schedule, and 30 epochs (vs.\
+    $3\times10^{-4}$, $0.01$, plain cosine annealing, and 50 epochs
+    above) -- consistently applied across every arm and both rounds, so no
+    comparison \emph{within} Table~\ref{tab:prereg} is affected, but this is
+    a fourth respect in which it is an independent round, not a rerun.
+\end{enumerate}
+
+Design: 4 arms (RY+CNOT, matched, sham, classical) $\times$ 2 datasets
+(Model\_II, Model\_III) $\times$ 10 seeds at $N{=}500$/class -- 80 runs --
+plus 20 further runs substituting the Givens butterfly circuit for
+RY+CNOT's quantum arm (the sham/matched/classical controls do not depend on
+which quantum circuit is tested and are reused, not rerun). Four primary
+hypotheses were pre-registered before any run: quantum $>$ matched and
+quantum $>$ sham, on each of the two datasets; paired one-sided Wilcoxon
+signed-rank test per cell, Holm-Bonferroni correction across the 4 tests,
+$\alpha{=}0.01$, with a practical-significance bar (Holm $p{<}0.01$
+\emph{and} $|\Delta|{\geq}2$pp \emph{and} $\geq 8/10$ seeds agreeing in
+sign) required before any cell is called a finding rather than merely
+directional.
+
+\begin{table}[h!]
+\centering
+\caption{Pre-registered $n{=}10$-seed results, $N{=}500$/class, held-out
+test set (mean $\pm$ std across seeds).}
+\label{tab:prereg}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Arm & Model\_II AUC & Model\_III AUC & $T$ & Total params \\
+\midrule
+RY+CNOT (quantum) & \win{0.886 $\pm$ 0.070} & \win{0.893 $\pm$ 0.055} & 384 & 142,467 \\
+Givens butterfly (classical) & 0.508 $\pm$ 0.033 & 0.528 $\pm$ 0.047 & 1,536 & 143,619 \\
+matched (rank-1) & 0.549 $\pm$ 0.021 & 0.570 $\pm$ 0.024 & 1,024 & 143,107 \\
+sham (unconstrained) & 0.729 $\pm$ 0.153 & 0.819 $\pm$ 0.107 & 32,768 & 174,851 \\
+classical (MHA) & 0.749 $\pm$ 0.075 & 0.699 $\pm$ 0.119 & 65,536 & 207,619 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.95\textwidth]{figures/qovt_ablation_results.pdf}
+\caption{Pre-registered ablation results (Table~\ref{tab:prereg}), mean
+$\pm$ std over 10 seeds. RY+CNOT is the only arm that trains reliably
+above chance at $N{=}500$ under this protocol; Givens butterfly does not.}
+\label{fig:results}
+\end{figure}
+
+\paragraph{RY+CNOT: 3 of 4 primary tests pass.} RY+CNOT beats matched
+decisively on both datasets (Model\_II: $\Delta{=}{+}33.7$pp, 10/10 seeds,
+Holm $p{=}0.0039$; Model\_III: $\Delta{=}{+}32.3$pp, 10/10, Holm
+$p{=}0.0039$) and beats sham significantly on Model\_II ($\Delta{=}{+}15.7$pp,
+10/10 seeds, Holm $p{=}0.0039$), but \emph{not} on Model\_III
+($\Delta{=}{+}7.4$pp, 7/10 seeds, Holm $p{=}0.0137$ -- clears the 2pp margin
+on its own but fails the corrected $p$-value and the 8/10-seed
+consistency bar). Figure~\ref{fig:paired} shows this per seed: on
+Model\_II every one of the 10 seeds favors RY+CNOT over sham; on Model\_III
+three seeds flip sign, which is exactly what a non-significant, noisier
+comparison looks like at the level of individual pairs (sham's Model\_III
+standard deviation, $0.107$, is the third-highest of any cell in
+Table~\ref{tab:prereg}, behind sham/Model\_II's $0.153$ and
+classical/Model\_III's $0.119$). This is a more nuanced picture than
+Section~\ref{sec:comparison}'s blanket ``statistically tied with classical
+MHA'': under a fairer, held-out-test protocol with a genuine
+parameter-matched control, RY+CNOT shows a real, dataset-dependent edge
+over an unconstrained-linear sham, not a uniform tie -- but it is not yet a
+confirmed, replicated finding by this paper's own bar (Section~\ref{sec:limitations}):
+one pre-registered round, however large the effect, is a candidate, and we
+report it as such pending an independent second round at a different $N$.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=0.85\textwidth]{figures/qovt_paired_seeds.pdf}
+\caption{RY+CNOT vs.\ sham, paired by training seed. Green: that seed
+favors RY+CNOT. Model\_II is unanimous (10/10); Model\_III has 3
+sign flips, consistent with the non-significant result in
+Table~\ref{tab:prereg}.}
+\label{fig:paired}
+\end{figure}
+
+\paragraph{Givens butterfly: the $n{=}10$ round confirms, and sharpens,
+Section~\ref{sec:crossover}'s own finding.} All 10 seeds land near chance
+at $N{=}500$ on both datasets (Model\_II $0.508{\pm}0.033$, Model\_III
+$0.528{\pm}0.047$) -- losing to \emph{every} other arm, including the
+weak rank-1 matched control (two-sided butterfly-vs-RY+CNOT: $p{=}0.0020$
+on both datasets, 0/10 seeds favoring butterfly). This is not a new,
+unexplained failure: it is a $10$-seed confirmation of the same
+$N{=}500$ failure Table~\ref{tab:sweep} already reported from 2 seeds
+(both near chance: $0.513$, $0.539$), now with $5\times$ the sample and a
+disjoint test set ruling out the earlier held-out-set concern as an
+explanation. It leaves Section~\ref{sec:caro-prediction}'s open question
+--- memorization vs.\ optimization instability --- unresolved (we did not
+log training accuracy in this round either), but it does rule out one
+candidate confound: the failure is not an artifact of reusing the
+validation set for both model selection and reporting, since it reproduces
+identically under a genuinely held-out test split.
+\textbf{This round covers only $N{=}500$}; Future Work item~1's other
+condition, $N{=}8{,}000$, remains untested at multi-seed and is the
+natural next step.
 
 % ─────────────────────────────────────────────────────────────
 \section{Analysis}
@@ -804,10 +970,14 @@ principle about quantum circuit design.
 
 We applied Quantum Orthogonal Vision Transformers (QOVT) to three-class dark
 matter substructure classification on the DeepLense gravitational lensing
-benchmark, comparing two quantum circuit families---RY+CNOT ring ($T{=}384$)
-and Givens butterfly ($T{=}1{,}536$)---against classical sham and
-multi-head-attention controls, with all runs now complete
-(no \running{} entries remain).
+benchmark, evaluating a genuine gate-model quantum circuit---the RY+CNOT
+ring ($T{=}384$)---against four classical controls: a Givens butterfly
+decomposition ($T{=}1{,}536$, same-architecture but not quantum, an
+ablation on the orthogonality constraint itself), sham, a new
+parameter-matched low-rank control, and multi-head attention, with
+all originally-planned single-seed runs complete (no \running{} entries
+remain) and, as of Section~\ref{sec:preregistered}, one pre-registered
+$n{=}10$-seed confirmatory round completed at $N{=}500$.
 
 \paragraph{Summary of findings.}
 The headline empirical result---RY+CNOT beating Givens by $0.40$ AUC at
@@ -827,6 +997,16 @@ At full data, RY+CNOT, Givens, both sham controls, classical MHA, and our
 reproduced MAE-ViT baseline (AUC $0.9895$, corrected from an earlier,
 erroneously low reported value) all land within $\approx1.5$ points of
 each other on Model\_II.
+Section~\ref{sec:preregistered}'s pre-registered, held-out-test-set,
+$n{=}10$-seed round both \emph{revises and sharpens} this picture at
+$N{=}500$: Givens' failure is confirmed at $5\times$ the sample size and
+survives a genuinely disjoint test set (ruling out a validation-reuse
+artifact as the explanation), while RY+CNOT is found to beat the
+unconstrained-linear sham significantly on Model\_II (not merely tie
+classical MHA, as Table~\ref{tab:sweep}'s single-seed data suggested) --
+though not on Model\_III, and not yet independently replicated, so this
+is reported as a candidate finding, not a settled quantum-over-classical
+claim.
 
 We regard the confirmed contribution of this paper as narrower than
 originally framed: RY+CNOT is a \textbf{NISQ-deployable circuit that matches
@@ -852,31 +1032,44 @@ independent of whether it demonstrates a quantum \emph{advantage}.
 
 \paragraph{Limitations.}
 \label{sec:limitations}
-All results are single-seed except where explicitly noted as multi-run in
-Tables~\ref{tab:fulldata}--\ref{tab:comparison}; even the multi-run cells use
-only 2--3 seeds, insufficient for tight confidence intervals.
+Results in Tables~\ref{tab:fulldata}--\ref{tab:comparison} are single-seed
+except where explicitly noted as multi-run (2--3 seeds); Section~\ref{sec:preregistered}
+resolves this for $N{=}500$ specifically with a pre-registered $n{=}10$ round,
+but every other $N$ (3000, 5000, 8000, full) is still single-seed.
 We did not log training-set accuracy, so the memorization-vs-optimization-failure
-question for Givens (Section~\ref{sec:caro-prediction}) remains unresolved.
+question for Givens (Section~\ref{sec:caro-prediction}) remains unresolved even
+after Section~\ref{sec:preregistered}'s confirmatory round.
 The asymmetric $W_Q{=}I$, $W_K{=}U$ attention design (Section~\ref{sec:qoattn})
 differs from the symmetric $W_Q{=}W_K{=}U$ design our original theoretical
 framing assumed; we have not re-run experiments with the symmetric design,
 so we cannot rule out that it behaves differently.
+The RY+CNOT-vs-sham finding in Section~\ref{sec:preregistered} is itself a
+single pre-registered round, not yet independently replicated at a second
+$N$ -- by this paper's own standard (a lesson learned the hard way in
+Section~\ref{sec:crossover} and Section~\ref{sec:analysis}), it should be
+read as a candidate result, not a settled one.
 Real hardware execution with noise characterization has not yet been
 performed.
 
 \paragraph{Future work.}
 Priority directions, revised in light of the above:
-(1)~multi-seed (5+) reruns of the Givens $N{=}500$ and $N{=}8{,}000$
-    conditions with train-accuracy logging, to directly test the
-    memorization vs.\ optimization-failure hypotheses;
-(2)~implement and test the symmetric $W_Q{=}W_K{=}U$ attention variant that
+(1)~multi-seed reruns of the Givens $N{=}8{,}000$ condition with
+    train-accuracy logging, to complete what Section~\ref{sec:preregistered}
+    left unfinished (that round covered only $N{=}500$) and to directly test
+    the memorization vs.\ optimization-failure hypotheses;
+(2)~an independent second pre-registered round for the RY+CNOT-vs-sham
+    result at a different $N$ (e.g.\ $N{=}250$ or $N{=}1000$), with a fresh
+    seed range, to determine whether Section~\ref{sec:preregistered}'s
+    Model\_II finding replicates or, like several of this project's earlier
+    single-round results, shrinks under further scrutiny;
+(3)~implement and test the symmetric $W_Q{=}W_K{=}U$ attention variant that
     the original theoretical framing described, to check whether it
     behaves differently from the asymmetric variant we report here;
-(3)~a loss-landscape or Hessian-conditioning study comparing Givens and
+(4)~a loss-landscape or Hessian-conditioning study comparing Givens and
     RY+CNOT to test the optimization-instability hypothesis directly;
-(4)~real-hardware deployment on IBM Quantum Eagle/Heron with zero-noise
+(5)~real-hardware deployment on IBM Quantum Eagle/Heron with zero-noise
     extrapolation~\cite{bharti2022nisq}, now that the RY+CNOT accuracy
-    claim (matching, not exceeding, classical MHA) is on firmer footing.
+    claim is on firmer, multi-seed footing at $N{=}500$.
 
 \paragraph{Broader Impact.}
 This work is a cautionary as well as a positive result: our first-pass

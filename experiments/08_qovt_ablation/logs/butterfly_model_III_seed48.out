@@ -1,0 +1,36 @@
+[INFO] QOVT-ABLATION D=64 P=8 depth=4 | mode=quantum circuit=butterfly | data=model_III N/class=500 seed=48 split_seed=0 | params=143619 attn_params=1536 qlr=None lr=0.001 | train(1500, 64, 64) val_sel(4469, 64, 64) test(4470, 64, 64) device=cuda
+[ep 001] val_sel AUC=0.4910 acc=0.3433
+[ep 002] val_sel AUC=0.4936 acc=0.3433
+[ep 003] val_sel AUC=0.5004 acc=0.3285
+[ep 004] val_sel AUC=0.5057 acc=0.3285
+[ep 005] val_sel AUC=0.5060 acc=0.3285
+[ep 006] val_sel AUC=0.5036 acc=0.3433
+[ep 007] val_sel AUC=0.5055 acc=0.3283
+[ep 008] val_sel AUC=0.5046 acc=0.3433
+[ep 009] val_sel AUC=0.5051 acc=0.3285
+[ep 010] val_sel AUC=0.5051 acc=0.3285
+[ep 011] val_sel AUC=0.4997 acc=0.3433
+[ep 012] val_sel AUC=0.5068 acc=0.3433
+[ep 013] val_sel AUC=0.5080 acc=0.3283
+[ep 014] val_sel AUC=0.5080 acc=0.3283
+[ep 015] val_sel AUC=0.5074 acc=0.3283
+[ep 016] val_sel AUC=0.5077 acc=0.3433
+[ep 017] val_sel AUC=0.5080 acc=0.3433
+[ep 018] val_sel AUC=0.5091 acc=0.3283
+[ep 019] val_sel AUC=0.5091 acc=0.3285
+[ep 020] val_sel AUC=0.5088 acc=0.3433
+[ep 021] val_sel AUC=0.5096 acc=0.3285
+[ep 022] val_sel AUC=0.5091 acc=0.3283
+[ep 023] val_sel AUC=0.5091 acc=0.3285
+[ep 024] val_sel AUC=0.5093 acc=0.3283
+[ep 025] val_sel AUC=0.5094 acc=0.3283
+[ep 026] val_sel AUC=0.5093 acc=0.3285
+[ep 027] val_sel AUC=0.5095 acc=0.3285
+[ep 028] val_sel AUC=0.5095 acc=0.3285
+[ep 029] val_sel AUC=0.5094 acc=0.3285
+[ep 030] val_sel AUC=0.5095 acc=0.3285
+============================================================
+TEST (best val_sel epoch, held-out, evaluated once)
+============================================================
+TEST AUC : 0.5058  acc 0.3447  f1 0.1709  axion_recall 1.0000
+[DONE-QOVT-ABLATION] mode=quantum model_III N=500 seed=48 test_AUC=0.5058 val_sel_AUC=0.5096 per_class=(axion=0.5052 cdm=0.4967 no_sub=0.5154) params=143619 attn_params=1536
