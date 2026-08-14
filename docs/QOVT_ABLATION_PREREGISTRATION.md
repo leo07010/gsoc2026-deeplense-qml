@@ -279,4 +279,39 @@ primary + all secondary tests will be reported regardless of outcome.
 
 ### Round 2 — Results
 
-*(to be filled in after the job completes)*
+Job 251310 completed (20/20 runs: 10 seeds x 2 datasets). Arm means
+(mean AUC over 10 seeds, held-out test split), reusing the round-1
+matched/sham/classical/RY+CNOT arms per the reuse rationale above:
+
+| Arm | Model_II mean (std) | Model_III mean (std) |
+|---|---|---|
+| RY+CNOT (quantum) | 0.886 (0.070) | 0.893 (0.055) |
+| Givens butterfly (classical) | 0.508 (0.033) | 0.528 (0.047) |
+| matched (rank-1) | 0.549 (0.021) | 0.570 (0.024) |
+| sham | 0.729 (0.153) | 0.819 (0.107) |
+| classical (MHA) | 0.749 (0.075) | 0.699 (0.119) |
+
+**Primary tests (Holm-corrected, paired one-sided Wilcoxon):**
+- [1] butterfly > matched, Model_II: not supported (butterfly mean 0.508 <
+  matched mean 0.549).
+- [2] butterfly > matched, Model_III: not supported (0.528 < 0.570).
+- [3] butterfly > sham, Model_II: not supported (0.508 < 0.729).
+- [4] butterfly > sham, Model_III: not supported (0.528 < 0.819).
+
+None of the 4 primary butterfly-wins-by-parameter-count-alone hypotheses
+hold — butterfly is the weakest arm on both datasets, at every $N{=}500$
+comparison. This is a null result for the primary claim, reported as
+pre-registered regardless of outcome.
+
+**Secondary tests:**
+- butterfly vs. RY+CNOT, both datasets, two-sided: RY+CNOT wins, $p=0.0020$
+  on both Model_II and Model_III, $0/10$ seeds favor butterfly on either
+  dataset (unanimous both ways).
+- butterfly vs. classical: not supported (butterfly is the weakest arm
+  overall, see means above).
+
+Full statistics and the resulting narrative (Givens' non-monotonic failure
+across $N$, contrasted with RY+CNOT's stability) are in
+`docs/QOVT_PAPER.tex`, Section 3.5 (`sec:prereg`) and Table 5
+(`tab:prereg`); raw per-seed data in
+`experiments/08_qovt_ablation/results_butterfly.jsonl`.
