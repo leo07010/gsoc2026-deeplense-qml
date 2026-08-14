@@ -64,17 +64,24 @@ We introduce QOVT, a Quantum Orthogonal Vision Transformer whose attention
 matrices are produced by a genuine, NISQ-deployable 6-qubit gate-model
 quantum circuit -- an RY+CNOT ring with $L_\mathrm{circ}{=}8$ layers and
 only $T{=}384$ free angles. On strong-gravitational-lensing images from
-three simulated dark-matter models, this circuit matches the held-out AUC
-of a standard 8-head classical multi-head-attention baseline ($T{=}65{,}536$)
-at every training-set size we test, from $N{=}500$ to the full $\sim\!25$k
-images per class, while using $170\times$ fewer attention parameters. A
+three simulated dark-matter models, this circuit stays competitive with
+the held-out AUC of a standard 8-head classical multi-head-attention
+baseline ($T{=}65{,}536$) using $170\times$ fewer attention parameters,
+from $N{=}500$ to the full $\sim\!25$k images per class -- it ties or
+edges ahead by a fraction of a point up to $N{=}5{,}000$, but the
+classical baseline pulls modestly ahead (by $0.7$--$1.4$ points) at
+$N{=}8{,}000$ and at full data, so we do not claim it beats classical
+attention outright. A
 pre-registered, held-out-test, 10-seed evaluation ($N{=}500$/class) further
 shows the circuit significantly beats an unconstrained (non-orthogonal)
 baseline on one of two datasets (Model\_II: $\Delta{=}{+}15.7$pp,
 Holm-corrected $p{=}0.0039$, $10/10$ seeds) but not the other
 (Model\_III: $\Delta{=}{+}7.4$pp, $p{=}0.0137$, not significant) -- a
-directional, dataset-dependent, unreplicated finding, not a general claim
-of quantum advantage. As a companion ablation we also study Givens-butterfly
+directional, dataset-dependent, unreplicated finding that we flag, not
+oversell: this round used a shorter training recipe under which the
+larger unconstrained baselines may have been undertrained relative to the
+tiny RY+CNOT circuit, a confound we disclose and have not yet ruled out
+(Section~\ref{sec:concl}). As a companion ablation we also study Givens-butterfly
 decomposition, a \emph{classical} (non-quantum, no gate-model circuit at
 all) construction of the same $64{\times}64$ orthogonal matrix with
 $4\times$ more parameters ($T{=}1{,}536$); it fails catastrophically and
@@ -162,9 +169,11 @@ Our contributions are:
   circuit (96 gates total: 48 single-qubit RY + 48 two-qubit CNOT,
   $T{=}384$ free angles) that
   produces the $64{\times}64$ orthogonal attention matrices used by every
-  QOVT layer, and show it matches an 8-head classical multi-head-attention
-  baseline's held-out AUC ($T{=}65{,}536$, $170\times$ more parameters) at
-  every training-set size we test.
+  QOVT layer, and show it stays within a point or two of an 8-head
+  classical multi-head-attention baseline's held-out AUC ($T{=}65{,}536$,
+  $170\times$ more parameters) across the full data-efficiency sweep --
+  tied or slightly ahead up to $N{=}5{,}000$, trailing by a small,
+  consistent margin at $N{=}8{,}000$ and at full data.
 \item \textbf{A pre-registered statistical evaluation.} Correcting a
   methodological flaw (discovery and confirmatory samples overlapping) we
   found in an earlier campaign in this project, we pre-register hypotheses,
@@ -390,23 +399,26 @@ one-vs-rest AUC. Training runs on a single NVIDIA H200 GPU via SLURM.
 \toprule
 Arm & Params & Model\_I & Model\_II & Model\_III \\
 \midrule
-RY+CNOT (quantum) & 142,467 & 0.979 & 0.985 & 0.995 \\
+RY+CNOT & 142,467 & 0.979 & 0.985 & 0.995 \\
 RY+CNOT sham & 174,851 & 0.980 & 0.991 & 0.990 \\
-Givens (classical) & 143,619 & 0.981 & \win{0.994} & \win{0.996} \\
+Givens butterfly & 143,619 & 0.981 & 0.994 & 0.996 \\
 Givens sham & 174,851 & 0.980 & 0.991 & 0.989 \\
-Classical MHA & 207,619 & \win{0.981} & 0.992 & 0.996 \\
+Classical MHA & 207,619 & 0.981 & 0.992 & 0.996 \\
 MAE-ViT (reference) & 2,722,947 & 0.978 & 0.990 & 0.990 \\
 \bottomrule
 \end{tabular}
-\caption{Full-data (single seed) macro OVR AUC. All architectures
-converge within $\sim$1.5 AUC points once given the full dataset.}
+\caption{Full-data (single seed) macro OVR AUC; no arm is bolded because,
+at single-seed resolution, none of these sub-1-point gaps should be read
+as a winner (see prose).}
 \label{tab:fulldata}
 \end{table}
 
-Given the full dataset, every arm -- quantum, classical, and classical
-baseline -- lands within about 1.5 AUC points of each other
-(Table~\ref{tab:fulldata}); the interesting regime, and the rest of this
-paper's focus, is low-data.
+Given the full dataset, RY+CNOT is not the best arm on any of the three
+datasets -- it trails the best-scoring arm by 0.1--0.9 points
+(Table~\ref{tab:fulldata}), a gap we read as noise at single-seed
+resolution but do not spin as a win. Full data is not where RY+CNOT's case
+is made; the interesting regime, and the rest of this paper's focus, is
+low-data.
 
 \subsection{Data-Efficiency Sweep}
 \label{sec:sweep}
@@ -415,23 +427,35 @@ paper's focus, is low-data.
 \centering\small
 \begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Arm ($T$) & $N{=}500$ & $N{=}3{,}000$ & $N{=}5{,}000$ & $N{=}8{,}000$ & full \\
+Arm & $N{=}500$ & $N{=}3{,}000$ & $N{=}5{,}000$ & $N{=}8{,}000$ & full \\
 \midrule
-RY+CNOT (384) & \win{0.914} & 0.964 & 0.970 & 0.966 & 0.985 \\
+RY+CNOT & 0.914 & 0.964 & 0.970 & 0.966 & 0.985 \\
 RY+CNOT sham & 0.881 & 0.960 & 0.961 & 0.965 & 0.991 \\
-Givens (1,536) & 0.526 & 0.939 & 0.961 & 0.558 & 0.994 \\
-Classical MHA (65,536) & 0.910 & \win{0.964} & \win{0.968} & \win{0.980} & 0.992 \\
+Givens butterfly & 0.526 & 0.939 & 0.961 & 0.558 & 0.994 \\
+Classical MHA & 0.910 & 0.964 & 0.968 & 0.980 & 0.992 \\
 \bottomrule
 \end{tabular}
-\caption{Model\_II macro OVR AUC vs.\ training-set size (single seed per
-cell; the $N{=}500$ cell is superseded by the 10-seed
-Table~\ref{tab:prereg}). Givens fails at \emph{both} $N{=}500$ and
-$N{=}8{,}000$ -- non-monotonic in $N$, ruling out simple memorization.}
+\caption{Model\_II macro OVR AUC vs.\ training-set size (parameter counts
+per arm: Table~\ref{tab:params}; single seed per cell, the $N{=}500$ cell
+is superseded by the 10-seed Table~\ref{tab:prereg}). No arm is bolded --
+see prose for exactly where RY+CNOT leads, ties, or trails. Givens fails
+at \emph{both} $N{=}500$ and $N{=}8{,}000$ -- non-monotonic in $N$,
+ruling out simple memorization.}
 \label{tab:sweep}
 \end{table}
 
-RY+CNOT tracks classical MHA within about 1--2 points at every $N$ we test,
-despite using $170\times$ fewer attention parameters. Givens, in contrast,
+The honest picture is mixed, not a clean win for RY+CNOT. At $N{=}500$
+and $N{=}5{,}000$ it is nominally ahead of classical MHA by a small
+margin ($+0.4$pp, $+0.2$pp); at $N{=}3{,}000$ the two tie exactly to three
+decimals. At $N{=}8{,}000$ and at full data, classical MHA pulls
+\emph{ahead} of RY+CNOT by a larger and, unlike the ties above,
+consistent margin in the same direction ($+1.4$pp and $+0.7$pp
+respectively) -- these are single-seed numbers and should not be
+over-read, but this is a real trend, not something we can wave away as
+matching. We read this table as: RY+CNOT is competitive with, not
+reliably better than, classical MHA across the sweep, and appears to lose
+a little ground as $N$ grows past 5,000 -- despite using $170\times$
+fewer attention parameters throughout. Givens, in contrast,
 collapses to near-chance ($0.526$) at $N{=}500$, recovers through the
 middle of the sweep, and then collapses \emph{again} at $N{=}8{,}000$
 ($0.558$) before working at full data. If this were memorization -- too
@@ -493,18 +517,20 @@ We run 5 arms $\times$ 2 datasets (Model\_II, Model\_III) $\times$ 10 seeds
 \centering\small
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
-Arm ($T$) & \multicolumn{2}{c}{Model\_II} & \multicolumn{2}{c}{Model\_III} \\
+Arm & \multicolumn{2}{c}{Model\_II} & \multicolumn{2}{c}{Model\_III} \\
  & mean AUC & std & mean AUC & std \\
 \midrule
-RY+CNOT (384) & \win{0.886} & 0.070 & \win{0.893} & 0.055 \\
-Givens (classical, 1,536) & 0.508 & 0.033 & 0.528 & 0.047 \\
-Matched (rank-1, 1,024) & 0.549 & 0.021 & 0.570 & 0.024 \\
-Sham (32,768) & 0.729 & 0.153 & 0.819 & 0.107 \\
-Classical MHA (65,536) & 0.749 & 0.075 & 0.699 & 0.119 \\
+RY+CNOT & \win{0.886} & 0.070 & 0.893 & 0.055 \\
+Givens butterfly & 0.508 & 0.033 & 0.528 & 0.047 \\
+Matched (rank-1) & 0.549 & 0.021 & 0.570 & 0.024 \\
+Sham & 0.729 & 0.153 & 0.819 & 0.107 \\
+Classical MHA & 0.749 & 0.075 & 0.699 & 0.119 \\
 \bottomrule
 \end{tabular}
 \caption{Pre-registered results, $N{=}500$/class, $n{=}10$ seeds, held-out
-test AUC. Full statistics in the text.}
+test AUC (parameter counts per arm: Table~\ref{tab:params}). Bold marks
+the Holm-corrected significant win discussed in the text; other gaps here
+are directional but not both significant and consistent, see prose.}
 \label{tab:prereg}
 \end{table}
 
@@ -539,9 +565,10 @@ of the two effects in this round.
 \section{Analysis}
 \label{sec:analysis}
 
-\textbf{Parameter efficiency comes with spectral stability.} RY+CNOT
-matches classical MHA's accuracy using $170\times$ fewer attention
-parameters (Table~\ref{tab:params}) because orthogonality is enforced by
+\textbf{Parameter efficiency comes with spectral stability.} RY+CNOT stays
+within a point or two of classical MHA's accuracy at every $N$ we test,
+and is never worse than that by more than $1.4$ points, using $170\times$
+fewer attention parameters (Table~\ref{tab:params}) -- because orthogonality is enforced by
 construction: $\|U\|_2=\|V\|_2=1$ for every setting of the circuit's
 angles, so the attention layer's output can never blow up or collapse
 regardless of $T$. This is also why RY+CNOT never exhibits Givens'
@@ -554,9 +581,12 @@ stable optimization landscape.
 Caro bound explained RY+CNOT's data efficiency, we would expect it to beat
 classical MHA at low $N$ (where the $O(\sqrt{T/N})$ gap should matter most)
 and the depth ablation to show \emph{fewer} parameters generalizing better.
-Neither holds: RY+CNOT ties classical MHA at every $N$
-(Table~\ref{tab:sweep}), and more circuit parameters improve, not hurt,
-low-$N$ accuracy (Table~\ref{tab:depth}). We keep the bound as a design
+Neither holds: RY+CNOT never clearly beats classical MHA at any $N$ we
+test, and actually trails it by a modest but consistent margin at the two
+\emph{largest} $N$ (Table~\ref{tab:sweep}) -- the opposite of where a
+parameter-count-driven generalization advantage should be largest. More
+circuit parameters also improve, not hurt, low-$N$ accuracy
+(Table~\ref{tab:depth}). We keep the bound as a design
 heuristic that motivated trying a shallow circuit in the first place, not
 as an explanation for the results we observe.
 
@@ -576,20 +606,44 @@ loss landscapes that we leave to future work rather than resolve here.
 \label{sec:concl}
 
 RY+CNOT is a genuine, 6-qubit, NISQ-deployable gate-model quantum circuit
-that produces the orthogonal attention matrices for QOVT and matches a
-classical multi-head-attention baseline's held-out accuracy at every
-training-set size we test, using $170\times$ fewer attention parameters and
-remaining spectrally stable throughout. A pre-registered, held-out-test,
-10-seed evaluation shows it significantly beats an unconstrained baseline
-on one of two datasets -- a real, directional, but dataset-dependent and
-as-yet-unreplicated finding. We find no evidence that the Caro et al.\
+that produces the orthogonal attention matrices for QOVT and stays within
+a point or two of a classical multi-head-attention baseline's held-out
+accuracy across the data-efficiency sweep -- tied or slightly ahead up to
+$N{=}5{,}000$, trailing by $0.7$--$1.4$ points at $N{=}8{,}000$ and full
+data -- using $170\times$ fewer attention parameters and remaining
+spectrally stable throughout; we do not claim it beats classical
+attention outright. A pre-registered, held-out-test, 10-seed evaluation
+shows it significantly beats an unconstrained baseline on one of two
+datasets -- a real, directional, but dataset-dependent and
+as-yet-unreplicated finding that a training-recipe confound (see
+Limitations) means we cannot yet fully attribute to circuit choice alone.
+We find no evidence that the Caro et al.\
 generalization bound explains this behavior, and we show, via a classical
 (non-quantum) Givens-butterfly control, that constructing "the same"
 orthogonal matrix without the RY+CNOT gate sequence loses its stability
 entirely, failing in roughly half of all runs including at $5\times$ more
 training data.
 
-\textbf{Limitations.} All results are simulated, not run on real quantum
+\textbf{Limitations.} \emph{The pre-registered round's ``significant''
+finding may be confounded by its training recipe, not just circuit
+choice.} Classical MHA's single-seed $N{=}500$ AUC under the main
+protocol (Table~\ref{tab:sweep}, $0.910$) is $16$ points higher than its
+10-seed mean under the pre-registered round's different, shorter recipe
+(Table~\ref{tab:prereg}, $0.749$); RY+CNOT drops far less between the same
+two protocols ($0.914 \to 0.886$, $2.8$ points). Sham's pre-registered
+standard deviation ($0.153$, the largest of any cell in
+Table~\ref{tab:prereg}) is also consistent with training instability
+rather than a stable, converged comparison. We do not have per-epoch logs
+from either round to confirm this directly, but the size and direction of
+this asymmetry -- the larger, unconstrained arms losing far more than the
+tiny RY+CNOT circuit when epochs drop from 50 to 30 and the schedule
+changes -- is exactly what under-training a larger parameter space in
+fewer epochs would produce. Until this is checked with a matched-recipe
+control, the pre-registered Model\_II finding should be read as
+\emph{RY+CNOT is more robust to this particular short training recipe than
+sham or classical attention are}, which is a real result but a narrower
+one than ``RY+CNOT's circuit is intrinsically better than an unconstrained
+baseline.'' All results are simulated, not run on real quantum
 hardware. Only the pre-registered round (Section~\ref{sec:prereg}) uses
 multiple seeds; the sweep and depth ablation (Sections~\ref{sec:sweep},
 \ref{sec:depth}) are single-seed and should be read as suggestive, not
@@ -601,9 +655,13 @@ literature. We did not log training-accuracy trajectories in enough detail
 to fully characterize \emph{why} Givens' optimization landscape is harder,
 only that it is.
 
-\textbf{Future work.} An independent second pre-registered round (a
-different $N$, fresh seeds) to test whether the Model\_II finding
-replicates; a symmetric $W_Q{=}W_K{=}U$ variant; a loss-landscape or
+\textbf{Future work.} Most immediately, a matched-recipe control -- rerun
+sham and classical MHA at $N{=}500$ under the \emph{main} 50-epoch
+protocol with 10 seeds and the same held-out split -- to directly test
+whether the recipe confound above, rather than circuit choice, explains
+the Model\_II finding; an independent second pre-registered round (a
+different $N$, fresh seeds) to test whether the finding replicates under
+either recipe; a symmetric $W_Q{=}W_K{=}U$ variant; a loss-landscape or
 Hessian-conditioning comparison between RY+CNOT and Givens to explain the
 stability gap directly; a multi-seed rerun of Givens at $N{=}8{,}000$ to
 characterize its failure mode more precisely; and deployment of the
