@@ -1,0 +1,105 @@
+{
+ "dataset": "model_II",
+ "classes": [
+  "axion",
+  "cdm",
+  "no_sub"
+ ],
+ "n_per_class": 300,
+ "radial": {
+  "axion_vs_cdm": {
+   "max_d": 1.457537644582094,
+   "argmax_bin": 25,
+   "n_bins_d_gt_0.8": 16,
+   "n_bins_d_gt_0.5": 26,
+   "n_bins": 46
+  },
+  "axion_vs_no_sub": {
+   "max_d": 2.8551666190138687,
+   "argmax_bin": 7,
+   "n_bins_d_gt_0.8": 16,
+   "n_bins_d_gt_0.5": 22,
+   "n_bins": 46
+  },
+  "cdm_vs_no_sub": {
+   "max_d": 1.679455008260222,
+   "argmax_bin": 23,
+   "n_bins_d_gt_0.8": 24,
+   "n_bins_d_gt_0.5": 30,
+   "n_bins": 46
+  }
+ },
+ "token_axis": {
+  "axion_vs_cdm": {
+   "max_d": 0.31776303055454097,
+   "argmax_freq": 10,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  },
+  "axion_vs_no_sub": {
+   "max_d": 0.32804376702893256,
+   "argmax_freq": 2,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  },
+  "cdm_vs_no_sub": {
+   "max_d": 0.2749838350549583,
+   "argmax_freq": 14,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  }
+ }
+}
+{
+ "dataset": "model_III",
+ "classes": [
+  "axion",
+  "cdm",
+  "no_sub"
+ ],
+ "n_per_class": 300,
+ "radial": {
+  "axion_vs_cdm": {
+   "max_d": 1.5307989638110981,
+   "argmax_bin": 29,
+   "n_bins_d_gt_0.8": 20,
+   "n_bins_d_gt_0.5": 29,
+   "n_bins": 46
+  },
+  "axion_vs_no_sub": {
+   "max_d": 2.3834697775717615,
+   "argmax_bin": 21,
+   "n_bins_d_gt_0.8": 11,
+   "n_bins_d_gt_0.5": 16,
+   "n_bins": 46
+  },
+  "cdm_vs_no_sub": {
+   "max_d": 1.890988626027861,
+   "argmax_bin": 24,
+   "n_bins_d_gt_0.8": 24,
+   "n_bins_d_gt_0.5": 27,
+   "n_bins": 46
+  }
+ },
+ "token_axis": {
+  "axion_vs_cdm": {
+   "max_d": 0.2647843198519141,
+   "argmax_freq": 16,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  },
+  "axion_vs_no_sub": {
+   "max_d": 0.3836119401136829,
+   "argmax_freq": 16,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  },
+  "cdm_vs_no_sub": {
+   "max_d": 0.35046686254151144,
+   "argmax_freq": 2,
+   "n_freqs_d_gt_0.8": 0,
+   "n_freqs": 32
+  }
+ }
+}
+done
