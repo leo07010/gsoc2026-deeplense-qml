@@ -1,0 +1,53 @@
+[INFO] QPE D=64 P=8 depth=4 | embed=scramble circuit_layers=8 | data=model_II N/class=500 seed=42 split_seed=0 | params=203508 embed_params=49 lr=0.001 epochs=48 | train(1500, 64, 64) val_sel(4455, 64, 64) test(4455, 64, 64) device=cuda
+[ep 001] val_sel AUC=0.5247 acc=0.3473
+[ep 002] val_sel AUC=0.5288 acc=0.3237
+[ep 003] val_sel AUC=0.5325 acc=0.3237
+[ep 004] val_sel AUC=0.5416 acc=0.3237
+[ep 005] val_sel AUC=0.5393 acc=0.3237
+[ep 006] val_sel AUC=0.5406 acc=0.3291
+[ep 007] val_sel AUC=0.5373 acc=0.3291
+[ep 008] val_sel AUC=0.5322 acc=0.3291
+[ep 009] val_sel AUC=0.5267 acc=0.3410
+[ep 010] val_sel AUC=0.5288 acc=0.3291
+[ep 011] val_sel AUC=0.5284 acc=0.3434
+[ep 012] val_sel AUC=0.5307 acc=0.3596
+[ep 013] val_sel AUC=0.5332 acc=0.3457
+[ep 014] val_sel AUC=0.5356 acc=0.3618
+[ep 015] val_sel AUC=0.5383 acc=0.3650
+[ep 016] val_sel AUC=0.5388 acc=0.3634
+[ep 017] val_sel AUC=0.5499 acc=0.3753
+[ep 018] val_sel AUC=0.5966 acc=0.3760
+[ep 019] val_sel AUC=0.6749 acc=0.4882
+[ep 020] val_sel AUC=0.7674 acc=0.6056
+[ep 021] val_sel AUC=0.8195 acc=0.6227
+[ep 022] val_sel AUC=0.8417 acc=0.6429
+[ep 023] val_sel AUC=0.8103 acc=0.6330
+[ep 024] val_sel AUC=0.8401 acc=0.6543
+[ep 025] val_sel AUC=0.8725 acc=0.7143
+[ep 026] val_sel AUC=0.8585 acc=0.6837
+[ep 027] val_sel AUC=0.8870 acc=0.7446
+[ep 028] val_sel AUC=0.8341 acc=0.6572
+[ep 029] val_sel AUC=0.8943 acc=0.7333
+[ep 030] val_sel AUC=0.8983 acc=0.7585
+[ep 031] val_sel AUC=0.8986 acc=0.7692
+[ep 032] val_sel AUC=0.9057 acc=0.7814
+[ep 033] val_sel AUC=0.9146 acc=0.7980
+[ep 034] val_sel AUC=0.9137 acc=0.7892
+[ep 035] val_sel AUC=0.9148 acc=0.7978
+[ep 036] val_sel AUC=0.9161 acc=0.8141
+[ep 037] val_sel AUC=0.9176 acc=0.8189
+[ep 038] val_sel AUC=0.9122 acc=0.7935
+[ep 039] val_sel AUC=0.9190 acc=0.8175
+[ep 040] val_sel AUC=0.9185 acc=0.8251
+[ep 041] val_sel AUC=0.9214 acc=0.8278
+[ep 042] val_sel AUC=0.9235 acc=0.8301
+[ep 043] val_sel AUC=0.9217 acc=0.8341
+[ep 044] val_sel AUC=0.9239 acc=0.8357
+[ep 045] val_sel AUC=0.9239 acc=0.8359
+[ep 046] val_sel AUC=0.9236 acc=0.8321
+[ep 047] val_sel AUC=0.9237 acc=0.8321
+[ep 048] val_sel AUC=0.9237 acc=0.8325
+============================================================
+TEST (best val_sel epoch, held-out, evaluated once)
+============================================================
+[DONE-QPE] embed=scramble model_II N=500 seed=42 test_AUC=0.9315 val_sel_AUC=0.9239 per_class=(axion=0.9407 cdm=0.8737 no_sub=0.9799) params=203508 embed_params=49 angle_drift=0.2227114886045456 U_frob_drift=0.8898904919624329

@@ -136,5 +136,60 @@ effect is zero".
 
 ## Results
 
-*(to be filled in after the jobs complete; nothing above this line will
-be edited after data exists)*
+Jobs 261977 (model_II) + 261979 (model_III), 2026-08-14. 160/160 runs
+completed, zero failures (`failed_runs_*` empty). Raw per-seed data:
+`experiments/10_quantum_patch_embed/results_qpe_model_II.jsonl` and
+`results_qpe_model_III.jsonl`; analysis: `analyze_qpe.py`.
+
+**Arm means (n=20 seeds, held-out test AUC):**
+
+| arm | Model_II mean (std) | Model_III mean (std) |
+|---|---|---|
+| quantum | 0.9285 (0.0074) | 0.9180 (0.0083) |
+| scramble | 0.9265 (0.0065) | 0.9176 (0.0090) |
+| dct | **0.9376 (0.0048)** | **0.9437 (0.0038)** |
+| conv | 0.9181 (0.0158) | 0.8823 (0.0870) |
+
+**Primary tests (one-sided paired Wilcoxon, Holm over 4):**
+
+| # | test | delta | pos | Holm p | verdict |
+|---|---|---|---|---|---|
+| 1 | quantum > scramble, II | +0.0021 | 12/20 | 0.324 | n.s. -- **falsification test fails** |
+| 2 | quantum > scramble, III | +0.0005 | 11/20 | 0.392 | n.s. |
+| 3 | quantum > conv, II | +0.0104 | 16/20 | 0.0040 | SIG but fails the 2pp practical bar |
+| 4 | quantum > conv, III | +0.0357 | 12/20 | 0.324 | n.s. (conv unstable: std 0.087, min 0.564) |
+
+**Secondary -- quantum vs dct (two-sided + committed TOST rule):**
+dct is significantly BETTER than quantum on both datasets
+(Model_II delta=-0.0091, p=0.00002, 90% CI [-0.0116, -0.0066], inside
+the +/-2pp band so formally "equivalent" by the committed rule but
+directionally dct-better; Model_III delta=-0.0256, p<0.00001, 90% CI
+[-0.0296, -0.0217], OUTSIDE the band -- not equivalent, dct wins).
+
+**Secondary -- scramble vs conv (context):** scramble +0.83pp over conv
+on II (p=0.008), +3.5pp on III (p=0.154, driven by conv's collapsed
+seeds).
+
+**Angle-drift diagnostic:** circuit engaged in every run --
+U_frob_drift mean 1.02-1.16 (min 0.58) against ||U||_F = 8, for both
+quantum and scramble, both datasets. The nulls on tests 1-2 are
+therefore informative, not an artifact of a frozen circuit.
+
+### Verdict per the pre-committed interpretation rules
+
+- Tests 1-2 fail with an engaged circuit: **genuine evidence against
+  the circuit bit-structure mattering** at the ~5pp detectable effect
+  size. Per the commitment above, the "quantum structure helps" framing
+  must not be used in any project claim.
+- The spectral-bias prediction from the Step-0 diagnostic IS validated
+  -- but by the classical arm: fixed 2D DCT (1 param) is the best arm
+  on both datasets, beating the learned conv baseline by 2.0pp (II) /
+  6.1pp (III) and beating the quantum circuit itself. Even the fallback
+  framing "the circuit is a hardware-executable way to get a spectral
+  embed" is weakened: DCT is better than the circuit, so the circuit's
+  48-angle manifold is a strictly worse route to the spectral bias
+  under this training budget.
+- Stability side-finding (not pre-registered, exploratory): conv
+  collapses on some Model_III seeds (min 0.564) while all three
+  norm-preserving embeds never drop below 0.89 -- consistent with the
+  orthogonality-stability observations in the QOVT ablation.
