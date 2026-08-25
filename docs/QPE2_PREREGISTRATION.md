@@ -164,5 +164,89 @@ as context on the ansatz's expressivity.
 
 ## Results
 
-*(to be filled in after the jobs complete; nothing above this line will
-be edited after data exists)*
+Jobs 291060 (model_II) + 291061 (model_III), 2026-08-22, 1h09m each.
+**480/480 runs completed, zero failures** (`failed_runs_*` empty). Raw
+per-seed data: `experiments/11_qpe2_spectral/results_qpe2_model_*.jsonl`;
+analysis `analyze_qpe2.py`, full output `qpe2_analysis_output.txt`.
+
+**Arm means (n=20 seeds, held-out test AUC; parenthesized figure is the
+population std, ddof=0):**
+
+| arm (embed params) | N=100 Model_II | N=100 Model_III | N=250 Model_II | N=250 Model_III |
+|---|---|---|---|---|
+| skew48 (49) | **0.8542** (0.031) | **0.8866** (0.017) | **0.9292** (0.006) | **0.9349** (0.005) |
+| dctfix (1) | 0.8516 (0.030) | 0.8843 (0.019) | 0.9287 (0.006) | 0.9335 (0.005) |
+| butterfly (193) | 0.8488 (0.034) | 0.8819 (0.025) | 0.9275 (0.007) | 0.9341 (0.006) |
+| quantum (49) | 0.8379 (**0.058**) | 0.8788 (**0.041**) | 0.9283 (0.006) | 0.9337 (0.007) |
+| cayley (2017) | 0.8339 (0.044) | 0.8822 (0.013) | 0.9273 (0.009) | 0.9338 (0.006) |
+| conv (4160) | 0.7302 (0.041) | 0.6872 (0.066) | 0.8940 (0.021) | 0.8950 (0.034) |
+
+**Primary family (N=100, one-sided, Holm over 6) -- all six fail, five
+of them with the sign reversed:**
+
+| # | test | delta | pos | raw p | Holm | verdict |
+|---|---|---|---|---|---|---|
+| 1 | quantum > dctfix, II | -0.0137 | 9/20 | 0.806 | 1.000 | reversed |
+| 2 | quantum > dctfix, III | -0.0056 | 12/20 | 0.435 | 1.000 | reversed |
+| 3 | quantum > skew48, II | -0.0163 | 7/20 | 0.918 | 1.000 | reversed |
+| 4 | quantum > skew48, III | -0.0079 | 11/20 | 0.565 | 1.000 | reversed |
+| 5 | quantum > cayley, II | +0.0039 | 10/20 | 0.273 | 1.000 | coin flip (see below) |
+| 6 | quantum > cayley, III | -0.0035 | 12/20 | 0.205 | 1.000 | reversed |
+
+**HEADLINE: NO.** Tests 1-4 do not pass; the pre-registered small-data
+quantum win is not observed, and the point estimates run the wrong way.
+The failure is not marginal: the largest delta anywhere in the family
+is +0.0039, against a pre-committed gate of +0.02. Test 5, the only
+positive one, is 10/20 seeds with a median paired difference of
++0.0001 -- a coin flip, not a direction.
+
+**Chart-drift diagnostic -- every chart moved, so the nulls are
+informative:** R_frob_drift means (against ||R||_F = 8) quantum
+0.70-0.84, skew48 1.22-1.40, butterfly 1.52-1.79, cayley 3.65-3.94.
+No arm was frozen at its initialization.
+
+**Secondary, N=250:** all six comparisons are null (|delta| <= 0.0012,
+raw p 0.46-0.86), and the TOST rule declares quantum EQUIVALENT to both
+dctfix and skew48 on both datasets (all four 90% CIs inside +/-2pp,
+widths ~0.005). At N=250 the choice of chart -- or whether to refine at
+all -- simply does not matter.
+
+**Secondary, quantum vs butterfly:** null at every cell (|delta| <=
+0.011, all p >= 0.32). Unlike the QOVT ablation, the butterfly chart
+does not fail here; composing it with the DCT prior appears to remove
+the instability that made it collapse in QOVT.
+
+### Verdict per the pre-committed interpretation rules
+
+- **Tests 1-2 fail, with all charts demonstrably moving.** The
+  committed reading applies verbatim: *learnable refinement adds
+  nothing detectable over the fixed spectral prior at low N; the
+  classical fixed DCT embed is the best known method here, full stop,
+  and no further quantum-embedding rounds will be proposed on these
+  datasets.*
+- The quantum arm is not merely equal but, **among the orthogonal
+  arms, the least stable** at N=100: its per-seed std (0.058 / 0.041)
+  is roughly double dctfix's (0.030 / 0.019), with a worst seed at
+  0.681. (conv is less stable still on Model_III, std 0.066, but conv
+  is the no-prior baseline, not an orthogonal chart.) This runs opposite to
+  the QOVT-era "orthogonal circuits are more stable" observation --
+  there, every comparison arm was unconstrained; here every arm is
+  orthogonal, and among orthogonal charts the circuit is the
+  worst-conditioned, not the best.
+- Bonus: skew48 is nominally the top arm in all four cells, but its
+  margin over dctfix (0.04-0.26pp) is far inside noise and was never a
+  pre-registered test; it is reported as an observation, not a finding.
+
+### The one large effect in this round is classical
+
+The fixed spectral prior (the **dctfix** arm) beats the learned conv
+embedding by a margin an order of magnitude larger than any quantum
+effect ever measured in this project: **+12.1pp (Model_II) and +19.7pp
+(Model_III) at N=100, both 20/20 seeds**, still +3.5pp (20/20) and
++3.9pp (19/20) at N=250. (The quantum arm's own margins over conv --
++10.8pp / +19.2pp / +3.4pp / +3.9pp -- are similar because every
+non-conv arm composes with the same DCT prior; the effect belongs to
+the prior, not the chart.) Combined with QPE-1 (DCT > conv by 2.0/6.1pp
+at N=500), the low-data story on these datasets is entirely about
+having the right fixed spectral prior, and not at all about quantum
+circuits.
